@@ -13,17 +13,14 @@ using namespace std;
 
 COpenCL::COpenCL()
 {
-	// init datamembers
-	mDevice = NULL;
-	mContext = NULL;
-	mQueue = NULL;
+
 }
 
 COpenCL::~COpenCL()
 {
 	// Free OpenCL memory:
-	if(mQueue) clReleaseCommandQueue(mQueue);
-	if(mContext) clReleaseContext(mContext);
+	if(mQueue()) clReleaseCommandQueue(mQueue());
+	if(mContext()) clReleaseContext(mContext());
 }
 
 /// Check error_code and output a detailed message if not CL_SUCCESS.
@@ -122,16 +119,18 @@ void COpenCL::Init(cl_device_type type)
 void COpenCL::Init(cl_device_id device_id)
 {
 	int err = 0;
-	this->mDevice = device_id;
+	this->mDevices.push_back(cl::Device(device_id));
 #ifdef DEBUG
 	printf("Initializing using the following device:\n");
 	this->PrintDeviceInfo(device_id);
 #endif //DEBUG
 
-	this->mContext = clCreateContext(0, 1, &device_id, NULL, NULL, &err);
+	// TODO: Register a callback error function.
+	this->mContext = cl::Context(mDevices, NULL, NULL, NULL, &err);
 	CheckOCLError("Unable to create context.", err);
 
-	this->mQueue = clCreateCommandQueue(mContext, device_id, 0, &err);
+	// TODO: If we enable multiple devices, we should use something other than the zeroth entry here:
+	this->mQueue = cl::CommandQueue(mContext, mDevices[0], 0, &err);
 	CheckOCLError("Unable to create command queue.", err);
 }
 
@@ -228,9 +227,6 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(clock_frequency), &clock_frequency, &returned_size);
 
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size), &max_work_group_size, &returned_size);
-
-	// TODO: There be a bug here somewhere.  Upgrade to Nvidia driver 195 somehow screwed up this command.
-	//err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(max_work_item_dims), &max_work_item_dims, &returned_size);
 
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(max_work_item_sizes), max_work_item_sizes, &returned_size);
 
