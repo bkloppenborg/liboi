@@ -12,4 +12,5 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 
 # Call CMake on the subdirectories
+add_subdirectory(lib)
 add_subdirectory(src)

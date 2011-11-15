@@ -10,13 +10,17 @@
 
 #include <string>
 #include <vector>
+#include "ReadTextFile.h"
+#include "COpenCL.h"
+
 using namespace std;
 
 class COpenCLRoutine
 {
 protected:
 	cl_device_id mDeviceID;
-	cl_context_id mContext;
+	cl_context mContext;
+	cl_command_queue mQueue;
 	vector<cl_program> mPrograms;
 	vector<cl_kernel> mKernels;
 	vector<string> mSource;
