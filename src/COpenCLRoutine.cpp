@@ -90,7 +90,7 @@ string COpenCLRoutine::ReadSource(string filename)
 	return ReadFile(mKernelPath + '/' +  filename, "Could not read OpenCL kernel source " + mKernelPath + '/' +  filename);
 }
 
-void SetSourcePath(string path_to_kernels)
+void COpenCLRoutine::SetSourcePath(string path_to_kernels)
 {
 	mKernelPath = path_to_kernels;
 }
