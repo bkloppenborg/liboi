@@ -71,6 +71,16 @@ cl_context COpenCL::GetContext()
 	return mContext();
 }
 
+cl_device_id	COpenCL::GetDevice()
+{
+	return this->mDevices[0]();
+}
+
+cl_command_queue COpenCL::GetQueue()
+{
+	return this->mQueue();
+}
+
 /// Returns a list of platforms on this machine
 void COpenCL::GetPlatformList(vector<cl_platform_id> * platforms)
 {

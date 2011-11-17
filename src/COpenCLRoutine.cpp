@@ -9,8 +9,11 @@
 #include "COpenCLRoutine.h"
 
 
-COpenCLRoutine::COpenCLRoutine()
+COpenCLRoutine::COpenCLRoutine(cl_device_id device, cl_context context, cl_command_queue queue)
 {
+	mDeviceID = device;
+	mContext = context;
+	mQueue = queue;
 	mKernelPath = "";
 
 }

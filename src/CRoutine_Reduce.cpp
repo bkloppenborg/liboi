@@ -11,7 +11,8 @@
 
 using namespace std;
 
-CRoutine_Reduce::CRoutine_Reduce()
+CRoutine_Reduce::CRoutine_Reduce(cl_device_id device, cl_context context, cl_command_queue queue)
+	:COpenCLRoutine(device, context, queue)
 {
 	// Specify the source location, set temporary buffers to null
 	mSource.push_back("reduce_float.cl");

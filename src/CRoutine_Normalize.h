@@ -13,7 +13,7 @@
 class CRoutine_Normalize: public COpenCLRoutine
 {
 public:
-	CRoutine_Normalize();
+	CRoutine_Normalize(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_Normalize();
 
 	void Init();

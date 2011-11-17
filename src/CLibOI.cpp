@@ -20,6 +20,10 @@ CLibOI::~CLibOI()
 
 void CLibOI::FreeOpenCLMem()
 {
+	// First free datamembers:
+	if(mImage_flux) delete mImage_flux;
+
+	// Now free OpenCL buffers:
 	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
 }
 
@@ -47,15 +51,15 @@ void CLibOI::InitMemory()
 void CLibOI::InitRoutines()
 {
 	// Init all routines.  For now pre-allocate all buffers.
-	mImage_flux = CRoutine_Reduce();
-	mImage_flux.SetSourcePath(mKernelSourcePath);
-	mImage_flux.Init(mImageWidth * mImageHeight, true);
+	mImage_flux = new CRoutine_Reduce(mOCL.GetDevice(), mOCL.GetContext(), mOCL.GetQueue());
+	mImage_flux->SetSourcePath(mKernelSourcePath);
+	mImage_flux->Init(mImageWidth * mImageHeight, true);
 }
 
 /// Computes the total flux for the current image.
 float CLibOI::TotalFlux(bool return_value)
 {
-	return mImage_flux.ComputeSum(return_value, mFluxBuffer, mImage, NULL, NULL);
+	return mImage_flux->ComputeSum(return_value, mFluxBuffer, mImage, NULL, NULL);
 }
 
 /// Tells OpenCL about the size of the image.

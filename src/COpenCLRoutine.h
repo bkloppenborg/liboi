@@ -28,7 +28,7 @@ protected:
 	string mKernelPath;
 
 public:
-	COpenCLRoutine();
+	COpenCLRoutine(cl_device_id mDevice, cl_context mContext, cl_command_queue mQueue);
 	~COpenCLRoutine();
 
 	int BuildKernel(string source);

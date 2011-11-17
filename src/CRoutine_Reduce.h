@@ -29,7 +29,7 @@ protected:
 	cl_mem tmp_buff2;
 
 public:
-	CRoutine_Reduce();
+	CRoutine_Reduce(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_Reduce();
 
 protected:

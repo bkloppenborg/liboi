@@ -52,6 +52,9 @@ public:
 	static void CheckOCLError(string user_message, int error_code);
 
 	cl_context		GetContext();
+	cl_device_id	GetDevice();
+	cl_command_queue GetQueue();
+
 	void 			GetDeviceList(cl_platform_id platform, vector<cl_device_id> * devices);
 	cl_device_type  GetDeviceType(cl_device_id device);
 	void 			GetPlatformList(vector<cl_platform_id> * platforms);

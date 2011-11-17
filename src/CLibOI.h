@@ -34,8 +34,8 @@ protected:
 
 	// Routines:
 	string mKernelSourcePath;
-	CRoutine_Reduce mImage_flux;
-	CRoutine_Normalize mImage_norm;
+	CRoutine_Reduce * mImage_flux;
+//	CRoutine_Normalize * mImage_norm;
 
 	// Memory objects (OpenCL or otherwise)
 	cl_mem mImage;
