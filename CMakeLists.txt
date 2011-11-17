@@ -12,5 +12,5 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 
 # Call CMake on the subdirectories
-add_subdirectory(${CMAKE_SOURCE_DIR}/lib/textio)
+add_subdirectory(${CMAKE_SOURCE_DIR}/lib/textio "${CMAKE_CURRENT_BINARY_DIR}/lib/textio")
 add_subdirectory(src)
