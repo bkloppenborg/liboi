@@ -37,9 +37,13 @@ public:
 	void MakeData_V2(cl_mem ft_buffer, int width, int height, cl_mem v2_uv, int v2_size, cl_mem output_buffer);
 	void MakeData_T3(cl_mem ft_buffer, int width, int height, cl_mem t3_uv, int t3_size, cl_mem output_buffer);
 
-	void Normalize(cl_mem image_location, int width, int height, float total_flux);
+	void Normalize(cl_mem image, cl_mem divisor, int width, int height, int depth);
 
 	void UnloadData(string filename);
+
+	// TODO: rename these as it's clunky.
+	cl_mem SetImageFromTexture(cl_context OCLContext, GLuint texture);
+	cl_mem SetImageFromRenderbuffer(cl_context OCLContext, GLuint renderbuffer);
 };
 
 #endif /* CLIBOI_H_ */
