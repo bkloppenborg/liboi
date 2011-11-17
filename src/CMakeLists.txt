@@ -6,7 +6,7 @@ find_package(OpenCL REQUIRED)
 include_directories(${OPENCL_INCLUDE_DIRS})
 
 # Add include directories and libs for compiled libraries.
-include_directories(${CMAKE_SOURCE_DIR}/libtextio/include)
+include_directories(${CMAKE_SOURCE_DIR}/lib/textio/include)
 
 file(GLOB SOURCE *.cpp)
 
