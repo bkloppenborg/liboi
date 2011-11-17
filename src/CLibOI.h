@@ -33,6 +33,7 @@ protected:
 	COpenCL mOCL;
 
 	// Routines:
+	string mKernelSourcePath;
 	CRoutine_Reduce mImage_flux;
 	CRoutine_Normalize mImage_norm;
 
@@ -62,6 +63,8 @@ public:
 	void   RegisterImage_CLMEM(cl_mem image);
 	cl_mem RegisterImage_GLRB(GLuint renderbuffer);
 	cl_mem RegisterImage_GLTB(GLuint texturebuffer);
+
+	void SetKernelSoucePath(string path_to_kernels);
 
 //	void ComputeChi2_V2(cl_mem v2_sim_data, cl_mem v2_real_data, int v2_size);
 //	void ComputeChi2_T3(cl_mem t3_sim_data, cl_mem t3_real_data, int t3_size);

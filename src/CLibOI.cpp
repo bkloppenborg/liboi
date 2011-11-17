@@ -48,6 +48,7 @@ void CLibOI::InitRoutines()
 {
 	// Init all routines.  For now pre-allocate all buffers.
 	mImage_flux = CRoutine_Reduce();
+	mImage_flux.SetSourcePath(mKernelSourcePath);
 	mImage_flux.Init(mImageWidth * mImageHeight, true);
 }
 
@@ -97,4 +98,9 @@ cl_mem CLibOI::RegisterImage_GLTB(GLuint texturebuffer)
 	COpenCL::CheckOCLError("Could not create OpenCL image object from GLTexture", err);
 
 	return mImage;
+}
+
+void CLibOI::SetKernelSoucePath(string path_to_kernels)
+{
+	mKernelSourcePath = path_to_kernels;
 }

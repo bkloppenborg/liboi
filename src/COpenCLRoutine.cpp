@@ -11,7 +11,7 @@
 
 COpenCLRoutine::COpenCLRoutine()
 {
-	// TODO Auto-generated constructor stub
+	mKernelPath = "";
 
 }
 
@@ -87,5 +87,10 @@ int COpenCLRoutine::BuildKernel(string source)
 
 string COpenCLRoutine::ReadSource(string filename)
 {
-	return ReadFile(filename, "Could not read OpenCL kernel source" + filename);
+	return ReadFile(mKernelPath + '/' +  filename, "Could not read OpenCL kernel source " + mKernelPath + '/' +  filename);
+}
+
+void SetSourcePath(string path_to_kernels)
+{
+	mKernelPath = path_to_kernels;
 }

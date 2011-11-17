@@ -25,12 +25,17 @@ protected:
 	vector<cl_kernel> mKernels;
 	vector<string> mSource;	// For storing the filenames of source files.
 
+	string mKernelPath;
+
 public:
 	COpenCLRoutine();
 	~COpenCLRoutine();
 
-	string ReadSource(string filename);
 	int BuildKernel(string source);
+
+	string ReadSource(string filename);
+
+	void SetSourcePath(string path_to_kernels);
 };
 
 #endif /* COPENCLROUTINE_H_ */
