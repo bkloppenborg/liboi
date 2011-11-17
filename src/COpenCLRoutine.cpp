@@ -92,9 +92,6 @@ int COpenCLRoutine::BuildKernel(string source)
 	// All is well, push the kernel onto the vector
 	mKernels.push_back(kernel);
 
-	// Free memory
-	delete tmp;
-
 	// Return the index of the latest kernel
 	return mPrograms.size();
 }
