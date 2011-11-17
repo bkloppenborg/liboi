@@ -11,12 +11,12 @@
 #ifndef CLIBOI_H_
 #define CLIBOI_H_
 
-#include "COILibData.h"
+//#include "COILibData.h"
 
 #include <string>
 
 #include "COpenCL.h"
-#include "enumerations.h"
+#include "LibOIEnumerations.h"
 #include "CRoutine_Reduce.h"
 #include "CRoutine_Normalize.h"
 
@@ -24,7 +24,7 @@ class CLibOI
 {
 protected:
 	// Datamembers:
-	vector<COILibData*> DataList;
+//	vector<COILibData*> DataList;
 
 	eFTMethods mFTMethod;
 	cl_device_type mDeviceType;
