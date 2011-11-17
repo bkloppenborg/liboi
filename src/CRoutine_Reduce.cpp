@@ -124,7 +124,7 @@ void CRoutine_Reduce::BuildKernels()
     for(i = 0; i < pass_count; i++)
     {
         // Insert macro definitions to specialize the kernel to a particular group size.  Then build the kernel.
-        tmp.clear();
+        tmp.str("");
         tmp << "#define GROUP_SIZE " << group_counts[i] << "\n" << "#define OPERATIONS " << operation_counts[i] << "\n\n";
         tmp << source;
 
