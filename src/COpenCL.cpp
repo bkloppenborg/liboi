@@ -65,6 +65,12 @@ cl_device_id COpenCL::FindDevice(cl_device_type type)
 	return NULL;
 }
 
+/// Returns the context
+cl_context COpenCL::GetContext()
+{
+	return mContext();
+}
+
 /// Returns a list of platforms on this machine
 void COpenCL::GetPlatformList(vector<cl_platform_id> * platforms)
 {

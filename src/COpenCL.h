@@ -48,14 +48,14 @@ public:
 	virtual ~COpenCL();
 
 public:
-	//init(int argc, char *argv[]);
 
 	static void CheckOCLError(string user_message, int error_code);
 
-	void GetDeviceList(cl_platform_id platform, vector<cl_device_id> * devices);
-	cl_device_type GetDeviceType(cl_device_id device);
-	void GetPlatformList(vector<cl_platform_id> * platforms);
-	static string GetOCLErrorString(cl_int err);
+	cl_context		GetContext();
+	void 			GetDeviceList(cl_platform_id platform, vector<cl_device_id> * devices);
+	cl_device_type  GetDeviceType(cl_device_id device);
+	void 			GetPlatformList(vector<cl_platform_id> * platforms);
+	static string 	GetOCLErrorString(cl_int err);
 
 	void Init(cl_device_type type);
 	void Init(cl_device_id device_id);
