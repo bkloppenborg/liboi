@@ -126,7 +126,7 @@ void CRoutine_Reduce::BuildKernels()
         // Insert macro definitions to specialize the kernel to a particular group size.  Then build the kernel.
         tmp.clear();
         tmp << "#define GROUP_SIZE " << group_counts[i] << "\n" << "#define OPERATIONS " << operation_counts[i] << "\n\n";
-        tmp << mSource[0];
+        tmp << source;
 
         BuildKernel(tmp.str());
     }
