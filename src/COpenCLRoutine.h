@@ -30,6 +30,7 @@ public:
 	~COpenCLRoutine();
 
 	string ReadSource(string filename);
+	int BuildKernel(string source);
 };
 
 #endif /* COPENCLROUTINE_H_ */

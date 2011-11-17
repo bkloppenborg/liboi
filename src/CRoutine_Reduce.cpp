@@ -118,58 +118,16 @@ void CRoutine_Reduce::BuildKernels()
     CreateReductionPasscounts(max_workgroup_size, MAX_GROUPS, MAX_WORK_ITEMS);
 
     // TODO: We might need to set format flags here:
-    stringstream tmp1;
-    const char * tmp2;;
+    stringstream tmp;
 
     for(i = 0; i < pass_count; i++)
     {
-        // Insert macro definitions to specialize the kernel to a particular group size
-        tmp1.clear();
-        tmp1 << "#define GROUP_SIZE " << group_counts[i] << "\n" << "#define OPERATIONS " << operation_counts[i] << "\n\n";
-        tmp1 << mSource[0];
+        // Insert macro definitions to specialize the kernel to a particular group size.  Then build the kernel.
+        tmp.clear();
+        tmp << "#define GROUP_SIZE " << group_counts[i] << "\n" << "#define OPERATIONS " << operation_counts[i] << "\n\n";
+        tmp << mSource[0];
 
-        // Create the compute program from the source buffer
-        tmp2 = tmp1.str().c_str();
-
-        program = clCreateProgramWithSource(mContext, 1, &tmp2, NULL, &err);
-        if (!program || err != CL_SUCCESS)
-        {
-            size_t len;
-            string tmp_err;
-            tmp_err.reserve(2048);
-            printf("Error: Failed to create compute program!\n");
-            printf("%s", tmp_err.c_str());
-            clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, tmp_err.size(), &tmp_err, &len);
-            printf("%s\n", tmp_err.c_str());
-            // TODO: Throw an exception, cleanly exit.
-        }
-
-        // Build the program executable
-        err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
-        if (err != CL_SUCCESS)
-        {
-            size_t len;
-            string tmp_err;
-            tmp_err.reserve(2048);
-            printf("Error: Failed to create compute program!\n");
-            printf("%s", tmp_err.c_str());
-            clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, tmp_err.size(), &tmp_err, &len);
-            printf("%s\n", tmp_err.c_str());
-            // TODO: Throw an exception, cleanly exit.
-        }
-
-        // Program built correctly, push it onto the vector
-        mPrograms.push_back(program);
-
-        // Create the compute kernel from within the program
-        kernel = clCreateKernel(program, "reduce", &err);
-		COpenCL::CheckOCLError("Failed to create parallel sum kernel.", err);
-
-		// All is well, push the kernel onto the vector
-		mKernels.push_back(kernel);
-
-		// Free memory
-		delete tmp2;
+        BuildKernel(tmp.str());
     }
 
 }
