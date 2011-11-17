@@ -13,8 +13,8 @@ using namespace std;
 
 CRoutine_Reduce::CRoutine_Reduce()
 {
-	// TODO Auto-generated constructor stub
-	kernel_source = "reduce_float.cl";
+	// Specify the source location, set temporary buffers to null
+	mSource.push_back("reduce_float.cl");
 	tmp_buff1 = NULL;
 	tmp_buff2 = NULL;
 
@@ -102,11 +102,11 @@ void CRoutine_Reduce::BuildKernels()
     cl_kernel kernel;
 
 #ifdef DEBUG
-    string message = "Loading and Compiling program " + this->kernel_source + "\n";
+    string message = "Loading and Compiling program " + mSource[0] + "\n";
 	printf("%s\n", message.c_str());
 #endif //DEBUG
 
-	string source = this->ReadSource(this->kernel_source);
+	string source = ReadSource(mSource[0]);
 
 	// Determine the limits of the OpenCL device:
     size_t returned_size = 0;

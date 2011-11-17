@@ -18,8 +18,8 @@ class CRoutine_Reduce: public COpenCLRoutine
 {
 protected:
 	int num_elements;
-	string kernel_source;
 	int pass_count;
+
 	vector<size_t> group_counts;
 	vector<size_t> work_item_counts;
 	vector<int> operation_counts;

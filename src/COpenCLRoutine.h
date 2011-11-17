@@ -23,7 +23,7 @@ protected:
 	cl_command_queue mQueue;
 	vector<cl_program> mPrograms;
 	vector<cl_kernel> mKernels;
-	vector<string> mSource;
+	vector<string> mSource;	// For storing the filenames of source files.
 
 public:
 	COpenCLRoutine();
