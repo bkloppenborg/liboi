@@ -5,8 +5,8 @@
  *      Author: bkloppenborg
  */
 
-#ifndef ENUMERATIONS_H_
-#define ENUMERATIONS_H_
+#ifndef LIBOI_ENUMERATIONS_H_
+#define LIBOI_ENUMERATIONS_H_
 
 
 enum eFTMethods
@@ -15,4 +15,4 @@ enum eFTMethods
 	NFFT	// Nonuniform Fast Fourier Transform O(N log(N))
 };
 
-#endif /* ENUMERATIONS_H_ */
+#endif /* LIBOI_ENUMERATIONS_H_ */
