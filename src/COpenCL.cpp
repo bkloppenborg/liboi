@@ -19,8 +19,8 @@ COpenCL::COpenCL()
 COpenCL::~COpenCL()
 {
 	// Free OpenCL memory:
-	if(mQueue()) clReleaseCommandQueue(mQueue());
-	if(mContext()) clReleaseContext(mContext());
+	if(mQueue) clReleaseCommandQueue(mQueue);
+	if(mContext) clReleaseContext(mContext);
 }
 
 /// Check error_code and output a detailed message if not CL_SUCCESS.
@@ -68,17 +68,17 @@ cl_device_id COpenCL::FindDevice(cl_device_type type)
 /// Returns the context
 cl_context COpenCL::GetContext()
 {
-	return mContext();
+	return mContext;
 }
 
 cl_device_id	COpenCL::GetDevice()
 {
-	return this->mDevices[0]();
+	return this->mDevice;
 }
 
 cl_command_queue COpenCL::GetQueue()
 {
-	return this->mQueue();
+	return this->mQueue;
 }
 
 /// Returns a list of platforms on this machine
@@ -135,19 +135,30 @@ void COpenCL::Init(cl_device_type type)
 void COpenCL::Init(cl_device_id device_id)
 {
 	int err = 0;
-	this->mDevices.push_back(cl::Device(device_id));
+	this->mDevice = device_id;
+
 #ifdef DEBUG
 	printf("Initializing using the following device:\n");
 	this->PrintDeviceInfo(device_id);
 #endif //DEBUG
 
-	// TODO: Register a callback error function.
-	this->mContext = cl::Context(mDevices, NULL, NULL, NULL, &err);
-	CheckOCLError("Unable to create context.", err);
+    // Create a context
+	// TODO: Register a GPU callback
+    this->mContext = clCreateContext(0, 1, &mDevice, NULL, NULL, &err);
+    CheckOCLError("Unable to create context.", err);
 
-	// TODO: If we enable multiple devices, we should use something other than the zeroth entry here:
-	this->mQueue = cl::CommandQueue(mContext, mDevices[0], 0, &err);
-	CheckOCLError("Unable to create command queue.", err);
+    // Create a command queue
+    this->mQueue = clCreateCommandQueue(mContext, mDevice, 0, &err);
+    CheckOCLError("Unable to create command queue.", err);
+
+	// I wasn't able to get the C++ headers to init the context correctly, we'll just use the C-versions for now
+//	// TODO: Register a callback error function.
+//	this->mContext = cl::Context(mDevices, CL_CONTEXT_PLATFORM, NULL, NULL, &err);
+//	CheckOCLError("Unable to create context.", err);
+//
+//	// TODO: If we enable multiple devices, we should use something other than the zeroth entry here:
+//	this->mQueue = cl::CommandQueue(mContext, mDevices[0], 0, &err);
+//	CheckOCLError("Unable to create command queue.", err);
 }
 
 /// Convert the OpenCL error code into a string.

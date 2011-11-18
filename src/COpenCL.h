@@ -38,9 +38,9 @@ protected:
 	// Datamembers for the OpenCL device, context and queue.
 	// At present we only support one device/context/queue, but could add more in the future
 	// TODO: Make this class support multiple OpenCL devices.
-	vector<cl::Device> mDevices;
-	cl::Context mContext;
-	cl::CommandQueue mQueue;
+	cl_device_id mDevice;
+	cl_context mContext;
+	cl_command_queue mQueue;
 
 
 public:
