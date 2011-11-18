@@ -10,12 +10,13 @@
 CLibOI::CLibOI()
 {
 	// init datamembers
-	mOCL = COpenCL();
+	mOCL = new COpenCL();
 }
 
 CLibOI::~CLibOI()
 {
 	FreeOpenCLMem();
+	delete mOCL;
 }
 
 void CLibOI::FreeOpenCLMem()
@@ -33,7 +34,7 @@ void CLibOI::Init(cl_device_type device_type, int image_width, int image_height,
 	RegisterImageSize(image_width, image_height, image_depth);
 
 	// Now initalize the OpenCL context and all required routines.
-	mOCL.Init(device_type);
+	mOCL->Init(device_type);
 	InitMemory();
 	InitRoutines();
 }
@@ -43,7 +44,7 @@ void CLibOI::InitMemory()
 {
 	int err = CL_SUCCESS;
 	// Allocate some memory on the OpenCL device
-	mFluxBuffer = clCreateBuffer(mOCL.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
+	mFluxBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
 
 	COpenCL::CheckOCLError("Could not initialize liboi required memory objects.", err);
 }
@@ -51,7 +52,7 @@ void CLibOI::InitMemory()
 void CLibOI::InitRoutines()
 {
 	// Init all routines.  For now pre-allocate all buffers.
-	mImage_flux = new CRoutine_Reduce(mOCL.GetDevice(), mOCL.GetContext(), mOCL.GetQueue());
+	mImage_flux = new CRoutine_Reduce(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 	mImage_flux->SetSourcePath(mKernelSourcePath);
 	mImage_flux->Init(mImageWidth * mImageHeight, true);
 }
@@ -84,7 +85,7 @@ void   CLibOI::RegisterImage_CLMEM(cl_mem image)
 cl_mem CLibOI::RegisterImage_GLRB(GLuint renderbuffer)
 {
 	int err = CL_SUCCESS;
-	mImage = clCreateFromGLRenderbuffer(mOCL.GetContext(), CL_MEM_READ_WRITE, renderbuffer, &err);
+	mImage = clCreateFromGLRenderbuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, renderbuffer, &err);
 	COpenCL::CheckOCLError("Could not create OpenCL image object from renderbuffer", err);
 
 	return mImage;
@@ -98,7 +99,7 @@ cl_mem CLibOI::RegisterImage_GLTB(GLuint texturebuffer)
 
 	int err = CL_SUCCESS;
 	// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.
-	mImage = clCreateFromGLTexture2D(mOCL.GetContext(), CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, texturebuffer, &err);
+	mImage = clCreateFromGLTexture2D(mOCL->GetContext(), CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, texturebuffer, &err);
 	COpenCL::CheckOCLError("Could not create OpenCL image object from GLTexture", err);
 
 	return mImage;

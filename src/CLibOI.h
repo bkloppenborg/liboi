@@ -30,7 +30,7 @@ protected:
 	cl_device_type mDeviceType;
 
 	// OpenCL Context, manager, etc.
-	COpenCL mOCL;
+	COpenCL * mOCL;
 
 	// Routines:
 	string mKernelSourcePath;
