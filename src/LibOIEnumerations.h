@@ -11,8 +11,14 @@
 
 enum eFTMethods
 {
-	DFT,	// Discrete Fourier Transform O(N^2)
-	NFFT	// Nonuniform Fast Fourier Transform O(N log(N))
+	DFT = 0,	// Discrete Fourier Transform O(N^2)
+	NFFT = 1	// Nonuniform Fast Fourier Transform O(N log(N))
+};
+
+enum eImageTypes
+{
+	OpenCLBuffer = 0,
+	OpenGLBuffer = 1
 };
 
 #endif /* LIBOI_ENUMERATIONS_H_ */

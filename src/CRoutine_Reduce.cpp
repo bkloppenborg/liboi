@@ -156,7 +156,7 @@ float CRoutine_Reduce::ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem in
 
 
     int i;
-    int err;
+    int err = CL_SUCCESS;
 
     // Do the reduction for each level
     cl_mem pass_swap;
@@ -201,23 +201,43 @@ float CRoutine_Reduce::ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem in
     }
 
     // Copy the new chi2 value over to it's final place in GPU memory.
-    err = clEnqueueCopyBuffer(mQueue, pass_output, final_buffer, 0, 0, sizeof(float), 0, NULL, NULL);
+    err = clEnqueueCopyBuffer(mQueue, pass_output, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
     COpenCL::CheckOCLError("Could not copy summed value to/from buffers on the GPU.", err);
 
 
     // If we need to copy data back do so
     if(copy_back)
     {
-        float sum = 0;
-        err = clEnqueueReadBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(float), &sum, 0, NULL, NULL );
+        cl_float sum = 0;
+        err = clEnqueueReadBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &sum, 0, NULL, NULL );
         COpenCL::CheckOCLError("Could not read back GPU SUM value.", err);
 
         // Check for a NaN:
         if(sum != sum)
-        	COpenCL::CheckOCLError("Error: Calculation yielded NAN.", 0);
+        {
+#ifdef DEBUG
+        	// Copy back the input/output buffers.
+        	float tmp_sum = 0;
+        	cl_float * tmp = new cl_float[num_elements];
+        	err = clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
+
+        	for(int i = 0; i < num_elements; i++)
+        	{
+        		if(i % 10 == 0)
+        			printf("%f ", tmp[i]);
+
+        		tmp_sum += tmp[i];
+        	}
+
+        	printf("\n");
+        	printf("Sum of Image copied to CPU: %f \n", tmp_sum);
+#endif //DEBUG
+
+        	COpenCL::CheckOCLError("Error: Calculation yielded NAN.", 1);
+        }
 
         // Return the sum
-        return sum;
+        return (float) sum;
     }
 
     // Return zero otherwise.

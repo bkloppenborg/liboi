@@ -19,6 +19,7 @@
 #include "LibOIEnumerations.h"
 #include "CRoutine_Reduce.h"
 #include "CRoutine_Normalize.h"
+#include "CRoutine_ImageToBuffer.h"
 
 class CLibOI
 {
@@ -35,10 +36,13 @@ protected:
 	// Routines:
 	string mKernelSourcePath;
 	CRoutine_Reduce * mImage_flux;
+	CRoutine_ImageToBuffer * mrCopyImage;
 //	CRoutine_Normalize * mImage_norm;
 
 	// Memory objects (OpenCL or otherwise)
-	cl_mem mImage;
+	eImageTypes mImageType;
+	cl_mem mCLImage;
+	cl_mem mGLImage;
 	int mImageWidth;
 	int mImageHeight;
 	int mImageDepth;
@@ -51,6 +55,9 @@ public:
 	virtual ~CLibOI();
 
 public:
+
+	void CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int layer);
+
 	void FreeOpenCLMem();
 
 	void Init(cl_device_type, int image_width, int image_height, int image_depth);
@@ -59,10 +66,10 @@ public:
 
 	float TotalFlux(bool return_value);
 
-	void   RegisterImageSize(int width, int height, int depth);
-	void   RegisterImage_CLMEM(cl_mem image);
-	cl_mem RegisterImage_GLRB(GLuint renderbuffer);
-	cl_mem RegisterImage_GLTB(GLuint texturebuffer);
+	void RegisterImageSize(int width, int height, int depth);
+	void RegisterImage_CLMEM(cl_mem image);
+	void RegisterImage_GLFB(GLuint framebuffer);
+	void RegisterImage_GLTB(GLuint texturebuffer);
 
 	void SetKernelSoucePath(string path_to_kernels);
 

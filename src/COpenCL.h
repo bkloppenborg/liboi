@@ -26,6 +26,7 @@
 #endif
 
 #include <GL/gl.h>
+#include <GL/glx.h>
 #include <string>
 
 using namespace std;
@@ -62,9 +63,9 @@ public:
 	static string 	GetOCLErrorString(cl_int err);
 
 	void Init(cl_device_type type);
-	void Init(cl_device_id device_id, cl_device_type type);
+	void Init(cl_platform_id platform, cl_device_id device, cl_device_type type);
 
-	cl_device_id FindDevice(cl_device_type type);
+	void FindDevice(cl_platform_id & platform, cl_device_id & device, cl_device_type type);
 
 	void PrintDeviceInfo(cl_device_id device_id);
 	void PrintPlatformInfo(cl_platform_id platform_id);

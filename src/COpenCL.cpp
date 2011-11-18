@@ -33,7 +33,8 @@ void COpenCL::CheckOCLError(string user_message, int error_code)
 		// and print out a message:
 		printf("Error Detected\n");
 		printf("%s \n", user_message.c_str());
-		printf("OpenCL Error: %s\n", error_string.c_str());
+		printf("OpenCL Error: %i %s \n", error_code, error_string.c_str());
+		throw;
 		//printf(SEP);
 		//exit(0);
 	}
@@ -41,7 +42,7 @@ void COpenCL::CheckOCLError(string user_message, int error_code)
 
 /// Searches through the available platforms and devices and returns the first
 /// instance of the specified type.
-cl_device_id COpenCL::FindDevice(cl_device_type type)
+void COpenCL::FindDevice(cl_platform_id & platform, cl_device_id & device, cl_device_type type)
 {
 	vector<cl_platform_id> platforms;
 	GetPlatformList(&platforms);
@@ -55,14 +56,16 @@ cl_device_id COpenCL::FindDevice(cl_device_type type)
 		for(j = 0; j < devices.size(); j++)
 		{
 			if(GetDeviceType(devices[j]) == type)
-				return devices[j];
+			{
+				platform = platforms[i];
+				device = devices[j];
+				break;
+			}
 		}
 
 		// Clear the vector
 		devices.clear();
 	}
-
-	return NULL;
 }
 
 /// Returns the context
@@ -128,26 +131,37 @@ cl_device_type COpenCL::GetDeviceType(cl_device_id device_id)
 /// Initializes the class using the first device found with the specified type.
 void COpenCL::Init(cl_device_type type)
 {
-	this->Init(this->FindDevice(type), type);
+	cl_platform_id platform;
+	cl_device_id device;
+
+	FindDevice(platform, device, type);
+	this->Init(platform, device, type);
 }
 
 /// Initializes the class.  Creates contexts and command queues.
-void COpenCL::Init(cl_device_id device_id, cl_device_type type)
+void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type type)
 {
 	int err = 0;
-	this->mDevice = device_id;
+	this->mDevice = device;
 
 #ifdef DEBUG
 	printf("Initializing using the following device:\n");
-	this->PrintDeviceInfo(device_id);
+	this->PrintDeviceInfo(mDevice);
 #endif //DEBUG
 
-	cl_context_properties tmp[2];
-	tmp[0] = CL_GL_CONTEXT_KHR;
-	tmp[1] = 0;
+	// Set the context properties.  This works for an X11 OpenGL session on Linux.
+	// TODO: Add initialization code for other operating systems.
+	// see https://github.com/enjalot/adventures_in_opencl/blob/master/part2/cll.cpp for examples
+    cl_context_properties properties[] =
+    {
+    		CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
+			CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
+			CL_CONTEXT_PLATFORM, (cl_context_properties) platform,
+			0
+    };
 
 	// Creates a context with OpenGL OpenCL interop turned on.
-    this->mContext = clCreateContext(tmp, 1, &mDevice, NULL, NULL, &err);
+    this->mContext = clCreateContextFromType(properties, type, NULL, NULL, &err);
     CheckOCLError("Unable to create context.", err);
 
     // Create a command queue
