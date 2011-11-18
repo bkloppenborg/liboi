@@ -128,7 +128,7 @@ void CRoutine_Reduce::BuildKernels()
         tmp << "#define GROUP_SIZE " << group_counts[i] << "\n" << "#define OPERATIONS " << operation_counts[i] << "\n\n";
         tmp << source;
 
-        BuildKernel(tmp.str());
+        BuildKernel(tmp.str(), "reduce");
     }
 
 }
@@ -215,24 +215,6 @@ float CRoutine_Reduce::ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem in
         // Check for a NaN:
         if(sum != sum)
         {
-#ifdef DEBUG
-        	// Copy back the input/output buffers.
-        	float tmp_sum = 0;
-        	cl_float * tmp = new cl_float[num_elements];
-        	err = clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
-
-        	for(int i = 0; i < num_elements; i++)
-        	{
-        		if(i % 10 == 0)
-        			printf("%f ", tmp[i]);
-
-        		tmp_sum += tmp[i];
-        	}
-
-        	printf("\n");
-        	printf("Sum of Image copied to CPU: %f \n", tmp_sum);
-#endif //DEBUG
-
         	COpenCL::CheckOCLError("Error: Calculation yielded NAN.", 1);
         }
 

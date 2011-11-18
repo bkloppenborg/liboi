@@ -68,6 +68,7 @@ void CLibOI::InitRoutines()
 	mImage_flux->Init(mImageWidth * mImageHeight, true);
 
 	mrCopyImage = new CRoutine_ImageToBuffer(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrCopyImage->SetSourcePath(mKernelSourcePath);
 	mrCopyImage->Init();
 }
 
@@ -80,7 +81,7 @@ float CLibOI::TotalFlux(bool return_value)
 	{
 		// Wait for the OpenGL queue to finish.
 		glFinish();
-		err |= clEnqueueAcquireGLObjects (mOCL->GetQueue(), 1, &mGLImage, 0, NULL, NULL);
+		err |= clEnqueueAcquireGLObjects(mOCL->GetQueue(), 1, &mGLImage, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Could not acquire OpenGL Memory object.", err);
 
 		// TODO: Implement depth channel for 3D images
@@ -121,6 +122,7 @@ void   CLibOI::RegisterImage_CLMEM(cl_mem image)
 /// Registers it as the currentt image object against which liboi operations will be undertaken.
 void CLibOI::RegisterImage_GLFB(GLuint framebuffer)
 {
+	this->mImageType = OpenGLBuffer;
 	int err = CL_SUCCESS;
 	mGLImage = clCreateFromGLBuffer(mOCL->GetContext(), CL_MEM_READ_ONLY, framebuffer, &err);
 	COpenCL::CheckOCLError("Could not create OpenCL image object from framebuffer", err);
@@ -134,7 +136,7 @@ void CLibOI::RegisterImage_GLFB(GLuint framebuffer)
 void CLibOI::RegisterImage_GLTB(GLuint texturebuffer)
 {
 	// TODO: Permit loading of 3D textures for spectral imaging.
-
+	this->mImageType = OpenGLBuffer;
 	int err = CL_SUCCESS;
 
 	// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.

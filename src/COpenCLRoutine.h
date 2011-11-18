@@ -31,7 +31,7 @@ public:
 	COpenCLRoutine(cl_device_id mDevice, cl_context mContext, cl_command_queue mQueue);
 	~COpenCLRoutine();
 
-	int BuildKernel(string source);
+	int BuildKernel(string source, string kernel_name);
 
 	string ReadSource(string filename);
 

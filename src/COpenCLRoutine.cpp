@@ -39,7 +39,7 @@ COpenCLRoutine::~COpenCLRoutine()
 
 /// Builds the kernel from the specified string.
 /// Appends the compiled kernel to mKernels and mPrograms, returns the index at which this kernel is located.
-int COpenCLRoutine::BuildKernel(string source)
+int COpenCLRoutine::BuildKernel(string source, string kernel_name)
 {
     const char * tmp = source.c_str();
     cl_program program;
@@ -86,8 +86,8 @@ int COpenCLRoutine::BuildKernel(string source)
     mPrograms.push_back(program);
 
     // Create the compute kernel from within the program
-    kernel = clCreateKernel(program, "reduce", &err);
-	COpenCL::CheckOCLError("Failed to create parallel sum kernel.", err);
+    kernel = clCreateKernel(program, kernel_name.c_str(), &err);
+	COpenCL::CheckOCLError("Failed to create kernel named " + kernel_name, err);
 
 	// All is well, push the kernel onto the vector
 	mKernels.push_back(kernel);

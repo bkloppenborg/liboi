@@ -23,7 +23,7 @@ CRoutine_Normalize::~CRoutine_Normalize()
 void CRoutine_Normalize::Init()
 {
 	string source = ReadSource(mSource[0]);
-	BuildKernel(source);
+	BuildKernel(source, "normalize");
 }
 
 void CRoutine_Normalize::Normalize(cl_mem image, cl_mem divisor, int width, int height, int depth)
