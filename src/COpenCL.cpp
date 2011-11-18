@@ -128,11 +128,11 @@ cl_device_type COpenCL::GetDeviceType(cl_device_id device_id)
 /// Initializes the class using the first device found with the specified type.
 void COpenCL::Init(cl_device_type type)
 {
-	this->Init(this->FindDevice(type));
+	this->Init(this->FindDevice(type), type);
 }
 
 /// Initializes the class.  Creates contexts and command queues.
-void COpenCL::Init(cl_device_id device_id)
+void COpenCL::Init(cl_device_id device_id, cl_device_type type)
 {
 	int err = 0;
 	this->mDevice = device_id;
@@ -142,9 +142,12 @@ void COpenCL::Init(cl_device_id device_id)
 	this->PrintDeviceInfo(device_id);
 #endif //DEBUG
 
-    // Create a context
-	// TODO: Register a GPU callback
-    this->mContext = clCreateContext(0, 1, &mDevice, NULL, NULL, &err);
+	cl_context_properties tmp[2];
+	tmp[0] = CL_GL_CONTEXT_KHR;
+	tmp[1] = 0;
+
+	// Creates a context with OpenGL OpenCL interop turned on.
+    this->mContext = clCreateContext(tmp, 1, &mDevice, NULL, NULL, &err);
     CheckOCLError("Unable to create context.", err);
 
     // Create a command queue

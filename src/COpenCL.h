@@ -14,6 +14,7 @@
 #define COPENCL_H_
 
 #pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
+#pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
 
 // Enable OpenCL exceptions
 #define __CL_ENABLE_EXCEPTIONS
@@ -61,7 +62,7 @@ public:
 	static string 	GetOCLErrorString(cl_int err);
 
 	void Init(cl_device_type type);
-	void Init(cl_device_id device_id);
+	void Init(cl_device_id device_id, cl_device_type type);
 
 	cl_device_id FindDevice(cl_device_type type);
 
