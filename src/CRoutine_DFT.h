@@ -10,14 +10,14 @@
 
 #include "COpenCLRoutine.h"
 
-class CRoutine_DFT: public COpenCLRoutine
+class CRoutine_DFT: public CRoutine_FT
 {
 public:
 	CRoutine_DFT();
 	~CRoutine_DFT();
 
 	void Init(float image_scale);
-	void DFT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output);
+	void FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output);
 };
 
 #endif /* CROUTINE_DFT_H_ */

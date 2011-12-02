@@ -8,7 +8,7 @@
 #include "CRoutine_DFT.h"
 
 CRoutine_DFT::CRoutine_DFT(cl_device_id device, cl_context context, cl_command_queue queue)
-	:COpenCLRoutine(device, context, queue)
+	:CRoutine_FT(device, context, queue)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("ft_dft.cl");
@@ -37,11 +37,10 @@ CRoutine_DFT::Init(float image_scale)
 
 /// Computes the discrete Fourier transform of a (real) image for the specified (cl_float2) UV points and stores
 /// the result in output.
-CRoutine_DFT::DFT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output)
+CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output)
 {
-
 #ifdef DEBUG
-	printf("Computing the DFT\n");
+	printf("Computing the DFT using %s\n", mSource[0]);
 #endif //DEBUG
 
     int err = 0;
@@ -71,6 +70,4 @@ CRoutine_DFT::DFT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_wid
     // Execute the kernel over the entire range of the data set
     err = clEnqueueNDRangeKernel(*pQueue, *pKernel_visi, 1, NULL, &global, &local, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue ft_dft2d kernel.", err);
-
-
 }
