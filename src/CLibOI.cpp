@@ -78,6 +78,33 @@ void CLibOI::InitRoutines()
 	mrNormalize->Init();
 }
 
+/// Normalizes a floating point buffer by dividing by the sum of the buffer
+void CLibOI::Normalize()
+{
+	// Temporary variables
+#ifdef DEBUG
+	float tmp1, tmp2;
+#endif // DEBUG
+
+	// First compute and store the total flux:
+#ifdef DEBUG
+	tmp1 = TotalFlux(true);
+#else // DEBUG
+	TotalFlux(false);
+#endif // DEBUG
+
+	// Now normalize the image
+	mrNormalize->Normalize(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
+
+#ifdef DEBUG
+	// If we are debugging, do another call to ensure the buffer was indeed normalized.
+	// we use the flux buffer here directly as TotalFlux copies the original image to the buffer.
+	tmp2 = mrTotalFlux->ComputeSum(true, mFluxBuffer, mCLImage, NULL, NULL);
+	printf("Pre/post normalization image sums: %f %f\n", tmp1, tmp2);
+
+#endif //DEBUG
+}
+
 /// Computes the total flux for the current image.
 float CLibOI::TotalFlux(bool return_value)
 {

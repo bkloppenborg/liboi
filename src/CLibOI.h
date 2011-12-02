@@ -64,6 +64,8 @@ public:
 	void InitMemory();
 	void InitRoutines();
 
+	void Normalize();
+
 	float TotalFlux(bool return_value);
 
 	void RegisterImageSize(int width, int height, int depth);
