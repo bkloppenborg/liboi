@@ -18,7 +18,7 @@ public:
 
 	void Init();
 
-	void Normalize(cl_mem image, cl_mem divisor, int width, int height, int depth);
+	void Normalize(cl_mem image, int image_width, int image_height, cl_mem divisor);
 };
 
 #endif /* CROUTINE_NORMALIZE_H_ */

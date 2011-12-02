@@ -33,7 +33,9 @@ void CLibOI::CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int
 void CLibOI::FreeOpenCLMem()
 {
 	// First free datamembers:
-	if(mImage_flux) delete mImage_flux;
+	if(mrTotalFlux) delete mrTotalFlux;
+	if(mrCopyImage) delete mrCopyImage;
+	if(mrNormalize) delete mrNormalize;
 
 	// Now free OpenCL buffers:
 	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
@@ -63,13 +65,17 @@ void CLibOI::InitMemory()
 void CLibOI::InitRoutines()
 {
 	// Init all routines.  For now pre-allocate all buffers.
-	mImage_flux = new CRoutine_Reduce(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mImage_flux->SetSourcePath(mKernelSourcePath);
-	mImage_flux->Init(mImageWidth * mImageHeight, true);
+	mrTotalFlux = new CRoutine_Reduce(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrTotalFlux->SetSourcePath(mKernelSourcePath);
+	mrTotalFlux->Init(mImageWidth * mImageHeight, true);
 
 	mrCopyImage = new CRoutine_ImageToBuffer(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 	mrCopyImage->SetSourcePath(mKernelSourcePath);
 	mrCopyImage->Init();
+
+	mrNormalize = new CRoutine_Normalize(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrNormalize->SetSourcePath(mKernelSourcePath);
+	mrNormalize->Init();
 }
 
 /// Computes the total flux for the current image.
@@ -89,7 +95,7 @@ float CLibOI::TotalFlux(bool return_value)
 		COpenCL::CheckOCLError("Could not copy OpenGL image to the OpenCL Memory buffer", err);
 	}
 
-	float flux = mImage_flux->ComputeSum(return_value, mFluxBuffer, mCLImage, NULL, NULL);
+	float flux = mrTotalFlux->ComputeSum(return_value, mFluxBuffer, mCLImage, NULL, NULL);
 
 	if(mImageType == OpenGLBuffer)
 	{
@@ -143,15 +149,15 @@ void CLibOI::RegisterImage_GLTB(GLuint texturebuffer)
 	mGLImage = clCreateFromGLTexture2D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, texturebuffer, &err);
 	COpenCL::CheckOCLError("Could not create OpenCL image object from GLTexture", err);
 
-#ifdef DEBUG
-
-	cl_image_format image_format;
-	size_t param_value_size;
-
-	clGetImageInfo(mGLImage, CL_IMAGE_FORMAT, param_value_size, (void*) &image_format, NULL);
-	//printf("Image format: %f", image_format);
-
-#endif //DEBUG
+//#ifdef DEBUG
+//
+//	cl_image_format image_format;
+//	size_t param_value_size;
+//
+//	clGetImageInfo(mGLImage, CL_IMAGE_FORMAT, param_value_size, (void*) &image_format, NULL);
+//	//printf("Image format: %f", image_format);
+//
+//#endif //DEBUG
 	mCLImage = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, mImageWidth * mImageHeight * sizeof(cl_float), NULL, &err);
 	COpenCL::CheckOCLError("Could not create temporary OpenCL image buffer", err);
 }

@@ -4,8 +4,8 @@
  *  Created on: Nov 14, 2011
  *      Author: bkloppenborg
  *
- *
  * TODO: Permit multiple OpenCL devices to be used at the same time.  Might be useful to use 2-3 GPUs!
+ *
  */
 
 #ifndef CLIBOI_H_
@@ -35,9 +35,9 @@ protected:
 
 	// Routines:
 	string mKernelSourcePath;
-	CRoutine_Reduce * mImage_flux;
+	CRoutine_Reduce * mrTotalFlux;
 	CRoutine_ImageToBuffer * mrCopyImage;
-//	CRoutine_Normalize * mImage_norm;
+	CRoutine_Normalize * mrNormalize;
 
 	// Memory objects (OpenCL or otherwise)
 	eImageTypes mImageType;
