@@ -76,6 +76,11 @@ void CLibOI::InitRoutines()
 	mrNormalize = new CRoutine_Normalize(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 	mrNormalize->SetSourcePath(mKernelSourcePath);
 	mrNormalize->Init();
+
+	// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
+	mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrFT->SetSourcePath(mKernelSourcePath);
+	mrFT->Init(mImageScale);
 }
 
 /// Normalizes a floating point buffer by dividing by the sum of the buffer
@@ -98,7 +103,7 @@ void CLibOI::Normalize()
 
 #ifdef DEBUG
 	// If we are debugging, do another call to ensure the buffer was indeed normalized.
-	// we use the flux buffer here directly as TotalFlux copies the original image to the buffer.
+	// Note we call the mrTotalFlux routine directly because TotalFlux copies the image over from the OpenGL buffer.
 	tmp2 = mrTotalFlux->ComputeSum(true, mFluxBuffer, mCLImage, NULL, NULL);
 	printf("Pre/post normalization image sums: %f %f\n", tmp1, tmp2);
 

@@ -20,6 +20,8 @@
 #include "CRoutine_Reduce.h"
 #include "CRoutine_Normalize.h"
 #include "CRoutine_ImageToBuffer.h"
+#include "CRoutine_FT.h"
+#include "CRoutine_DFT.h"
 
 class CLibOI
 {
@@ -38,6 +40,7 @@ protected:
 	CRoutine_Reduce * mrTotalFlux;
 	CRoutine_ImageToBuffer * mrCopyImage;
 	CRoutine_Normalize * mrNormalize;
+	CRoutine_FT * mrFT;
 
 	// Memory objects (OpenCL or otherwise)
 	eImageTypes mImageType;
@@ -46,6 +49,7 @@ protected:
 	int mImageWidth;
 	int mImageHeight;
 	int mImageDepth;
+	float mImageScale;
 
 	cl_mem mFluxBuffer;
 

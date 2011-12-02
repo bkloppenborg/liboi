@@ -7,7 +7,8 @@
 
 #include "CRoutine_FT.h"
 
-CRoutine_FT::CRoutine_FT()
+CRoutine_FT::CRoutine_FT(cl_device_id device, cl_context context, cl_command_queue queue)
+	:COpenCLRoutine(device, context, queue)
 {
 	// TODO Auto-generated constructor stub
 

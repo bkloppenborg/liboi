@@ -22,13 +22,13 @@ float2 MultComplex3Special(float magA, float argB, float argC)
 }
 
 __kernel void dft_2d(
-	__global float2 uv_points,
+	__global float2 * uv_points,
 	__private int nuv,
 	__global float * image,
 	__private int image_width,
-	__global float2 output,
-	__local float * tmpA,
-	__local float * tmpB
+	__global float2 * output,
+	__local float * sA,
+	__local float * sB
 )
 {
     float2 tmp;
@@ -36,9 +36,8 @@ __kernel void dft_2d(
     tmp.s1 = 0;
     
     float arg_C;
-    
-    int image_width = image_size[0];    
-    int uv_pnt = get_global_id(0);
+      
+    int tid = get_global_id(0);
     int lsize_x;
     int lid = get_local_id(0);
     int i = 0;
@@ -46,7 +45,7 @@ __kernel void dft_2d(
     int m = 0;    
 
     // Load up the UV information
-    float2 uv = uv_info[uv_pnt];
+    float2 uv = uv_points[tid];
     
     // Iterate over every pixel (i,j) in the image, calculating their contributions to the given UV point.
  
@@ -82,6 +81,6 @@ __kernel void dft_2d(
     }
     
     // Write the result to the output array
-    output[uv_pnt] = tmp * inv_flux[0];
+    output[tid] = tmp;
 }
 
