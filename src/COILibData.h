@@ -18,6 +18,9 @@
 	#include <CL/cl.hpp>
 #endif
 
+// TODO: This class should be able to manipulate the order of the data BEFORE uploading
+// to the OpenCL device to promote coalesced memory loads.
+
 class COILibData
 {
 private:
@@ -39,6 +42,8 @@ public:
 	cl_mem GetLocation_T3();
 	cl_mem GetLocation_T3Phase();
 	cl_mem GetLocation_T3UV();
+
+	void ReadFromFile(string filename);
 };
 
 #endif /* COILIBDATA_H_ */

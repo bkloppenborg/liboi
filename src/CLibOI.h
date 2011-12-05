@@ -51,7 +51,11 @@ protected:
 	int mImageDepth;
 	float mImageScale;
 
+	// Temporary buffers:
 	cl_mem mFluxBuffer;
+	cl_mem mFTBuffer;
+	cl_mem mVis2Buffer;
+	cl_mem mT3Buffer;
 
 
 public:

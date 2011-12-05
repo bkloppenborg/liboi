@@ -39,6 +39,9 @@ void CLibOI::FreeOpenCLMem()
 
 	// Now free OpenCL buffers:
 	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
+	if(mFTBuffer) clReleaseMemObject(mFTBuffer);
+	if(mVis2Buffer) clReleaseMemObject(mVis2Buffer);
+	if(mT3Buffer) clReleaseMemObject(mT3Buffer);
 }
 
 void CLibOI::Init(cl_device_type device_type, int image_width, int image_height, int image_depth)
