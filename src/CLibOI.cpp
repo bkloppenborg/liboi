@@ -16,6 +16,7 @@ CLibOI::CLibOI()
 	mGLImage = NULL;
 	mFluxBuffer = NULL;
 	mImageType = OpenCLBuffer;	// By default we assume the image is stored in an OpenCL buffer.
+	mImageScale = 1;
 }
 
 CLibOI::~CLibOI()
@@ -44,10 +45,10 @@ void CLibOI::FreeOpenCLMem()
 	if(mT3Buffer) clReleaseMemObject(mT3Buffer);
 }
 
-void CLibOI::Init(cl_device_type device_type, int image_width, int image_height, int image_depth)
+void CLibOI::Init(cl_device_type device_type, int image_width, int image_height, int image_depth, float scale)
 {
 	// First register the width, height, and depth of the images we will be using.
-	RegisterImageSize(image_width, image_height, image_depth);
+	RegisterImageInfo(image_width, image_height, image_depth, scale);
 
 	// Now initalize the OpenCL context and all required routines.
 	mOCL->Init(device_type);
@@ -144,13 +145,14 @@ float CLibOI::TotalFlux(bool return_value)
 
 /// Tells OpenCL about the size of the image.
 /// The image must have a depth of at least one.
-void   CLibOI::RegisterImageSize(int width, int height, int depth)
+void   CLibOI::RegisterImageInfo(int width, int height, int depth, float scale)
 {
 	// TODO: Check on the size of the image.
 
 	mImageWidth = width;
 	mImageHeight = height;
 	mImageDepth = depth;
+	mImageScale = scale;
 }
 
 /// Registers image as the current image object against which liboi operations will be undertaken.

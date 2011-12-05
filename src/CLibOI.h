@@ -68,7 +68,7 @@ public:
 
 	void FreeOpenCLMem();
 
-	void Init(cl_device_type, int image_width, int image_height, int image_depth);
+	void Init(cl_device_type, int image_width, int image_height, int image_depth, float image_scale);
 	void InitMemory();
 	void InitRoutines();
 
@@ -76,7 +76,7 @@ public:
 
 	float TotalFlux(bool return_value);
 
-	void RegisterImageSize(int width, int height, int depth);
+	void RegisterImageInfo(int width, int height, int depth, float scale);
 	void RegisterImage_CLMEM(cl_mem image);
 	void RegisterImage_GLFB(GLuint framebuffer);
 	void RegisterImage_GLTB(GLuint texturebuffer);
