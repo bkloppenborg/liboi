@@ -11,4 +11,4 @@ include_directories(${CMAKE_SOURCE_DIR}/lib/textio/include)
 file(GLOB SOURCE *.cpp)
 
 add_library(oi ${SOURCE})
-target_link_libraries(oi textio oifitslib getoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
+target_link_libraries(oi textio oifits getoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
