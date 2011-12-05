@@ -54,8 +54,7 @@ __kernel void ft_to_t3(
     __global float2 * data_bip,
     __global long4 * data_uvpnt,
     __global short4 * data_sign,
-    __global float * mock_data_bs,
-    __global int * array_offset)
+    __global float * mock_data_bs)
 {   
     int i = get_global_id(0);
     

@@ -21,10 +21,21 @@
 // TODO: This class should be able to manipulate the order of the data BEFORE uploading
 // to the OpenCL device to promote coalesced memory loads.
 
+#include <string>
+
+extern "C" {
+    #include "exchange.h"
+    #include "oifile.h"
+	#include "getoifits.h"
+}
+
+using namespace std;
+
 class COILibData
 {
 private:
 	// Location and size of data loaded into OpenCL memory objects.
+	int n_uv;
 	int n_v2;
 	cl_mem v2_loc;
 	cl_mem v2_uv;
@@ -33,9 +44,14 @@ private:
 	cl_mem t3_phasor;
 	cl_mem t3_uv;
 
+	// Storage containers for OIFITS data.
+	oi_data * mData;
+
 public:
-	COILibData();
+	COILibData(oi_data * data);
 	~COILibData();
+
+	void CopyToOpenCLDevice(cl_queue * queue);
 
 	cl_mem GetLocation_V2();
 	cl_mem GetLocation_V2UV();
@@ -43,7 +59,7 @@ public:
 	cl_mem GetLocation_T3Phase();
 	cl_mem GetLocation_T3UV();
 
-	void ReadFromFile(string filename);
+	static COILibData * FromFile(string filename);
 };
 
 #endif /* COILIBDATA_H_ */
