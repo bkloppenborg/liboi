@@ -23,6 +23,7 @@
 
 #include <string>
 
+#include "COpenCL.h"
 extern "C" {
     #include "exchange.h"
     #include "oifile.h"
@@ -51,7 +52,7 @@ public:
 	COILibData(oi_data * data);
 	~COILibData();
 
-	void CopyToOpenCLDevice(cl_queue * queue);
+	void CopyToOpenCLDevice(cl_command_queue * queue);
 
 	cl_mem GetLocation_V2();
 	cl_mem GetLocation_V2UV();

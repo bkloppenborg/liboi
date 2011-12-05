@@ -37,7 +37,7 @@ COILibData::~COILibData()
 }
 
 /// Copies the data from CPU memory over to the OpenCL device memory, creating memory objects when necessary.
-void COILibData::CopyToOpenCLDevice(cl_queue * queue)
+void COILibData::CopyToOpenCLDevice(cl_command_queue * queue)
 {
 	// First free any allocated GPU memory if it was allocated before.
 	if(v2_loc) clReleaseMemObject(v2_loc);

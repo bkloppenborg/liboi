@@ -7,8 +7,8 @@
 
 #include "CRoutine_FTtoV2.h"
 
-CRoutine_FTtoV2::CRoutine_DFTtoV2(cl_device_id device, cl_context context, cl_command_queue queue)
-	:CRoutine_FT(device, context, queue)
+CRoutine_FTtoV2::CRoutine_FTtoV2(cl_device_id device, cl_context context, cl_command_queue queue)
+	:COpenCLRoutine(device, context, queue)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("ft_to_vis2.cl");
@@ -26,14 +26,14 @@ void CRoutine_FTtoV2::Init(float image_scale)
     BuildKernel(source, "ft_to_vis2");
 }
 
-void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
+void CRoutine_FTtoV2::CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
 {
     int err = 0;
     size_t global = (size_t) n_v2_points;
     size_t local;
 
     // Get the maximum work-group size for executing the kernel on the device
-    err = clGetKernelWorkGroupInfo(mKernels[0], mDevice, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+    err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
     COpenCL::CheckOCLError("Failed to determine maximum group size for ft_to_vis2 kernel.", err);
 
     // Set the kernel arguments

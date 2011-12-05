@@ -8,7 +8,7 @@
 #include "CRoutine_FTtoT3.h"
 
 CRoutine_FTtoT3::CRoutine_FTtoT3(cl_device_id device, cl_context context, cl_command_queue queue)
-	:CRoutine_FT(device, context, queue)
+	:COpenCLRoutine(device, context, queue)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("ft_to_t3.cl");
@@ -33,7 +33,7 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem uv_points
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(*pKernel_bispec, *pDevice_id, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
 
 	// Set kernel arguments:
@@ -45,7 +45,7 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem uv_points
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
 
 	// Execute the kernel over the entire range of the data set
-	err = clEnqueueNDRangeKernel(*pQueue, *pKernel_bispec, 1, NULL, &global, NULL, 0, NULL, NULL);
+	err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
 
 }
