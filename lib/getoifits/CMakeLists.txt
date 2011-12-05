@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(getoifits)
 
 # Add include directories and libs for compiled libraries.
-include_directories(${CMAKE_SOURCE_DIR}/lib/oifitslib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../oifitslib)
 
 set(SOURCES getoifits.c)
 
