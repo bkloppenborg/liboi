@@ -15,4 +15,14 @@ if(NOT TARGET textio)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/lib/textio)
 endif(NOT TARGET textio)
 
+# Call CMake on the subdirectories
+if(NOT TARGET liboifits)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/lib/oifitslib)
+endif(NOT TARGET liboifits)
+
+# Call CMake on the subdirectories
+if(NOT TARGET getoifits)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/lib/getoifits)
+endif(NOT TARGET getoifits)
+
 add_subdirectory(src)

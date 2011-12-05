@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(liboi)
+project(oi)
 
 find_package(OpenGL REQUIRED)
 find_package(OpenCL REQUIRED)
@@ -10,4 +10,5 @@ include_directories(${CMAKE_SOURCE_DIR}/lib/textio/include)
 
 file(GLOB SOURCE *.cpp)
 
-add_library(liboi ${SOURCE} ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
+add_library(oi ${SOURCE})
+target_link_libraries(oi textio oifitslib getoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
