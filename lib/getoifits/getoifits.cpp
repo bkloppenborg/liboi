@@ -5,11 +5,11 @@
  * This package uses the Oifits Exchange routines by John Young to view,
  * select and extract oi data.
  */
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <complex.h>
+
 #include "getoifits.h"
+#include <cstdlib>
+#include <string.h>
+
 
 #define uv_threshold 5.0e-5
 #define infinity 1e99
@@ -93,14 +93,14 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 	}
 
 	/* Allocate memory */
-	data->pow = malloc( (usersel->numvis2 + 1) *sizeof(float));
-	data->powerr = malloc( (usersel->numvis2 + 1 ) *sizeof(float));
-	data->bisamp = malloc(usersel->numt3 *sizeof(float));
-	data->bisamperr = malloc(usersel->numt3 *sizeof(float));
-	data->bisphs = malloc(usersel->numt3 *sizeof(float));
-	data->bisphserr = malloc(usersel->numt3 *sizeof(float));
-	data->bsref = malloc(usersel->numt3 *sizeof(oi_bsref));
-	data->uv = malloc((1 + usersel->numvis2+3 *usersel->numt3)*sizeof(oi_uv));
+	data->pow = (float*) malloc( (usersel->numvis2 + 1) *sizeof(float));
+	data->powerr = (float*) malloc( (usersel->numvis2 + 1 ) *sizeof(float));
+	data->bisamp = (float*) malloc(usersel->numt3 *sizeof(float));
+	data->bisamperr = (float*) malloc(usersel->numt3 *sizeof(float));
+	data->bisphs = (float*) malloc(usersel->numt3 *sizeof(float));
+	data->bisphserr = (float*) malloc(usersel->numt3 *sizeof(float));
+	data->bsref = (oi_bsref*) malloc(usersel->numt3 *sizeof(oi_bsref));
+	data->uv = (oi_uv*) malloc((1 + usersel->numvis2+3 *usersel->numt3)*sizeof(oi_uv));
 	/* Allocate as much space for UV as possible initially and then reallocate in the end */
 
 	/* Read in visibility */

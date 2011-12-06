@@ -20,14 +20,22 @@ protected:
 	vector<COILibData *> data;
 
 public:
+	// Operator overloads:
+	COILibData * operator[](int i) { return data[i]; }
+
+public:
 	COILibDataList();
 	~COILibDataList();
 
 	void Append(COILibData * data);
 
+	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
+
 	int MaxNumData();
 
 	void ReadFile(string filename);
+
+
 };
 
 #endif /* COILIBDATALIST_H_ */

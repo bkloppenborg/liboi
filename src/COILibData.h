@@ -9,6 +9,13 @@
  * It should be generalized if radio interferometry routines are implmenented in liboi.
  */
 
+// TODO: This class interfaces with getoifits (Fabien Baron) and oifitslib (John Young) which are
+// are both written in C.  This forces us to use <complex.h> rather than <complex>.  We'll probably
+// need to write a new OIFITS interface to alleviate this issue.
+
+// TODO: This class should be able to manipulate the order of the data BEFORE uploading
+// to the OpenCL device to promote coalesced memory loads.
+
 #ifndef COILIBDATA_H_
 #define COILIBDATA_H_
 
@@ -18,41 +25,49 @@
 	#include <CL/cl.hpp>
 #endif
 
-// TODO: This class should be able to manipulate the order of the data BEFORE uploading
-// to the OpenCL device to promote coalesced memory loads.
-
-#include <string>
-
-#include "COpenCL.h"
 extern "C" {
     #include "exchange.h"
     #include "oifile.h"
-	#include "getoifits.h"
 }
+
+#include "getoifits.h"
+#include <string>
+#include <complex>
+#include "COpenCL.h"
+
 
 using namespace std;
 
 class COILibData
 {
-private:
+	// NOTE: This class currently uses liboifits and getoifits and is compliant with those libraries
+	// but it is our intention to change this.  I wouldn't suggest inheriting from this object as
+	// datamembers and some functions are likely to change.
+protected:
 	// Location and size of data loaded into OpenCL memory objects.
-	int n_uv;
-	int n_v2;
-	cl_mem v2_loc;
-	cl_mem v2_uv;
-	int n_t3;
-	cl_mem t3_loc;
-	cl_mem t3_phasor;
-	cl_mem t3_uv;
+	cl_mem mData_cl; // Vis2 + T3, concatinated as cl_float2's.
+	cl_mem mData_err_cl;
+	cl_mem mData_phasor_cl;	// Quantity required to rotate the T3 phase to Y=0
+	cl_mem mData_uvpnt_cl;
+	cl_mem mData_sign_cl;
+
+	// TODO: Temporary datamembers for use with getoifits and oifitslib.
+	float * mData;
+	float * mData_err;
+	complex<float> * mData_phasor;
+	int mNVis2;
+	int mNT3;
+	int mNUV;
+	int mNData;
 
 	// Storage containers for OIFITS data.
-	oi_data * mData;
+	oi_data * mOIData;
 
 public:
 	COILibData(oi_data * data);
 	~COILibData();
 
-	void CopyToOpenCLDevice(cl_command_queue * queue);
+	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
 
 	cl_mem GetLocation_V2();
 	cl_mem GetLocation_V2UV();
@@ -63,6 +78,10 @@ public:
 	int GetNumV2();
 	int GetNumT3();
 	int GetNumUV();
+
+	void InitData(bool do_extrapolation);
+
+	float square(float number) {return number*number; };
 };
 
 #endif /* COILIBDATA_H_ */

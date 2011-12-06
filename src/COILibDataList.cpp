@@ -25,6 +25,15 @@ void COILibDataList::Append(COILibData * data)
 	this->data.push_back(data);
 }
 
+/// Copies all data sources to the OpenCL device using the specified command queue.
+void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
+{
+    for(vector<COILibData*>::iterator it = data.begin(); it != data.end(); ++it)
+    {
+    	(*it)->CopyToOpenCLDevice(context, queue);
+    }
+}
+
 /// Finds the maximum number of data points (Vis2 + T3) and returns that number.
 int COILibDataList::MaxNumData()
 {

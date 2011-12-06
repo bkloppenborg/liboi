@@ -7,13 +7,18 @@
  * select and extract oi data.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <complex.h>
-#include <math.h>
-#include <string.h>
-#include "exchange.h"
-#include "fitsio.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <complex>
+#include <string>
+
+extern "C"{
+	#include "exchange.h"
+	#include "fitsio.h"
+}
+
+using namespace std;
 
 #define maxins 50
 #define billion (1.0e9)
@@ -77,7 +82,7 @@ typedef struct _data
 typedef struct _dataonly
 {
   float *pow;
-  float complex *t3;
+  complex<float> * t3;
   int nbis;
   int npow;
 }data_only;
