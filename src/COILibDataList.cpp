@@ -20,7 +20,7 @@ COILibDataList::~COILibDataList()
 		delete data[i];
 }
 
-COILibDataList::Append(COILibData * data)
+void COILibDataList::Append(COILibData * data)
 {
 	this->data.push_back(data);
 }

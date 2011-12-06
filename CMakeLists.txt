@@ -16,9 +16,9 @@ if(NOT TARGET textio)
 endif(NOT TARGET textio)
 
 # Call CMake on the subdirectories
-if(NOT TARGET liboifits)
+if(NOT TARGET oifits)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/oifitslib)
-endif(NOT TARGET liboifits)
+endif(NOT TARGET oifits)
 
 # Call CMake on the subdirectories
 if(NOT TARGET getoifits)

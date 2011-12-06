@@ -162,9 +162,9 @@ float CLibOI::TotalFlux(bool return_value)
 }
 
 /// Reads in a data file, stores it in the data array.
-void ReadDataFile(string filename)
+void CLibOI::ReadDataFile(string filename)
 {
-
+	mDataList.ReadFile(filename);
 }
 
 /// Tells OpenCL about the size of the image.
