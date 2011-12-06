@@ -91,7 +91,7 @@ public:
 	void RegisterImage_GLFB(GLuint framebuffer);
 	void RegisterImage_GLTB(GLuint texturebuffer);
 
-	void SetKernelSoucePath(string path_to_kernels);
+	void SetKernelSourcePath(string path_to_kernels);
 
 //	void ComputeChi2_V2(cl_mem v2_sim_data, cl_mem v2_real_data, int v2_size);
 //	void ComputeChi2_T3(cl_mem t3_sim_data, cl_mem t3_real_data, int t3_size);

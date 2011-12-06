@@ -223,7 +223,7 @@ void CLibOI::RegisterImage_GLTB(GLuint texturebuffer)
 	COpenCL::CheckOCLError("Could not create temporary OpenCL image buffer", err);
 }
 
-void CLibOI::SetKernelSoucePath(string path_to_kernels)
+void CLibOI::SetKernelSourcePath(string path_to_kernels)
 {
 	mKernelSourcePath = path_to_kernels;
 }
