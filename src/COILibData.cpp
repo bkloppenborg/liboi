@@ -37,37 +37,30 @@ COILibData::~COILibData()
 }
 
 /// Copies the data from CPU memory over to the OpenCL device memory, creating memory objects when necessary.
-void COILibData::CopyToOpenCLDevice(cl_command_queue * queue)
+//void COILibData::CopyToOpenCLDevice(cl_command_queue * queue)
+//{
+//	// First free any allocated GPU memory if it was allocated before.
+//	if(v2_loc) clReleaseMemObject(v2_loc);
+//	if(v2_uv) clReleaseMemObject(v2_uv);
+//	if(t3_loc) clReleaseMemObject(t3_loc);
+//	if(t3_phasor) clReleaseMemObject(t3_phasor);
+//	if(t3_uv) clReleaseMemObject(t3_uv);
+//
+//	// Now copy the data from OIFITS structs into
+//	// TODO:
+//}
+
+int COILibData::GetNumV2()
 {
-	// First free any allocated GPU memory if it was allocated before.
-	if(v2_loc) clReleaseMemObject(v2_loc);
-	if(v2_uv) clReleaseMemObject(v2_uv);
-	if(t3_loc) clReleaseMemObject(t3_loc);
-	if(t3_phasor) clReleaseMemObject(t3_phasor);
-	if(t3_uv) clReleaseMemObject(t3_uv);
-
-	// Now copy the data from OIFITS structs into
-
+	return n_v2;
 }
 
-/// Reads in an OIFITS file, returns a COILibData object.
-COILibData * COILibData::FromFile(string filename)
+int COILibData::GetNumT3()
 {
-	// TODO: Right now this routine uses getoifits (Fabien Baron) and oifitslib (John Young) to read in the data
-	// we can probably get a performance increase on the GPU by sorting the data intelligently on load.
-	// We'll need to implement a new reading function to do this.
-	// Note: If we reorder the data, we'll need to make sure the V2 and T3 kernels still understand where their data is at.
+	return n_t3;
+}
 
-	// From GPAIR, Allocate storage for OIFITS data
-	oi_usersel usersel;
-	oi_data * tmp = new oi_data();
-	int status;
-
-	// From GPAIR, read_oifits
-	strcpy(usersel.file, filename.c_str());
-	get_oi_fits_selection(&usersel, &status);
-	get_oi_fits_data(&usersel, tmp, &status);
-	printf("OIFITS File read\n");
-
-	return new COILibData(tmp);
+int COILibData::GetNumUV()
+{
+	return n_uv;
 }

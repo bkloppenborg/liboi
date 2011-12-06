@@ -60,7 +60,9 @@ public:
 	cl_mem GetLocation_T3Phase();
 	cl_mem GetLocation_T3UV();
 
-	static COILibData * FromFile(string filename);
+	int GetNumV2();
+	int GetNumT3();
+	int GetNumUV();
 };
 
 #endif /* COILIBDATA_H_ */
