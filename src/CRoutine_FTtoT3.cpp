@@ -19,7 +19,7 @@ CRoutine_FTtoT3::~CRoutine_FTtoT3()
 	// TODO Auto-generated destructor stub
 }
 
-void CRoutine_FTtoT3::Init(float image_scale)
+void CRoutine_FTtoT3::Init(void)
 {
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[0]);

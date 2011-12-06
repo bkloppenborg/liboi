@@ -17,6 +17,8 @@ CLibOI::CLibOI()
 	mFluxBuffer = NULL;
 	mImageType = OpenCLBuffer;	// By default we assume the image is stored in an OpenCL buffer.
 	mImageScale = 1;
+
+	mMaxData = 1024;
 }
 
 CLibOI::~CLibOI()
@@ -50,16 +52,19 @@ void CLibOI::Init(cl_device_type device_type, int image_width, int image_height,
 	// First register the width, height, and depth of the images we will be using.
 	RegisterImageInfo(image_width, image_height, image_depth, scale);
 
-	// Now initalize the OpenCL context and all required routines.
+	// Now initalize the OpenCL context.  The programmer should call InitMemory and InitRoutines
+	// after loading any data into memory.
 	mOCL->Init(device_type);
-	InitMemory();
-	InitRoutines();
 }
 
 /// Initializes memory used for storing various things on the OpenCL context.
 void CLibOI::InitMemory()
 {
 	int err = CL_SUCCESS;
+
+	// Determine the maximum data size.
+	//int mMaxData = mDataList;
+
 	// Allocate some memory on the OpenCL device
 	mFluxBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
 
@@ -85,6 +90,19 @@ void CLibOI::InitRoutines()
 	mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 	mrFT->SetSourcePath(mKernelSourcePath);
 	mrFT->Init(mImageScale);
+
+	// Initialize the FTtoV2 and FTtoT3 routines
+	mrV2 = new CRoutine_FTtoV2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrV2->SetSourcePath(mKernelSourcePath);
+	mrV2->Init(mImageScale);
+
+	mrT3 = new CRoutine_FTtoT3(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrT3->SetSourcePath(mKernelSourcePath);
+	mrT3->Init();
+
+	mrChi2 = new CRoutine_Chi2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrChi2->SetSourcePath(mKernelSourcePath);
+	mrChi2->Init(mMaxData);
 }
 
 /// Normalizes a floating point buffer by dividing by the sum of the buffer
@@ -141,6 +159,12 @@ float CLibOI::TotalFlux(bool return_value)
 	}
 
 	return flux;
+}
+
+/// Reads in a data file, stores it in the data array.
+void ReadDataFile(string filename)
+{
+
 }
 
 /// Tells OpenCL about the size of the image.

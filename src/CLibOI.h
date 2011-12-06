@@ -17,17 +17,21 @@
 
 #include "COpenCL.h"
 #include "LibOIEnumerations.h"
+#include "COILibData.h"
 #include "CRoutine_Reduce.h"
 #include "CRoutine_Normalize.h"
 #include "CRoutine_ImageToBuffer.h"
 #include "CRoutine_FT.h"
 #include "CRoutine_DFT.h"
+#include "CRoutine_FTtoV2.h"
+#include "CRoutine_FTtoT3.h"
+#include "CRoutine_Chi2.h"
 
 class CLibOI
 {
 protected:
 	// Datamembers:
-//	vector<COILibData*> DataList;
+	vector<COILibData*> DataList;
 
 	eFTMethods mFTMethod;
 	cl_device_type mDeviceType;
@@ -41,6 +45,9 @@ protected:
 	CRoutine_ImageToBuffer * mrCopyImage;
 	CRoutine_Normalize * mrNormalize;
 	CRoutine_FT * mrFT;
+	CRoutine_FTtoV2 * mrV2;
+	CRoutine_FTtoT3 * mrT3;
+	CRoutine_Chi2 * mrChi2;
 
 	// Memory objects (OpenCL or otherwise)
 	eImageTypes mImageType;
@@ -50,6 +57,8 @@ protected:
 	int mImageHeight;
 	int mImageDepth;
 	float mImageScale;
+
+	int mMaxData;
 
 	// Temporary buffers:
 	cl_mem mFluxBuffer;
@@ -76,6 +85,7 @@ public:
 
 	float TotalFlux(bool return_value);
 
+	void ReadDataFile(string filename);
 	void RegisterImageInfo(int width, int height, int depth, float scale);
 	void RegisterImage_CLMEM(cl_mem image);
 	void RegisterImage_GLFB(GLuint framebuffer);

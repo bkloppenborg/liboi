@@ -58,10 +58,6 @@ __kernel void ft_to_t3(
 {   
     int i = get_global_id(0);
     
-    // TODO: Workaround for error introduced in Nvidia 195-series drivers.  Should be able to
-    // pass in an integer to this function without needing it to be an array.
-    int offset = array_offset[0];
-
     // Pull some data from global memory:
     long4 uvpnt = data_uvpnt[i];
     float2 vab = vis[uvpnt.s0];
@@ -75,6 +71,6 @@ __kernel void ft_to_t3(
     
     // TODO: Convert mock_data_bs over to a float2 array.
     float2 temp = MultComplex4(vab, vbc, vca, data_bip[i]);
-    mock_data_bs[offset + 2*i] = temp.s0;
-    mock_data_bs[offset + 2*i + 1] = temp.s1;
+    mock_data_bs[2*i] = temp.s0;
+    mock_data_bs[2*i + 1] = temp.s1;
 }
