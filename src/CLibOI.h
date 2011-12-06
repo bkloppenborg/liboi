@@ -17,7 +17,7 @@
 
 #include "COpenCL.h"
 #include "LibOIEnumerations.h"
-#include "COILibData.h"
+#include "COILibDataList.h"
 #include "CRoutine_Reduce.h"
 #include "CRoutine_Normalize.h"
 #include "CRoutine_ImageToBuffer.h"
@@ -31,7 +31,7 @@ class CLibOI
 {
 protected:
 	// Datamembers:
-	vector<COILibData*> DataList;
+	COILibDataList mDataList;
 
 	eFTMethods mFTMethod;
 	cl_device_type mDeviceType;
