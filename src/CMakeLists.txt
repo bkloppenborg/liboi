@@ -13,8 +13,8 @@ include_directories(${GTK2_INCLUDE_DIRS})
 
 # Add include directories and libs for compiled libraries.
 include_directories(${CMAKE_SOURCE_DIR}/lib/textio/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib/getoifits)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib/oifitslib)
+include_directories(${OIFITS_INCLUDE_DIRECTORIES})
+include_directories(${GETOIFITS_INCLUDE_DIRECTORIES})
 
 file(GLOB SOURCE *.cpp)
 

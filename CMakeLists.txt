@@ -18,11 +18,13 @@ endif(NOT TARGET textio)
 # Call CMake on the subdirectories
 if(NOT TARGET oifits)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/oifitslib)
+	SET(OIFITS_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/lib/oifitslib)
 endif(NOT TARGET oifits)
 
 # Call CMake on the subdirectories
 if(NOT TARGET getoifits)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/getoifits)
+	SET(GETOIFITS_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/lib/getoifits)
 endif(NOT TARGET getoifits)
 
 add_subdirectory(src)
