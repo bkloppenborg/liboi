@@ -236,8 +236,6 @@ void CRoutine_Reduce::Init(int num_elements, bool allocate_temp_buffers)
 
 	// Now allocate any required buffers:
 	if(allocate_temp_buffers)
-	{
-
-	}
+		AllocateInternalBuffers();
 
 }
