@@ -35,10 +35,10 @@ float CRoutine_Chi2::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 	COpenCL::CheckOCLError("Failed to determine workgroup size for chi2 kernel.", err);
 
 	// Set the arguments to our compute kernel
-	err  = clSetKernelArg(mKernels[mChi2KernelID], 0, sizeof(cl_mem), data);
-	err |= clSetKernelArg(mKernels[mChi2KernelID], 1, sizeof(cl_mem), data_err);
-	err |= clSetKernelArg(mKernels[mChi2KernelID], 2, sizeof(cl_mem), model_data);
-	err |= clSetKernelArg(mKernels[mChi2KernelID], 3, sizeof(cl_mem), mChi2Temp);
+	err  = clSetKernelArg(mKernels[mChi2KernelID], 0, sizeof(cl_mem), &data);
+	err |= clSetKernelArg(mKernels[mChi2KernelID], 1, sizeof(cl_mem), &data_err);
+	err |= clSetKernelArg(mKernels[mChi2KernelID], 2, sizeof(cl_mem), &model_data);
+	err |= clSetKernelArg(mKernels[mChi2KernelID], 3, sizeof(cl_mem), &mChi2Temp);
 	err |= clSetKernelArg(mKernels[mChi2KernelID], 4, sizeof(int), &n);
 	COpenCL::CheckOCLError("Failed to set chi2 kernel arguments.", err);
 
@@ -68,5 +68,5 @@ void CRoutine_Chi2::Init(int num_elements)
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[mChi2SourceID]);
     BuildKernel(source, "chi2");
-    mChi2KernelID = mKernels.size();
+    mChi2KernelID = mKernels.size() - 1;
 }

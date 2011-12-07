@@ -61,16 +61,16 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 #endif //DEBUG
 
 	// Set the kernel arguments and enqueue the kernel
-	err = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), uv_points);
-	err = clSetKernelArg(mKernels[0], 1, sizeof(int), &n_uv_points);
-	err = clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), image);
-	err = clSetKernelArg(mKernels[0], 3, sizeof(int), &image_width);
-	err = clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), output);
-	err = clSetKernelArg(mKernels[0], 6, local * sizeof(float), NULL);
-	err = clSetKernelArg(mKernels[0], 7, local * sizeof(float), NULL);
+	err = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &uv_points);
+	err |= clSetKernelArg(mKernels[0], 1, sizeof(int), &n_uv_points);
+	err |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &image);
+	err |= clSetKernelArg(mKernels[0], 3, sizeof(int), &image_width);
+	err |= clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), &output);
+	err |= clSetKernelArg(mKernels[0], 5, local * sizeof(float), NULL);
+	err |= clSetKernelArg(mKernels[0], 6, local * sizeof(float), NULL);
 	COpenCL::CheckOCLError("Failed to set ft_dft2d kernel arguments.", err);
 
     // Execute the kernel over the entire range of the data set
-    err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, &local, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue ft_dft2d kernel.", err);
 }

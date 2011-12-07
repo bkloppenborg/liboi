@@ -17,8 +17,13 @@ CLibOI::CLibOI()
 	mFluxBuffer = NULL;
 	mImageType = OpenCLBuffer;	// By default we assume the image is stored in an OpenCL buffer.
 	mImageScale = 1;
+	mMaxData = 0;
+	mMaxUV = 0;
 
-	mMaxData = 1024;
+	// Temporary buffers:
+	mFluxBuffer = NULL;
+	mFTBuffer = NULL;
+	mSimDataBuffer = NULL;
 }
 
 CLibOI::~CLibOI()
@@ -33,6 +38,12 @@ void CLibOI::CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int
 	mrCopyImage->CopyImage(gl_image, cl_buffer, width, height, layer);
 }
 
+/// Computes the chi2 between the current simulated data, and the observed data set specified in data
+float CLibOI::DataToChi2(COILibData * data)
+{
+	return mrChi2->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData());
+}
+
 void CLibOI::FreeOpenCLMem()
 {
 	// First free datamembers:
@@ -43,8 +54,34 @@ void CLibOI::FreeOpenCLMem()
 	// Now free OpenCL buffers:
 	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
 	if(mFTBuffer) clReleaseMemObject(mFTBuffer);
-	if(mVis2Buffer) clReleaseMemObject(mVis2Buffer);
-	if(mT3Buffer) clReleaseMemObject(mT3Buffer);
+	if(mSimDataBuffer) clReleaseMemObject(mSimDataBuffer);
+}
+
+/// Computes the Fourier transform of the image, then generates Vis2 and T3's.
+void CLibOI::FTToData(COILibData * data)
+{
+	// First compute the Fourier transform
+	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth, mImageHeight, mFTBuffer);
+
+	// Now create the V2 and T3's
+	mrV2->FTtoV2(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
+	mrT3->FTtoT3(mFTBuffer, data->GetLoc_DataT3Phi(), data->GetLoc_DataUVPoints(),
+			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
+}
+
+/// Uses the current active image to compute the chi2 with respect to the specified data.
+/// This is a convenience function that calls FTToData and DataToChi2.
+float CLibOI::ImageToChi2(COILibData * data)
+{
+	// Simple, call the other functions
+	FTToData(data);
+	return DataToChi2(data);
+}
+
+float CLibOI::ImageToChi2(int data_num)
+{
+	COILibData * data = mDataList[data_num];
+	return ImageToChi2(data);
 }
 
 void CLibOI::Init(cl_device_type device_type, int image_width, int image_height, int image_depth, float scale)
@@ -62,12 +99,14 @@ void CLibOI::InitMemory()
 {
 	int err = CL_SUCCESS;
 
-	// Determine the maximum data size.
-	//int mMaxData = mDataList;
+	// Determine the maximum data size, cache it locally.
+	mMaxData = mDataList.MaxNumData();
+	mMaxUV = mDataList.MaxUVPoints();
 
 	// Allocate some memory on the OpenCL device
 	mFluxBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
-
+	mFTBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * mMaxUV, NULL, &err);
+	mSimDataBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * mMaxData, NULL, &err);
 	COpenCL::CheckOCLError("Could not initialize liboi required memory objects.", err);
 }
 
@@ -103,6 +142,13 @@ void CLibOI::InitRoutines()
 	mrChi2 = new CRoutine_Chi2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 	mrChi2->SetSourcePath(mKernelSourcePath);
 	mrChi2->Init(mMaxData);
+}
+
+/// Reads in an OIFITS file and stores it into OpenCL memory
+void CLibOI::LoadData(string filename)
+{
+	mDataList.ReadFile(filename);
+	mDataList[mDataList.size() - 1]->CopyToOpenCLDevice(mOCL->GetContext(), mOCL->GetQueue());
 }
 
 /// Normalizes a floating point buffer by dividing by the sum of the buffer
@@ -159,12 +205,6 @@ float CLibOI::TotalFlux(bool return_value)
 	}
 
 	return flux;
-}
-
-/// Reads in a data file, stores it in the data array.
-void CLibOI::ReadDataFile(string filename)
-{
-	mDataList.ReadFile(filename);
 }
 
 /// Tells OpenCL about the size of the image.

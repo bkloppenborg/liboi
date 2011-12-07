@@ -108,21 +108,6 @@ void COILibData::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
 	delete bsref_sign;
 }
 
-int COILibData::GetNumV2()
-{
-	return mNVis2;
-}
-
-int COILibData::GetNumT3()
-{
-	return mNT3;
-}
-
-int COILibData::GetNumUV()
-{
-	return mNUV;
-}
-
 /// Initalize the OIFITS data, copying over to standard float memory objects
 /// TODO: This is a routine pulled directly from GPAIR, if we replace getoifits and liboifits we should
 /// also strike this routine.

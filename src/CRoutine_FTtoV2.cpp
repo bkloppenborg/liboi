@@ -37,8 +37,8 @@ void CRoutine_FTtoV2::CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl
     COpenCL::CheckOCLError("Failed to determine maximum group size for ft_to_vis2 kernel.", err);
 
     // Set the kernel arguments
-    err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), ft_loc);
-    err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), output);
+    err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_loc);
+    err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &output);
     COpenCL::CheckOCLError("Failed to set ft_to_vis2 kernel arguments.", err);
 
     // Execute the kernel over the entire range of the data set

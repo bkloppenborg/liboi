@@ -32,8 +32,11 @@ public:
 	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
 
 	int MaxNumData();
+	int MaxUVPoints();
 
 	void ReadFile(string filename);
+
+	int size(void) { return data.size(); }
 
 
 };

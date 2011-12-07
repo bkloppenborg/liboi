@@ -585,8 +585,10 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 		if(wave.nwave > 1)
 		  {
 		    printf("Select a wavelength range (default value = 1 50000) :");
-		    fgets(commstring,100,stdin);
-		    tmpi = sscanf(commstring,"%f %f", &usersel->minband, &usersel->maxband);
+		    //fgets(commstring,100,stdin);
+		    //tmpi = sscanf(commstring,"%f %f", &usersel->minband, &usersel->maxband);
+		    // TODO: Undo the automatic selection here:
+		    tmpi = sscanf("1 50000","%f %f", &usersel->minband, &usersel->maxband);
 		  }
 		else
 		  {
@@ -696,7 +698,7 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 		  printf("Error: no data available within the selected waveband limits\n");
 		  usersel->minband= -1.;
 		  usersel->maxband= -1.;
-		  getchar();
+		  //getchar();
 		  goto AGAIN2;
 		}
 		printf("Found %ld powerspectrum and %ld bispectrum points between %.0f and %.0f nm.\n\n",
@@ -763,15 +765,3 @@ void free_oi_data(oi_data *data)
   free(data->uv);
   free(data->bsref);
 }
-
-
-
-
-
-
-
-
-
-
-
-

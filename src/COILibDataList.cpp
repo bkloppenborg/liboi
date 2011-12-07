@@ -41,7 +41,22 @@ int COILibDataList::MaxNumData()
 	int max = 0;
     for(vector<COILibData*>::iterator it = data.begin(); it != data.end(); ++it)
     {
-    	tmp = (*it)->GetNumV2() + (*it)->GetNumT3();
+    	tmp = (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
+    	if(tmp > max)
+    		max = tmp;
+    }
+
+    return max;
+}
+
+/// Finds the maximum number of data points (Vis2 + T3) and returns that number.
+int COILibDataList::MaxUVPoints()
+{
+	int tmp;
+	int max = 0;
+    for(vector<COILibData*>::iterator it = data.begin(); it != data.end(); ++it)
+    {
+    	tmp = (*it)->GetNumUV();
     	if(tmp > max)
     		max = tmp;
     }

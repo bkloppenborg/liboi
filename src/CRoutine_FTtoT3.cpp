@@ -37,12 +37,12 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem uv_points
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
 
 	// Set kernel arguments:
-	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), ft_loc);
-	err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), data_phasor);
-	err |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), uv_points);
-	err |= clSetKernelArg(mKernels[0], 3, sizeof(cl_mem), data_sign);
+	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_loc);
+	err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &data_phasor);
+	err |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &uv_points);
+	err |= clSetKernelArg(mKernels[0], 3, sizeof(cl_mem), &data_sign);
 	err |= clSetKernelArg(mKernels[0], 4, sizeof(int), &n_v2);
-	err |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), output);      // Output is stored on the GPU.
+	err |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);      // Output is stored on the GPU.
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
 
 	// Execute the kernel over the entire range of the data set

@@ -69,15 +69,17 @@ public:
 
 	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
 
-	cl_mem GetLocation_V2();
-	cl_mem GetLocation_V2UV();
-	cl_mem GetLocation_T3();
-	cl_mem GetLocation_T3Phase();
-	cl_mem GetLocation_T3UV();
+	// Inline the get location functions
+	cl_mem GetLoc_Data() {return mData_cl; };
+	cl_mem GetLoc_DataErr() { return mData_err_cl; };
+	cl_mem GetLoc_DataT3Phi() { return mData_phasor_cl; };
+	cl_mem GetLoc_DataT3Sign() { return mData_sign_cl; };
+	cl_mem GetLoc_DataUVPoints() { return mData_uvpnt_cl; };
 
-	int GetNumV2();
-	int GetNumT3();
-	int GetNumUV();
+	int GetNumData() { return mNData; };
+	int GetNumT3() { return mNT3; };
+	int GetNumUV() { return mNUV; };
+	int GetNumV2() { return mNVis2; };
 
 	void InitData(bool do_extrapolation);
 
