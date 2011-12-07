@@ -54,7 +54,8 @@ __kernel void ft_to_t3(
     __global float2 * data_bip,
     __global long4 * data_uvpnt,
     __global short4 * data_sign,
-    __global float * mock_data_bs)
+    __private int num_v2,
+    __global float * T3_output)
 {   
     int i = get_global_id(0);
     
@@ -71,6 +72,6 @@ __kernel void ft_to_t3(
     
     // TODO: Convert mock_data_bs over to a float2 array.
     float2 temp = MultComplex4(vab, vbc, vca, data_bip[i]);
-    mock_data_bs[2*i] = temp.s0;
-    mock_data_bs[2*i + 1] = temp.s1;
+    T3_output[num_v2 + 2*i] = temp.s0;
+    T3_output[num_v2 + 2*i + 1] = temp.s1;
 }
