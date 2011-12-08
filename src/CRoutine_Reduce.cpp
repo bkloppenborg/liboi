@@ -172,10 +172,10 @@ float CRoutine_Reduce::ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem in
         unsigned int entries = entry_counts[i];
         size_t shared_size = sizeof(float) * local * operations;
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 		printf("Pass[%4d] Global[%4d] Local[%4d] Groups[%4d] WorkItems[%4d] Operations[%d] Entries[%d]\n",  i,
 			(int)global, (int)local, (int)group_counts[i], (int)work_item_counts[i], operations, entries);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
         // Swap the inputs and outputs for each pass
         //

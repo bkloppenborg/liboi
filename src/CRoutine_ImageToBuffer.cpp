@@ -53,7 +53,7 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int wi
     err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, local, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to enqueue image copying kernel.", err);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
         	// Copy back the input/output buffers.
         	float tmp_sum = 0;
         	int num_elements = width * height;
@@ -70,7 +70,7 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int wi
 
         	printf("\n");
         	printf("Sum of Image copied to CPU: %f \n", tmp_sum);
-#endif //DEBUG
+#endif //DEBUG_VERBOSE
 
     // Free memory
     delete global;
