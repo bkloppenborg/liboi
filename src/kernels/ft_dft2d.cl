@@ -74,14 +74,11 @@ __kernel void dft_2d(
             
             for(m = 0; m < lsize_x; m++)
             {
-                //tmp += MultComplex3Special(sA[m], sB[m] * uv.s0, arg_C);
+                tmp += MultComplex3Special(sA[m], sB[m] * uv.s0, arg_C);
             }
             barrier(CLK_LOCAL_MEM_FENCE);
         }
     }
-    
-    tmp.s0 = uv.s0;
-    tmp.s1 = uv.s1;
     
     // Write the result to the output array
     output[tid] = tmp;
