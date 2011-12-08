@@ -22,13 +22,13 @@ COpenCLRoutine::~COpenCLRoutine()
 {
 	// Release any kernels or programs
 	int i;
-	for(i = mKernels.size(); i > 0; i--)
+	for(i = mKernels.size() - 1; i > 0; i--)
 	{
 		clReleaseKernel(mKernels[i]);
 		mKernels.pop_back();
 	}
 
-	for(i = mPrograms.size(); i > 0; i--)
+	for(i = mPrograms.size() - 1; i > 0; i--)
 	{
 		clReleaseProgram(mPrograms[i]);
 		mPrograms.pop_back();
