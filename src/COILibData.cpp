@@ -28,6 +28,7 @@ COILibData::COILibData(oi_data * data)
 	mData_err_cl = NULL;
 	mData_phasor_cl = NULL;
 	mData_uvpnt_cl = NULL;
+	mData_bsref_cl = NULL;
 	mData_sign_cl = NULL;
 }
 
@@ -39,6 +40,7 @@ COILibData::~COILibData()
 	if(mData_phasor_cl) clReleaseMemObject(mData_phasor_cl);
 	if(mData_uvpnt_cl) clReleaseMemObject(mData_uvpnt_cl);
 	if(mData_sign_cl) clReleaseMemObject(mData_sign_cl);
+	if(mData_bsref_cl) clReleaseMemObject(mData_bsref_cl);
 
 	// Free local memory:
 	free_oi_data(mOIData);
@@ -87,15 +89,17 @@ void COILibData::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
 	// Now create buffers on the OpenCL device
     mData_cl = clCreateBuffer(context, CL_MEM_READ_ONLY,  sizeof(float) * mNData, NULL, NULL);
     mData_err_cl = clCreateBuffer(context, CL_MEM_READ_ONLY,  sizeof(float) * mNData, NULL, NULL);
+    mData_uvpnt_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
     mData_phasor_cl = clCreateBuffer(context, CL_MEM_READ_ONLY,  sizeof(cl_float2) * mNT3, NULL, NULL);
-    mData_uvpnt_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_long4) * mNT3, NULL, NULL);
+    mData_bsref_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_long4) * mNT3, NULL, NULL);
     mData_sign_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_short4) * mNT3, NULL, NULL);
 
     // Now move the data over:
     err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, 0, sizeof(float) * mNData, mData, 0, NULL, NULL);
     err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, 0, sizeof(float) * mNData, mData_err, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(queue, mData_uvpnt_cl, CL_FALSE, 0, sizeof(cl_float2) * mNUV, uv_info, 0, NULL, NULL);
     err |= clEnqueueWriteBuffer(queue, mData_phasor_cl, CL_FALSE, 0, sizeof(cl_float2) * mNT3, mData_phasor, 0, NULL, NULL);
-    err |= clEnqueueWriteBuffer(queue, mData_uvpnt_cl, CL_FALSE, 0, sizeof(cl_long4) * mNT3, bsref_uvpnt, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(queue, mData_bsref_cl, CL_FALSE, 0, sizeof(cl_long4) * mNT3, bsref_uvpnt, 0, NULL, NULL);
     err |= clEnqueueWriteBuffer(queue, mData_sign_cl, CL_FALSE, 0, sizeof(cl_short4) * mNT3, bsref_sign, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy OIFITS data over to the OpenCL Device.", err);
 

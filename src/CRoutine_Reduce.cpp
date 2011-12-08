@@ -210,7 +210,7 @@ float CRoutine_Reduce::ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem in
     {
         cl_float sum = 0;
         err = clEnqueueReadBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &sum, 0, NULL, NULL );
-        COpenCL::CheckOCLError("Could not read back GPU SUM value.", err);
+        COpenCL::CheckOCLError("Could not read back OpenCL SUM value.", err);
 
         // Check for a NaN:
         if(sum != sum)
@@ -235,7 +235,7 @@ void CRoutine_Reduce::Init(int num_elements, bool allocate_temp_buffers)
 	BuildKernels();
 
 	// Now allocate any required buffers:
-	if(allocate_temp_buffers)
-		AllocateInternalBuffers();
+//	if(allocate_temp_buffers)
+//		AllocateInternalBuffers();
 
 }

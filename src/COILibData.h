@@ -49,6 +49,7 @@ protected:
 	cl_mem mData_err_cl;
 	cl_mem mData_phasor_cl;	// Quantity required to rotate the T3 phase to Y=0
 	cl_mem mData_uvpnt_cl;
+	cl_mem mData_bsref_cl;
 	cl_mem mData_sign_cl;
 
 	// TODO: Temporary datamembers for use with getoifits and oifitslib.

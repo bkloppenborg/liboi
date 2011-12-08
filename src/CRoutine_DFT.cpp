@@ -44,16 +44,16 @@ void CRoutine_DFT::Init(float image_scale)
 void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output)
 {
 #ifdef DEBUG
-	printf("Computing the DFT using %s\n", mSource[0].c_str());
+	printf("Computing the FT using DFT method, %s\n", mSource[0].c_str());
 #endif //DEBUG
 
     int err = 0;
     size_t global = (size_t) n_uv_points;
-    size_t local;                     // local domain size for our calculation
+    size_t local = 128;                     // local domain size for our calculation
 
-   // Get the maximum work-group size for executing the kernel on the device
-    err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine the kernel workgroup size for ft_dft2d kernel.", err);
+    // Get the maximum work-group size for executing the kernel on the device
+//    err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+//	COpenCL::CheckOCLError("Failed to determine the kernel workgroup size for ft_dft2d kernel.", err);
 
 #ifdef DEBUG
     // Output some information about kernel sizes:
@@ -73,4 +73,22 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
     // Execute the kernel over the entire range of the data set
     err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue ft_dft2d kernel.", err);
+
+#ifdef DEBUG
+	// Copy back the input/output buffers.
+	cl_float * tmp = new cl_float[n_uv_points];
+	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_uv_points * sizeof(cl_float), tmp, 0, NULL, NULL);
+
+	printf("Every 10th element of DFT Buffer:\n");
+	for(int i = 0; i < n_uv_points; i++)
+	{
+		printf("%f ", tmp[2*i]);
+		printf("%f ", tmp[2*i+1]);
+	}
+
+	// End the line, free memory.
+	printf("\n");
+	delete tmp;
+
+#endif //DEBUG
 }

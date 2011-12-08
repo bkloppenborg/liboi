@@ -44,19 +44,19 @@ float CRoutine_Chi2::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 
 	// Execute the kernel over the entire range of the data set
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChi2KernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to enqueue chi2 kernel", err);
+	COpenCL::CheckOCLError("Failed to enqueue chi2 kernel.", err);
 
 	// Now fire up the parallel sum kernel and return the output.
-	return ComputeSum(true, mChi2Output, mChi2Temp, NULL, NULL);
+	return ComputeSum(true, mChi2Output, mChi2Temp, tmp_buff1, tmp_buff2);
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
 void CRoutine_Chi2::Init(int num_elements)
 {
+	int err = CL_SUCCESS;
+
 	// First initialize the base-class constructor:
 	CRoutine_Reduce::Init(num_elements, true);
-
-	int err = CL_SUCCESS;
 
 	// Now allocate some memory
 	if(mChi2Temp == NULL)

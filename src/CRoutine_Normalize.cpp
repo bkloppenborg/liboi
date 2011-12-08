@@ -47,7 +47,6 @@ void CRoutine_Normalize::Normalize(cl_mem image, int image_width, int image_heig
     err |= clSetKernelArg(mKernels[0],  2, sizeof(cl_int2), &tmp);
 	COpenCL::CheckOCLError("Failed to set normalization kernel arguments.", err);
 
-
     err = CL_SUCCESS;
     err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, local, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to enqueue normalization kernel.", err);

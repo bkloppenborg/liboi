@@ -74,6 +74,7 @@ void CLibOI::FTToData(COILibData * data)
 float CLibOI::ImageToChi2(COILibData * data)
 {
 	// Simple, call the other functions
+	Normalize();
 	FTToData(data);
 	return DataToChi2(data);
 }
