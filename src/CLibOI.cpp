@@ -65,7 +65,7 @@ void CLibOI::FTToData(COILibData * data)
 
 	// Now create the V2 and T3's
 	mrV2->FTtoV2(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
-	mrT3->FTtoT3(mFTBuffer, data->GetLoc_DataT3Phi(), data->GetLoc_DataUVPoints(),
+	mrT3->FTtoT3(mFTBuffer, data->GetLoc_DataT3Phi(), data->GetLoc_DataBSRef(),
 			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
 }
 

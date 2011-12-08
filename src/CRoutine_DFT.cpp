@@ -79,8 +79,8 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	cl_float * tmp = new cl_float[n_uv_points];
 	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_uv_points * sizeof(cl_float), tmp, 0, NULL, NULL);
 
-	printf("Every 10th element of DFT Buffer:\n");
-	for(int i = 0; i < n_uv_points; i++)
+	printf("DFT Buffer elements:\n");
+	for(int i = 0; i < n_uv_points/2; i++)
 	{
 		printf("%f ", tmp[2*i]);
 		printf("%f ", tmp[2*i+1]);

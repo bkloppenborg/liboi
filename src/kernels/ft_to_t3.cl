@@ -50,9 +50,9 @@ float2 MultComplex2(float2 A, float2 B)
 
 // The actual kernel function.
 __kernel void ft_to_t3(
-    __global float2 * vis,
-    __global float2 * data_bip,
-    __global long4 * data_uvpnt,
+    __global float2 * FT_output,
+    __global float2 * data_phasor,
+    __global long4 * data_bsref,
     __global short4 * data_sign,
     __private int num_v2,
     __global float * T3_output)
@@ -60,10 +60,10 @@ __kernel void ft_to_t3(
     int i = get_global_id(0);
     
     // Pull some data from global memory:
-    long4 uvpnt = data_uvpnt[i];
-    float2 vab = vis[uvpnt.s0];
-    float2 vbc = vis[uvpnt.s1];
-    float2 vca = vis[uvpnt.s2];
+    long4 uvpnt = data_bsref[i];
+    float2 vab = FT_output[uvpnt.s0];
+    float2 vbc = FT_output[uvpnt.s1];
+    float2 vca = FT_output[uvpnt.s2];
     
     short4 sign = data_sign[i];
     vab.s1 *= sign.s0;
@@ -71,7 +71,7 @@ __kernel void ft_to_t3(
     vca.s1 *= sign.s2;
     
     // TODO: Convert mock_data_bs over to a float2 array.
-    float2 temp = MultComplex4(vab, vbc, vca, data_bip[i]);
+    float2 temp = MultComplex4(vab, vbc, vca, data_phasor[i]);
     T3_output[num_v2 + 2*i] = temp.s0;
     T3_output[num_v2 + 2*i + 1] = temp.s1;
 }

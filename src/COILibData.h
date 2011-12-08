@@ -73,6 +73,7 @@ public:
 	// Inline the get location functions
 	cl_mem GetLoc_Data() {return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };
+	cl_mem GetLoc_DataBSRef() { return mData_bsref_cl; };
 	cl_mem GetLoc_DataT3Phi() { return mData_phasor_cl; };
 	cl_mem GetLoc_DataT3Sign() { return mData_sign_cl; };
 	cl_mem GetLoc_DataUVPoints() { return mData_uvpnt_cl; };
