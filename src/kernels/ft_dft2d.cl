@@ -28,7 +28,8 @@ __kernel void dft_2d(
 	__private int image_width,
 	__global float2 * output,
 	__local float * sA,
-	__local float * sB
+	__local float * sB,
+	__global float * flux
 )
 {
     float2 tmp;
@@ -79,7 +80,7 @@ __kernel void dft_2d(
             barrier(CLK_LOCAL_MEM_FENCE);
         }
     }
-    
+        
     // Write the result to the output array
     output[tid] = tmp;
 }

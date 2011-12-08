@@ -6,6 +6,7 @@
  */
 
 #include "CRoutine_FTtoT3.h"
+#include <cstdio>
 
 CRoutine_FTtoT3::CRoutine_FTtoT3(cl_device_id device, cl_context context, cl_command_queue queue)
 	:COpenCLRoutine(device, context, queue)
@@ -48,6 +49,21 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsre
 	// Execute the kernel over the entire range of the data set
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
+
+#ifdef DEBUG
+	// Copy back the input/output buffers.
+	cl_float2 * tmp = new cl_float2[n_t3];
+	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, n_v2 * sizeof(cl_float), n_t3 * sizeof(cl_float2), tmp, 0, NULL, NULL);
+
+	printf("T3 Buffer elements:\n");
+	for(int i = 0; i < n_t3; i++)
+		printf("(%f %f) ", tmp[i].s0, tmp[i].s1);
+
+	// End the line, free memory.
+	printf("\n");
+	delete tmp;
+
+#endif //DEBUG
 
 }
 

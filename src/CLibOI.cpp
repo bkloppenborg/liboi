@@ -58,10 +58,11 @@ void CLibOI::FreeOpenCLMem()
 }
 
 /// Computes the Fourier transform of the image, then generates Vis2 and T3's.
+/// This routine assumes the image has been normalized using Normalize() (and that the total flux is stored in mFluxBuffer)
 void CLibOI::FTToData(COILibData * data)
 {
 	// First compute the Fourier transform
-	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth, mImageHeight, mFTBuffer);
+	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth, mImageHeight, mFluxBuffer, mFTBuffer);
 
 	// Now create the V2 and T3's
 	mrV2->FTtoV2(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
@@ -76,7 +77,8 @@ float CLibOI::ImageToChi2(COILibData * data)
 	// Simple, call the other functions
 	Normalize();
 	FTToData(data);
-	return DataToChi2(data);
+	float chi2 = DataToChi2(data);
+	return chi2;
 }
 
 float CLibOI::ImageToChi2(int data_num)

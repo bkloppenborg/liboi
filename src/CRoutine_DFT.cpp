@@ -41,7 +41,7 @@ void CRoutine_DFT::Init(float image_scale)
 
 /// Computes the discrete Fourier transform of a (real) image for the specified (cl_float2) UV points and stores
 /// the result in output.
-void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output)
+void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output)
 {
 #ifdef DEBUG
 	printf("Computing the FT using DFT method, %s\n", mSource[0].c_str());
@@ -68,6 +68,7 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	err |= clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), &output);
 	err |= clSetKernelArg(mKernels[0], 5, local * sizeof(float), NULL);
 	err |= clSetKernelArg(mKernels[0], 6, local * sizeof(float), NULL);
+	err |= clSetKernelArg(mKernels[0], 7, sizeof(cl_mem), &image_flux);
 	COpenCL::CheckOCLError("Failed to set ft_dft2d kernel arguments.", err);
 
     // Execute the kernel over the entire range of the data set

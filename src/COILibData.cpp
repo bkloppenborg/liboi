@@ -30,6 +30,8 @@ COILibData::COILibData(oi_data * data)
 	mData_uvpnt_cl = NULL;
 	mData_bsref_cl = NULL;
 	mData_sign_cl = NULL;
+
+	InitData(true);
 }
 
 COILibData::~COILibData()

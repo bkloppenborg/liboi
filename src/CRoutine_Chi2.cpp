@@ -29,6 +29,7 @@ float CRoutine_Chi2::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 	int err = 0;
 	size_t global = (size_t) n;
 	size_t local = 0;
+	float sum = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
 	err = clGetKernelWorkGroupInfo(mKernels[mChi2KernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
@@ -47,7 +48,9 @@ float CRoutine_Chi2::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 	COpenCL::CheckOCLError("Failed to enqueue chi2 kernel.", err);
 
 	// Now fire up the parallel sum kernel and return the output.
-	return ComputeSum(true, mChi2Output, mChi2Temp, tmp_buff1, tmp_buff2);
+	sum = ComputeSum(true, mChi2Output, mChi2Temp, tmp_buff1, tmp_buff2);
+
+	return sum;
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
