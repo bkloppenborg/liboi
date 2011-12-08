@@ -50,7 +50,7 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsre
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	// Copy back the input/output buffers.
 	cl_float2 * tmp = new cl_float2[n_t3];
 	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, n_v2 * sizeof(cl_float), n_t3 * sizeof(cl_float2), tmp, 0, NULL, NULL);
@@ -63,7 +63,7 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsre
 	printf("\n");
 	delete tmp;
 
-#endif //DEBUG
+#endif //DEBUG_VERBOSE
 
 }
 

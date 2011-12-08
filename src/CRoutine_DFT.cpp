@@ -75,7 +75,7 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
     err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue ft_dft2d kernel.", err);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	// Copy back the input/output buffers.
 	cl_float * tmp = new cl_float[n_uv_points];
 	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_uv_points * sizeof(cl_float), tmp, 0, NULL, NULL);
@@ -91,5 +91,5 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	printf("\n");
 	delete tmp;
 
-#endif //DEBUG
+#endif //DEBUG_VERBOSE
 }

@@ -46,7 +46,7 @@ void CRoutine_FTtoV2::CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl
     err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to enqueue the ft_to_vis2 kernel.", err);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	// Copy back the input/output buffers.
 	cl_float * tmp = new cl_float[n_v2_points];
 	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_v2_points * sizeof(cl_float), tmp, 0, NULL, NULL);
@@ -61,6 +61,6 @@ void CRoutine_FTtoV2::CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl
 	printf("\n");
 	delete tmp;
 
-#endif //DEBUG
+#endif //DEBUG_VERBOSE
 
 }
