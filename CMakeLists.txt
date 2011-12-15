@@ -32,8 +32,7 @@ if(NOT TARGET getoifits)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/getoifits)
 endif(NOT TARGET getoifits)
 
-# TODO: Remove this silly requirement thanks to oifitslib.
+add_subdirectory(src)
+
 # Export the inclusion directories.
 set(OI_INCLUDE_DIRS ${OIFITS_INCLUDE_DIRS} ${OPENCL_INCLUDE_DIRS} CACHE INTERNAL "")
-
-add_subdirectory(src)
