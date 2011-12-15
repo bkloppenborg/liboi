@@ -23,6 +23,7 @@ endif(NOT TARGET textio)
 if(NOT TARGET oifits)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/oifitslib)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/oifitslib)
+	include_directories(${OIFITS_INCLUDE_DIRS})
 endif(NOT TARGET oifits)
 
 # Call CMake on the subdirectories
@@ -33,6 +34,6 @@ endif(NOT TARGET getoifits)
 
 # TODO: Remove this silly requirement thanks to oifitslib.
 # Export the inclusion directories.
-set(OI_INCLUDE_DIRS "${OIFITS_INCLUDE_DIRS}" CACHE INTERNAL "")
+set(OI_INCLUDE_DIRS ${OIFITS_INCLUDE_DIRS} ${OPENCL_INCLUDE_DIRS} CACHE INTERNAL "")
 
 add_subdirectory(src)
