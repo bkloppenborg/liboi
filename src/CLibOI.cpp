@@ -32,6 +32,28 @@ CLibOI::~CLibOI()
 	delete mOCL;
 }
 
+/// Copies the specified layer from the registered image buffer over to an OpenCL memory buffer.
+/// If the image is already in an OpenCL buffer, this function need not be called.
+void CLibOI::CopyImageToBuffer(int layer)
+{
+	int err = CL_SUCCESS;
+
+	if(mImageType == OpenGLBuffer)
+	{
+		// Wait for the OpenGL queue to finish.
+		glFinish();
+		err |= clEnqueueAcquireGLObjects(mOCL->GetQueue(), 1, &mGLImage, 0, NULL, NULL);
+		COpenCL::CheckOCLError("Could not acquire OpenGL Memory object.", err);
+
+		// TODO: Implement depth channel for 3D images
+		CopyImageToBuffer(mGLImage, mCLImage, mImageWidth, mImageHeight, layer);
+		COpenCL::CheckOCLError("Could not copy OpenGL image to the OpenCL Memory buffer", err);
+		clFinish(mOCL->GetQueue());
+		err |= clEnqueueReleaseGLObjects (mOCL->GetQueue(), 1, &mGLImage, 0, NULL, NULL);
+		COpenCL::CheckOCLError("Could not Release OpenGL Memory object.", err);
+	}
+}
+
 /// Copies gl_image, an OpenGL image in of the internal format GL_R, to a floating point image buffer, cl_image.
 void CLibOI::CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int layer)
 {
@@ -164,7 +186,7 @@ void CLibOI::Normalize()
 
 	// First compute and store the total flux:
 #ifdef DEBUG
-	tmp1 = TotalFlux(true);
+	tmp1 = TotalFlux(0, true);
 #else // DEBUG
 	TotalFlux(false);
 #endif // DEBUG
@@ -182,31 +204,13 @@ void CLibOI::Normalize()
 }
 
 /// Computes the total flux for the current image.
-float CLibOI::TotalFlux(bool return_value)
+/// If the image is 2D, use zero for the layer.
+float CLibOI::TotalFlux(int layer, bool return_value)
 {
 	int err = CL_SUCCESS;
-
-	if(mImageType == OpenGLBuffer)
-	{
-		// Wait for the OpenGL queue to finish.
-		glFinish();
-		err |= clEnqueueAcquireGLObjects(mOCL->GetQueue(), 1, &mGLImage, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Could not acquire OpenGL Memory object.", err);
-
-		// TODO: Implement depth channel for 3D images
-		CopyImageToBuffer(mGLImage, mCLImage, mImageWidth, mImageHeight, 0);
-		COpenCL::CheckOCLError("Could not copy OpenGL image to the OpenCL Memory buffer", err);
-	}
+	CopyImageToBuffer(layer);
 
 	float flux = mrTotalFlux->ComputeSum(return_value, mFluxBuffer, mCLImage, NULL, NULL);
-
-	if(mImageType == OpenGLBuffer)
-	{
-		clFinish(mOCL->GetQueue());
-		err |= clEnqueueReleaseGLObjects (mOCL->GetQueue(), 1, &mGLImage, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Could not Release OpenGL Memory object.", err);
-	}
-
 	return flux;
 }
 

@@ -7,6 +7,8 @@
  * C++ interface layer to the OpenCL Interferometry Library
  *
  * TODO: Permit multiple OpenCL devices to be used at the same time.  Might be useful to use 2-3 GPUs!
+ * TODO: Implement spectral layers.
+ *       Probably need to add an ImageToChi2(int data_num, int layer) function.
  *
  * NOTE: To use copy an image to the OpenCL buffer using CopyImageToBuffer then call required functions.
  */
@@ -76,6 +78,7 @@ public:
 
 public:
 
+	void CopyImageToBuffer(int layer);
 	void CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int layer);
 	float DataToChi2(COILibData * data);
 
@@ -93,7 +96,7 @@ public:
 
 	void Normalize();
 
-	float TotalFlux(bool return_value);
+	float TotalFlux(int layer, bool return_value);
 
 	void RegisterImageInfo(int width, int height, int depth, float scale);
 	void RegisterImage_CLMEM(cl_mem image);

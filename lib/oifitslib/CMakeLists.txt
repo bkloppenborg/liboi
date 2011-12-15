@@ -10,5 +10,4 @@ find_package(GTK2 REQUIRED)
 include_directories(${GTK2_INCLUDE_DIRS})
 
 set(SOURCES read_fits.c write_fits.c free_fits.c oifile.c oifilter.c oicheck.c oimerge.c)
-
 add_library(oifits ${SOURCES} ${CFITSIO_LIBRARIES} ${GTK2_LIBRARIES})
