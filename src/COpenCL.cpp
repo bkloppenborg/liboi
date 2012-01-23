@@ -13,7 +13,9 @@ using namespace std;
 
 COpenCL::COpenCL()
 {
-
+	mDevice = 0;
+	mContext = 0;
+	mQueue = 0;
 }
 
 COpenCL::~COpenCL()

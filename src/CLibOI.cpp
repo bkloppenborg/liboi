@@ -24,6 +24,15 @@ CLibOI::CLibOI()
 	mFluxBuffer = NULL;
 	mFTBuffer = NULL;
 	mSimDataBuffer = NULL;
+
+	// Routines
+	mrTotalFlux = NULL;
+	mrCopyImage = NULL;
+	mrNormalize = NULL;
+	mrFT = NULL;
+	mrV2 = NULL;
+	mrT3 = NULL;
+	mrChi2 = NULL;
 }
 
 CLibOI::~CLibOI()
