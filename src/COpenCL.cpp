@@ -11,11 +11,13 @@
 
 using namespace std;
 
-COpenCL::COpenCL()
+COpenCL::COpenCL(cl_device_type type)
 {
 	mDevice = 0;
 	mContext = 0;
 	mQueue = 0;
+
+	Init(type);
 }
 
 COpenCL::~COpenCL()

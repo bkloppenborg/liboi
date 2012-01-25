@@ -8,10 +8,11 @@
 #include "CLibOI.h"
 #include <cstdio>
 
-CLibOI::CLibOI()
+CLibOI::CLibOI(cl_device_type type)
 {
 	// init datamembers
-	mOCL = new COpenCL();
+	mOCL = new COpenCL(type);
+
 	mCLImage = NULL;
 	mGLImage = NULL;
 	mFluxBuffer = NULL;
@@ -37,7 +38,16 @@ CLibOI::CLibOI()
 
 CLibOI::~CLibOI()
 {
-	FreeOpenCLMem();
+	// First free datamembers:
+	if(mrTotalFlux) delete mrTotalFlux;
+	if(mrCopyImage) delete mrCopyImage;
+	if(mrNormalize) delete mrNormalize;
+
+	// Now free OpenCL buffers:
+	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
+	if(mFTBuffer) clReleaseMemObject(mFTBuffer);
+	if(mSimDataBuffer) clReleaseMemObject(mSimDataBuffer);
+
 	delete mOCL;
 }
 
@@ -75,19 +85,6 @@ float CLibOI::DataToChi2(COILibData * data)
 	return mrChi2->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData());
 }
 
-void CLibOI::FreeOpenCLMem()
-{
-	// First free datamembers:
-	if(mrTotalFlux) delete mrTotalFlux;
-	if(mrCopyImage) delete mrCopyImage;
-	if(mrNormalize) delete mrNormalize;
-
-	// Now free OpenCL buffers:
-	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
-	if(mFTBuffer) clReleaseMemObject(mFTBuffer);
-	if(mSimDataBuffer) clReleaseMemObject(mSimDataBuffer);
-}
-
 /// Computes the Fourier transform of the image, then generates Vis2 and T3's.
 /// This routine assumes the image has been normalized using Normalize() (and that the total flux is stored in mFluxBuffer)
 void CLibOI::FTToData(COILibData * data)
@@ -118,20 +115,24 @@ float CLibOI::ImageToChi2(int data_num)
 	return ImageToChi2(data);
 }
 
-void CLibOI::Init(cl_device_type device_type, int image_width, int image_height, int image_depth, float scale)
+void CLibOI::Init()
 {
-	// First register the width, height, and depth of the images we will be using.
-	RegisterImageInfo(image_width, image_height, image_depth, scale);
+	int err = CL_SUCCESS;
+//	InitMemory();
+//	InitRoutines();
 
-	// Now initalize the OpenCL context.  The programmer should call InitMemory and InitRoutines
-	// after loading any data into memory.
-	mOCL->Init(device_type);
 }
 
 /// Initializes memory used for storing various things on the OpenCL context.
 void CLibOI::InitMemory()
 {
 	int err = CL_SUCCESS;
+
+	if(mImageType == OpenGLBuffer)
+	{
+		mCLImage = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, mImageWidth * mImageHeight * sizeof(cl_float), NULL, &err);
+		COpenCL::CheckOCLError("Could not create temporary OpenCL image buffer", err);
+	}
 
 	// Determine the maximum data size, cache it locally.
 	mMaxData = mDataList.MaxNumData();
@@ -225,7 +226,7 @@ float CLibOI::TotalFlux(int layer, bool return_value)
 
 /// Tells OpenCL about the size of the image.
 /// The image must have a depth of at least one.
-void   CLibOI::RegisterImageInfo(int width, int height, int depth, float scale)
+void   CLibOI::SetImageInfo(int width, int height, int depth, float scale)
 {
 	// TODO: Check on the size of the image.
 
@@ -236,27 +237,24 @@ void   CLibOI::RegisterImageInfo(int width, int height, int depth, float scale)
 }
 
 /// Registers image as the current image object against which liboi operations will be undertaken.
-void   CLibOI::RegisterImage_CLMEM(cl_mem image)
+void   CLibOI::SetImage_CLMEM(cl_mem image)
 {
 	mCLImage = image;
 }
 
 /// Creates an OpenCL memory object from the renderbuffer
 /// Registers it as the currentt image object against which liboi operations will be undertaken.
-void CLibOI::RegisterImage_GLFB(GLuint framebuffer)
+void CLibOI::SetImage_GLFB(GLuint framebuffer)
 {
 	this->mImageType = OpenGLBuffer;
 	int err = CL_SUCCESS;
 	mGLImage = clCreateFromGLBuffer(mOCL->GetContext(), CL_MEM_READ_ONLY, framebuffer, &err);
 	COpenCL::CheckOCLError("Could not create OpenCL image object from framebuffer", err);
-
-	mCLImage = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, mImageWidth * mImageHeight * sizeof(cl_float), NULL, &err);
-	COpenCL::CheckOCLError("Could not create temporary OpenCL image buffer", err);
 }
 
 /// Creates an OpenCL memory object from a texturebuffer
 /// Registers it as the currentt image object against which liboi operations will be undertaken.
-void CLibOI::RegisterImage_GLTB(GLuint texturebuffer)
+void CLibOI::SetImage_GLTB(GLuint texturebuffer)
 {
 	// TODO: Permit loading of 3D textures for spectral imaging.
 	this->mImageType = OpenGLBuffer;
@@ -275,8 +273,6 @@ void CLibOI::RegisterImage_GLTB(GLuint texturebuffer)
 //	//printf("Image format: %f", image_format);
 //
 //#endif //DEBUG
-	mCLImage = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, mImageWidth * mImageHeight * sizeof(cl_float), NULL, &err);
-	COpenCL::CheckOCLError("Could not create temporary OpenCL image buffer", err);
 }
 
 void CLibOI::SetKernelSourcePath(string path_to_kernels)

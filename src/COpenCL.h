@@ -46,11 +46,10 @@ protected:
 
 
 public:
-	COpenCL();
+	COpenCL(cl_device_type type);
 	virtual ~COpenCL();
 
 public:
-
 	static void CheckOCLError(string user_message, int error_code);
 
 	cl_context		GetContext();
@@ -60,11 +59,13 @@ public:
 	void 			GetDeviceList(cl_platform_id platform, vector<cl_device_id> * devices);
 	cl_device_type  GetDeviceType(cl_device_id device);
 	void 			GetPlatformList(vector<cl_platform_id> * platforms);
+protected:
 	static string 	GetOCLErrorString(cl_int err);
 
 	void Init(cl_device_type type);
 	void Init(cl_platform_id platform, cl_device_id device, cl_device_type type);
 
+public:
 	void FindDevice(cl_platform_id & platform, cl_device_id & device, cl_device_type type);
 
 	void PrintDeviceInfo(cl_device_id device_id);

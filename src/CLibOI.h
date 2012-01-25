@@ -73,7 +73,7 @@ protected:
 
 
 public:
-	CLibOI();
+	CLibOI(cl_device_type type);
 	virtual ~CLibOI();
 
 public:
@@ -88,7 +88,7 @@ public:
 
 	float ImageToChi2(COILibData * data);
 	float ImageToChi2(int data_num);
-	void Init(cl_device_type, int image_width, int image_height, int image_depth, float image_scale);
+	void Init();
 	void InitMemory();
 	void InitRoutines();
 
@@ -98,11 +98,10 @@ public:
 
 	float TotalFlux(int layer, bool return_value);
 
-	void RegisterImageInfo(int width, int height, int depth, float scale);
-	void RegisterImage_CLMEM(cl_mem image);
-	void RegisterImage_GLFB(GLuint framebuffer);
-	void RegisterImage_GLTB(GLuint texturebuffer);
-
+	void SetImageInfo(int width, int height, int depth, float scale);
+	void SetImage_CLMEM(cl_mem image);
+	void SetImage_GLFB(GLuint framebuffer);
+	void SetImage_GLTB(GLuint texturebuffer);
 	void SetKernelSourcePath(string path_to_kernels);
 
 
