@@ -205,7 +205,7 @@ void CLibOI::Normalize()
 #ifdef DEBUG
 	tmp1 = TotalFlux(0, true);
 #else // DEBUG
-	TotalFlux(false);
+	TotalFlux(0, false);
 #endif // DEBUG
 
 	// Now normalize the image

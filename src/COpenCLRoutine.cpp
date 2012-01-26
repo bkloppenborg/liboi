@@ -41,6 +41,12 @@ COpenCLRoutine::~COpenCLRoutine()
 /// Appends the compiled kernel to mKernels and mPrograms, returns the index at which this kernel is located.
 int COpenCLRoutine::BuildKernel(string source, string kernel_name)
 {
+
+#ifdef DEBUG
+    string message = "Loading and Compiling program " +  kernel_name + "\n";
+	printf("%s\n", message.c_str());
+#endif //DEBUG
+
     const char * tmp = source.c_str();
     cl_program program;
     cl_kernel kernel;
