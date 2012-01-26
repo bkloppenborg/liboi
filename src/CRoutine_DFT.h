@@ -12,12 +12,14 @@
 
 class CRoutine_DFT: public CRoutine_FT
 {
+	float mImageScale;
 public:
 	CRoutine_DFT(cl_device_id device, cl_context context, cl_command_queue queue);
 	~CRoutine_DFT();
 
 	void Init(float image_scale);
 	void FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output);
+	void FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output);
 };
 
 #endif /* CROUTINE_DFT_H_ */

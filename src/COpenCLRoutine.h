@@ -16,6 +16,12 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#ifdef M_PI
+#define PI M_PI
+#else
+#define PI 3.1415926535897932384626433832795028841968
+#endif
+
 using namespace std;
 
 
