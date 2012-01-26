@@ -64,13 +64,16 @@ protected:
 	// Storage containers for OIFITS data.
 	oi_data * mOIData;
 
+	string mFileName;
+
 public:
-	COILibData(oi_data * data);
+	COILibData(oi_data * data, string filename);
 	~COILibData();
 
 	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
 
 	// Inline the get location functions
+	string GetFilename(void) { return mFileName; };
 	cl_mem GetLoc_Data() {return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };
 	cl_mem GetLoc_DataBSRef() { return mData_bsref_cl; };

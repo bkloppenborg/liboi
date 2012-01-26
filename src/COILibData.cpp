@@ -10,7 +10,7 @@
 
 using namespace std;
 
-COILibData::COILibData(oi_data * data)
+COILibData::COILibData(oi_data * data, string filename)
 {
 	mOIData = data;
 
@@ -30,6 +30,8 @@ COILibData::COILibData(oi_data * data)
 	mData_uvpnt_cl = NULL;
 	mData_bsref_cl = NULL;
 	mData_sign_cl = NULL;
+
+	mFileName = filename;
 
 	InitData(true);
 }

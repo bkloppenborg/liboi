@@ -84,5 +84,5 @@ void COILibDataList::ReadFile(string filename)
 	get_oi_fits_data(&usersel, tmp, &status);
 	printf("OIFITS File read\n");
 
-	Append(new COILibData(tmp));
+	Append(new COILibData(tmp, filename));
 }
