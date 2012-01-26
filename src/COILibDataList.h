@@ -11,23 +11,20 @@
 #include <string>
 
 #include "COILibData.h"
+#include "CVectorList.h"
 
 using namespace std;
 
-class COILibDataList
+class COILibDataList : public CVectorList<COILibData*>
 {
-protected:
-	vector<COILibData *> data;
 
 public:
 	// Operator overloads:
-	COILibData * operator[](int i) { return data[i]; }
+	//COILibData * operator[](int i) { return mList[i]; }
 
 public:
 	COILibDataList();
 	~COILibDataList();
-
-	void Append(COILibData * data);
 
 	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
 
@@ -35,10 +32,6 @@ public:
 	int MaxUVPoints();
 
 	void ReadFile(string filename);
-
-	int size(void) { return data.size(); }
-
-
 };
 
 #endif /* COILIBDATALIST_H_ */

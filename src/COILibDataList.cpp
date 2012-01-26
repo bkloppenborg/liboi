@@ -15,20 +15,20 @@ COILibDataList::COILibDataList()
 
 COILibDataList::~COILibDataList()
 {
-	// Deallocate the models
-	for(int i = data.size() - 1; i > -1; i--)
-		delete data[i];
+//	// Deallocate the models
+//	for(int i = data.size() - 1; i > -1; i--)
+//		delete data[i];
 }
 
-void COILibDataList::Append(COILibData * data)
-{
-	this->data.push_back(data);
-}
+//void COILibDataList::Append(COILibData * data)
+//{
+//	this->data.push_back(data);
+//}
 
 /// Copies all data sources to the OpenCL device using the specified command queue.
 void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
 {
-    for(vector<COILibData*>::iterator it = data.begin(); it != data.end(); ++it)
+    for(vector<COILibData*>::iterator it = mList.begin(); it != mList.end(); ++it)
     {
     	(*it)->CopyToOpenCLDevice(context, queue);
     }
@@ -39,7 +39,7 @@ int COILibDataList::MaxNumData()
 {
 	int tmp;
 	int max = 0;
-    for(vector<COILibData*>::iterator it = data.begin(); it != data.end(); ++it)
+    for(vector<COILibData*>::iterator it = mList.begin(); it != mList.end(); ++it)
     {
     	tmp = (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
     	if(tmp > max)
@@ -54,7 +54,7 @@ int COILibDataList::MaxUVPoints()
 {
 	int tmp;
 	int max = 0;
-    for(vector<COILibData*>::iterator it = data.begin(); it != data.end(); ++it)
+    for(vector<COILibData*>::iterator it = mList.begin(); it != mList.end(); ++it)
     {
     	tmp = (*it)->GetNumUV();
     	if(tmp > max)

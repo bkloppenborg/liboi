@@ -118,8 +118,8 @@ float CLibOI::ImageToChi2(int data_num)
 void CLibOI::Init()
 {
 	int err = CL_SUCCESS;
-//	InitMemory();
-//	InitRoutines();
+	InitMemory();
+	InitRoutines();
 
 }
 
@@ -140,8 +140,12 @@ void CLibOI::InitMemory()
 
 	// Allocate some memory on the OpenCL device
 	mFluxBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
-	mFTBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * mMaxUV, NULL, &err);
-	mSimDataBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * mMaxData, NULL, &err);
+
+	if(mMaxData > 0)
+	{
+		mFTBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * mMaxUV, NULL, &err);
+		mSimDataBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * mMaxData, NULL, &err);
+	}
 	COpenCL::CheckOCLError("Could not initialize liboi required memory objects.", err);
 }
 
@@ -160,23 +164,26 @@ void CLibOI::InitRoutines()
 	mrNormalize->SetSourcePath(mKernelSourcePath);
 	mrNormalize->Init();
 
-	// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
-	mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrFT->SetSourcePath(mKernelSourcePath);
-	mrFT->Init(mImageScale);
+	if(mMaxData > 0)
+	{
+		// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
+		mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrFT->SetSourcePath(mKernelSourcePath);
+		mrFT->Init(mImageScale);
 
-	// Initialize the FTtoV2 and FTtoT3 routines
-	mrV2 = new CRoutine_FTtoV2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrV2->SetSourcePath(mKernelSourcePath);
-	mrV2->Init(mImageScale);
+		// Initialize the FTtoV2 and FTtoT3 routines
+		mrV2 = new CRoutine_FTtoV2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrV2->SetSourcePath(mKernelSourcePath);
+		mrV2->Init(mImageScale);
 
-	mrT3 = new CRoutine_FTtoT3(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrT3->SetSourcePath(mKernelSourcePath);
-	mrT3->Init();
+		mrT3 = new CRoutine_FTtoT3(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrT3->SetSourcePath(mKernelSourcePath);
+		mrT3->Init();
 
-	mrChi2 = new CRoutine_Chi2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrChi2->SetSourcePath(mKernelSourcePath);
-	mrChi2->Init(mMaxData);
+		mrChi2 = new CRoutine_Chi2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrChi2->SetSourcePath(mKernelSourcePath);
+		mrChi2->Init(mMaxData);
+	}
 }
 
 /// Reads in an OIFITS file and stores it into OpenCL memory
