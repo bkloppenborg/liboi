@@ -52,6 +52,6 @@ void CRoutine_Normalize::Normalize(cl_mem image, int image_width, int image_heig
     COpenCL::CheckOCLError("Failed to enqueue normalization kernel.", err);
 
     // Free memory
-    delete global;
-    delete local;
+    delete global[];
+    delete local[];
 }
