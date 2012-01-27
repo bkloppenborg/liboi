@@ -11,6 +11,8 @@ __kernel void chi2(
    	// Required since we may swap out data sets and they may have different sizes
     if(i < n)
 		temp = (data[i] - mock_data[i]) / data_err[i];
+	else
+		temp = 0;
     
     output[i] = temp * temp;
 }
