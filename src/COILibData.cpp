@@ -48,6 +48,11 @@ COILibData::~COILibData()
 
 	// Free local memory:
 	free_oi_data(mOIData);
+
+	delete[] mData;
+	delete[] mData_err;
+	delete[] mData_phasor;
+
 }
 
 /// Copies the data from CPU memory over to the OpenCL device memory, creating memory objects when necessary.
@@ -130,7 +135,7 @@ void COILibData::InitData(bool do_extrapolation)
 	for (ii = 0; ii < mNVis2; ii++)
 	{
 		mData[ii] = mOIData->pow[ii];
-		mData_err[ii] = 1. / fabs(mOIData->powerr[ii]);
+		mData_err[ii] = mOIData->powerr[ii];
 	}
 
 	// Let j = npow, set elements [j, j + nbis - 1] to the bispectra data.
