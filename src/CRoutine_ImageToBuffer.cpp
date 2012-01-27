@@ -73,6 +73,6 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int wi
 #endif //DEBUG_VERBOSE
 
     // Free memory
-    delete global;
-    delete local;
+    delete[] global;
+    delete[] local;
 }

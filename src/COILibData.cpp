@@ -111,9 +111,9 @@ void COILibData::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
 	clFinish(queue);
 
 	// Free memory
-	delete phasor;
-	delete bsref_uvpnt;
-	delete bsref_sign;
+	delete[] phasor;
+	delete[] bsref_uvpnt;
+	delete[] bsref_sign;
 }
 
 /// Initalize the OIFITS data, copying over to standard float memory objects

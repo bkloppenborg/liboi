@@ -15,6 +15,7 @@ using namespace std;
 CRoutine_DFT::CRoutine_DFT(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine_FT(device, context, queue)
 {
+	mImageScale = 0;
 	// Specify the source location for the kernel.
 	mSource.push_back("ft_dft2d.cl");
 }
@@ -26,7 +27,7 @@ CRoutine_DFT::~CRoutine_DFT()
 
 void CRoutine_DFT::Init(float image_scale)
 {
-	float mImageScale = image_scale;
+	mImageScale = image_scale;
 
 	// Compile the image scale into the kernel.
 	double RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per milliarcsecond
@@ -93,11 +94,12 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 
 	// First pull down the UV points and image.
 	cl_float2 * cpu_uvpts = new cl_float2[n_uv_points];
-	err = clEnqueueReadBuffer(mQueue, uv_points, CL_TRUE, 0, n_uv_points * sizeof(cl_float2), uv_points, 0, NULL, NULL);
-	float * cpu_image = new float[image_width * image_height];
+	err = clEnqueueReadBuffer(mQueue, uv_points, CL_TRUE, 0, n_uv_points * sizeof(cl_float2), cpu_uvpts, 0, NULL, NULL);
+	cl_float * cpu_image = new cl_float[image_width * image_height];
 	err = clEnqueueReadBuffer(mQueue, image, CL_TRUE, 0, image_width * image_height * sizeof(cl_float), cpu_image, 0, NULL, NULL);
-	float flux = 0;
+	cl_float flux = 0;
 	err = clEnqueueReadBuffer(mQueue, image_flux, CL_TRUE, 0, sizeof(cl_float), &flux, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to copy back DFT data, CRoutine_DFT.cpp", err);
 
 	int uu = 0;
 	int ii = 0;
@@ -107,13 +109,16 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 	int dft_size = n_uv_points * image_width;
 	complex<float> * DFT_tablex = new complex<float>[dft_size];
 	complex<float> * DFT_tabley = new complex<float>[dft_size];
+	float tmp = 0;
 
 	for (uu = 0; uu < n_uv_points; uu++)
 	{
 		for (ii = 0; ii < image_width; ii++)
 		{
-			DFT_tablex[image_width * uu + ii] = complex<float>(0, 2.0 * PI * RPMAS * mImageScale * cpu_uvpts[uu].s0 * (float) ii);
-			DFT_tabley[image_width * uu + ii] = complex<float>(0, -2.0 * PI * RPMAS * mImageScale * cpu_uvpts[uu].s1 * (float) ii);
+			tmp = 2.0 * PI * RPMAS * mImageScale * cpu_uvpts[uu].s0 * (float) ii;
+			DFT_tablex[image_width * uu + ii] = complex<float>(sin(tmp), cos(tmp));
+			tmp = -2.0 * PI * RPMAS * mImageScale * cpu_uvpts[uu].s1 * (float) ii;
+			DFT_tabley[image_width * uu + ii] = complex<float>(sin(tmp), cos(tmp));
 		}
 	}
 
@@ -131,7 +136,9 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 			}
 		}
 			if (flux > 0)
+			{
 				visi[uu] /= flux;
+			}
 	}
 
 	// Lastly copy back the OpenCL values and compare them to what was computed above.
@@ -154,13 +161,10 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 		printf("%i Re: (%f, %f, %f)\n ", i, real_cpu, real_cl, real_cpu - real_cl);
 	}
 
-
-
-
 	// Free memory:
-	delete cpu_image;
-	delete cpu_uvpts;
-	delete DFT_tablex;
-	delete DFT_tabley;
-	delete cl_visi;
+	delete[] cpu_image;
+	delete[] cpu_uvpts;
+	delete[] DFT_tablex;
+	delete[] DFT_tabley;
+	delete[] cl_visi;
 }

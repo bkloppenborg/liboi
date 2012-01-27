@@ -43,7 +43,7 @@ int COpenCLRoutine::BuildKernel(string source, string kernel_name)
 {
 
 #ifdef DEBUG
-    string message = "Loading and Compiling program " +  kernel_name + "\n";
+    string message = "Loading and Compiling program " +  mSource[0] + "\n";
 	printf("%s\n", message.c_str());
 #endif //DEBUG
 

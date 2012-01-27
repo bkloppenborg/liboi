@@ -111,6 +111,9 @@ float CLibOI::ImageToChi2(COILibData * data)
 
 float CLibOI::ImageToChi2(int data_num)
 {
+	if(data_num > mDataList.size() - 1)
+		return -1;
+
 	COILibData * data = mDataList[data_num];
 	return ImageToChi2(data);
 }
