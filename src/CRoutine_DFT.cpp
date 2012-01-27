@@ -6,9 +6,6 @@
  */
 
 #include "CRoutine_DFT.h"
-#include <sstream>
-#include <iomanip>
-#include <cstdio>
 #include <complex>
 
 using namespace std;
@@ -159,7 +156,7 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 		real_cpu = visi[i].real();
 		imag_cl = cl_visi[i].s1;
 		imag_cpu = visi[i].imag();
-		printf("%i Re: (%f, %f, %f) Im: (%f, %f, %f)\n ", i, real_cpu, real_cl, real_cpu - real_cl, imag_cpu, imag_cl, imag_cpu - imag_cl);
+		printf("\t %i Re: (%f, %f, %e) Im: (%f, %f, %e)\n ", i, real_cpu, real_cl, real_cpu - real_cl, imag_cpu, imag_cl, imag_cpu - imag_cl);
 	}
 
 	// Free memory:

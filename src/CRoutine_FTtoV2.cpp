@@ -27,7 +27,7 @@ void CRoutine_FTtoV2::Init(float image_scale)
     BuildKernel(source, "ft_to_vis2");
 }
 
-void CRoutine_FTtoV2::CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
+void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
 {
     int err = 0;
     size_t global = (size_t) n_v2_points;
@@ -47,20 +47,33 @@ void CRoutine_FTtoV2::CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl
     COpenCL::CheckOCLError("Failed to enqueue the ft_to_vis2 kernel.", err);
 
 #ifdef DEBUG_VERBOSE
-	// Copy back the input/output buffers.
-	cl_float * tmp = new cl_float[n_v2_points];
-	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_v2_points * sizeof(cl_float), tmp, 0, NULL, NULL);
+    FTtoV2_CPU(ft_loc, n_v2_points, output);
+#endif //DEBUG_VERBOSE
+}
 
-	printf("V2 Buffer elements:\n");
+/// Computes the V2 using the input data on the CPU, compares the values and writes out to the console.
+void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_mem output)
+{
+	int err = 0;
+	// Pull back values from the OpenCL devices:
+	cl_float2 * cpu_dft = new cl_float2[n_v2_points];
+	err = clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_v2_points * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
+	cl_float * cl_output = new cl_float[n_v2_points];
+	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_v2_points * sizeof(cl_float), cl_output, 0, NULL, NULL);
+
+	cl_float vis2 = 0;
+	cl_float real = 0;
+	cl_float imag = 0;
+	printf("Vis2 Buffer elements: (CPU, OpenCL, Diff)\n");
 	for(int i = 0; i < n_v2_points; i++)
 	{
-		printf("%f ", tmp[i]);
+		real = cpu_dft[i].s0;
+		imag = cpu_dft[i].s1;
+		vis2 = real * real + imag * imag;
+		printf("\t%i (%f %f %e)\n", i, vis2, cl_output[i], vis2 - cl_output[i]);
 	}
 
-	// End the line, free memory.
-	printf("\n");
-	delete tmp;
-
-#endif //DEBUG_VERBOSE
-
+	// Free memory
+	delete[] cpu_dft;
+	delete[] cl_output;
 }

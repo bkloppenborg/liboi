@@ -39,6 +39,7 @@ protected:
 public:
 
 	float ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem input_buffer, cl_mem output_buffer, cl_mem partial_sum_buffer);
+	float ComputeSum_CPU(cl_mem input_buffer, int n);
 	void Init(int num_elements, bool allocate_temp_buffers);
 
 

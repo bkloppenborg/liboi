@@ -18,6 +18,7 @@ public:
 
 	void Init(void);
 	void FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem uv_points, cl_mem data_sign, int n_t3, int n_v2, cl_mem output);
+	void FTtoT3_CPU(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output);
 };
 
 #endif /* CROUTINE_FTTOT3_H_ */

@@ -18,6 +18,7 @@ public:
 
 	void Init(float image_scale);
 	void FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output);
+	void FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_mem output);
 };
 
 #endif /* CROUTINE_FTTOV2_H_ */

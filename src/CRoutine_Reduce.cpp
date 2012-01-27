@@ -226,6 +226,25 @@ float CRoutine_Reduce::ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem in
     return 0.0;
 }
 
+float CRoutine_Reduce::ComputeSum_CPU(cl_mem input_buffer, int n)
+{
+	int err = 0;
+	cl_float * tmp = new cl_float[n];
+	err = clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, n * sizeof(cl_float), tmp, 0, NULL, NULL);
+
+	float sum = 0;
+	printf("Computing Sum on CPU from input_buffer\n");
+	for(int i = 0; i < n; i++)
+	{
+		printf("\t%i %e\n", i, tmp[i]);
+		sum += tmp[i];
+	}
+
+	printf("CPU Sum: %f\n", sum);
+
+	delete[] tmp;
+}
+
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
 /// allocate_temp_buffers: if true will automatically allocate/deallocate buffers. Otherwise you need to do this elsewhere
 void CRoutine_Reduce::Init(int num_elements, bool allocate_temp_buffers)

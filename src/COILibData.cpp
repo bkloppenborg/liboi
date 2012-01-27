@@ -135,7 +135,7 @@ void COILibData::InitData(bool do_extrapolation)
 	for (ii = 0; ii < mNVis2; ii++)
 	{
 		mData[ii] = mOIData->pow[ii];
-		mData_err[ii] = mOIData->powerr[ii];
+		mData_err[ii] = fabs(mOIData->powerr[ii]);
 	}
 
 	// Let j = npow, set elements [j, j + nbis - 1] to the bispectra data.
@@ -165,7 +165,7 @@ void COILibData::InitData(bool do_extrapolation)
 
 				// And form the triple amplitude statistics
 				mOIData->bisamp[ii] = sqrt(sqamp1 * sqamp2 * sqamp3);
-				mOIData->bisamperr[ii] = mOIData->bisamp[ii] * sqrt(sqamperr1 / sqamp1 + sqamperr2 / sqamp2 + sqamperr3 / sqamp3);
+				mOIData->bisamperr[ii] = fabs(mOIData->bisamp[ii] * sqrt(sqamperr1 / sqamp1 + sqamperr2 / sqamp2 + sqamperr3 / sqamp3));
 
 				if(!warning_extrapolation)
 				{

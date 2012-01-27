@@ -123,7 +123,6 @@ void CLibOI::Init()
 	int err = CL_SUCCESS;
 	InitMemory();
 	InitRoutines();
-
 }
 
 /// Initializes memory used for storing various things on the OpenCL context.

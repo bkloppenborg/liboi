@@ -3,6 +3,15 @@
  *
  *  Created on: Nov 14, 2011
  *      Author: bkloppenborg
+ *
+ *
+ *  Base class for all OpenCL routines.  Each routine should implement
+ *  both the optimized OpenCL function AND a completely unoptimized CPU-only version
+ *  of the same code.  Names are typically:
+ *    Function(...) 	// OpenCL Version
+ *    Function_CPU(...) // CPU-only version.
+ *  so that the OpenCL routines may be tested against known-good algorithms.  Input
+ *  data for *_CPU should be pulled from the OpenCL device.
  */
 
 #ifndef COPENCLROUTINE_H_
@@ -10,8 +19,12 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
+#include <iomanip>
+#include <cstdio>
 #include "ReadTextFile.h"
 #include "COpenCL.h"
+
 
 #define _USE_MATH_DEFINES
 #include <cmath>

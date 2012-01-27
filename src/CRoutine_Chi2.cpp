@@ -53,7 +53,7 @@ float CRoutine_Chi2::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 #ifdef DEBUG_VERBOSE
 	// Copy back the data, model, and errors:
 	Chi2_CPU(data, data_err, model_data, n);
-
+	ComputeSum_CPU(mChi2Output, n);
 #endif // DEBUG_VERBOSE
 
 	// Now fire up the parallel sum kernel and return the output.
@@ -78,7 +78,7 @@ float CRoutine_Chi2::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, i
 	for(int i = 0; i < n; i++)
 	{
 		tmp = (cpu_data[i] - cpu_model_data[i]) / cpu_data_err[i];
-		printf("%i %f %f %f %f \n", i, cpu_data[i], cpu_model_data[i], cpu_data[i] - cpu_model_data[i], cpu_data_err[i]);
+		printf("%i %f %f %e %e \n", i, cpu_data[i], cpu_model_data[i], cpu_data[i] - cpu_model_data[i], cpu_data_err[i]);
 		sum += tmp * tmp;
 	}
 
