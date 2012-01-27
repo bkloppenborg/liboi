@@ -185,11 +185,11 @@ void COILibData::InitData(bool do_extrapolation)
 		// A weird workaround here between Fabien's original code and the C++ conversion.
 		// Evidently we can't do exp(-1 * I * mOIData->bisphs[ii] * PI / 180) so instead we do this:
 		float angle = mOIData->bisphs[ii] * PI / 180;
-		mData_phasor[ii] = complex<float> (cos(angle), sin(angle));
+		mData_phasor[ii] = complex<float> (cos(angle), -sin(angle));
 
 		mData[mNVis2 + 2 * ii] = fabs(mOIData->bisamp[ii]);
 		mData[mNVis2 + 2 * ii + 1] = 0.;
-		mData_err[mNVis2 + 2 * ii] = mOIData->bisamperr[ii];
+		mData_err[mNVis2 + 2 * ii] = fabs(mOIData->bisamperr[ii]);
 		mData_err[mNVis2 + 2 * ii + 1] = fabs(mOIData->bisamp[ii] * mOIData->bisphserr[ii] * PI / 180. );
 
 		//printf("ii %d err1 %f err2 %f \n ", ii, data_err[npow + 2 * ii], data_err[npow + 2 * ii + 1]);
