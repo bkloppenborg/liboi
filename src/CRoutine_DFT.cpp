@@ -79,10 +79,10 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
     err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue ft_dft2d kernel.", err);
 
-//#ifdef DEBUG_VERBOSE
+#ifdef DEBUG_VERBOSE
 	// Compare the CPU and OpenCL computed DFT values.
 	FT_CPU(uv_points, n_uv_points, image, image_width, image_height, image_flux, output);
-//#endif //DEBUG_VERBOSE
+#endif //DEBUG_VERBOSE
 }
 
 /// Computes the DFT on the CPU, then compares CPU and OpenCL output.
@@ -158,7 +158,7 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 		real_cpu = visi[i].real();
 		imag_cl = cl_visi[i].s1;
 		imag_cpu = visi[i].imag();
-		printf("%i Re: (%f, %f, %f)\n ", i, real_cpu, real_cl, real_cpu - real_cl);
+		printf("%i Re: (%f, %f, %f) Im: (%f, %f, %f)\n ", i, real_cpu, real_cl, real_cpu - real_cl, imag_cpu, imag_cl, imag_cpu - imag_cl);
 	}
 
 	// Free memory:

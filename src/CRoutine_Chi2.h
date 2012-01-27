@@ -22,6 +22,7 @@ public:
 	~CRoutine_Chi2();
 
 	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	float Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 
 	void Init(int num_elements);
 };

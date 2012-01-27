@@ -12,5 +12,5 @@ __kernel void chi2(
     if(i < n)
 		temp = (data[i] - mock_data[i]) * data_err[i];
     
-    output[i] = temp * temp;
+    output[i] = 0; //temp * temp;
 }

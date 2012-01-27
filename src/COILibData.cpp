@@ -189,8 +189,8 @@ void COILibData::InitData(bool do_extrapolation)
 
 		mData[mNVis2 + 2 * ii] = fabs(mOIData->bisamp[ii]);
 		mData[mNVis2 + 2 * ii + 1] = 0.;
-		mData_err[mNVis2 + 2 * ii] = 1. / mOIData->bisamperr[ii];
-		mData_err[mNVis2 + 2 * ii + 1] = 1. / fabs(mOIData->bisamp[ii] * mOIData->bisphserr[ii] * PI / 180. );
+		mData_err[mNVis2 + 2 * ii] = mOIData->bisamperr[ii];
+		mData_err[mNVis2 + 2 * ii + 1] = fabs(mOIData->bisamp[ii] * mOIData->bisphserr[ii] * PI / 180. );
 
 		//printf("ii %d err1 %f err2 %f \n ", ii, data_err[npow + 2 * ii], data_err[npow + 2 * ii + 1]);
 	}
