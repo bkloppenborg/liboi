@@ -8,9 +8,10 @@
 #ifndef CROUTINE_CHI2_H_
 #define CROUTINE_CHI2_H_
 
-#include "CRoutine_Reduce.h"
+#include "CRoutine_Reduce_Sum.h"
 
-class CRoutine_Chi2: public CRoutine_Reduce {
+class CRoutine_Chi2: public CRoutine_Reduce_Sum
+{
 	int mChi2SourceID;
 	int mChi2KernelID;
 

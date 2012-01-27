@@ -1,7 +1,7 @@
 /*
  * CRoutine_Reduce.h
  *
- *  Created on: Nov 14, 2011
+ *  Created on: Jan 27, 2012
  *      Author: bkloppenborg
  */
 
@@ -14,7 +14,7 @@
 
 #include "COpenCLRoutine.h"
 
-class CRoutine_Reduce: public COpenCLRoutine
+class CRoutine_Reduce : public COpenCLRoutine
 {
 protected:
 	int num_elements;
@@ -36,13 +36,6 @@ protected:
 	void AllocateInternalBuffers();
 	void CreateReductionPasscounts(int max_group_size, int max_groups, int max_work_items);
 	void BuildKernels();
-public:
-
-	float ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem input_buffer, cl_mem output_buffer, cl_mem partial_sum_buffer);
-	float ComputeSum_CPU(cl_mem input_buffer, int n);
-	void Init(int num_elements, bool allocate_temp_buffers);
-
-
 };
 
 #endif /* CROUTINE_REDUCE_H_ */
