@@ -7,6 +7,7 @@
 
 #include "CRoutine_DFT.h"
 #include <sstream>
+#include <iomanip>
 #include <cstdio>
 #include <complex>
 
@@ -32,12 +33,12 @@ void CRoutine_DFT::Init(float image_scale)
 	// Compile the image scale into the kernel.
 	double RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per milliarcsecond
 	string source = ReadSource(mSource[0]);
-	float arg = 2.0 * M_PI * RPMAS * image_scale;
+	float arg = 2.0 * M_PI * RPMAS * mImageScale;
     stringstream tmp;
 
-    // Insert macro definition for ARG
+    // Insert macro definition for ARG (arg to 10 decimals in SI notation)
     tmp.str("");
-    tmp << "#define ARG " << arg << "\n";
+    tmp << "#define ARG " << setprecision(10) << arg << "\n";
     tmp << source;
 
     BuildKernel(tmp.str(), "dft_2d");
@@ -116,9 +117,9 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 		for (ii = 0; ii < image_width; ii++)
 		{
 			tmp = 2.0 * PI * RPMAS * mImageScale * cpu_uvpts[uu].s0 * (float) ii;
-			DFT_tablex[image_width * uu + ii] = complex<float>(sin(tmp), cos(tmp));
+			DFT_tablex[image_width * uu + ii] = complex<float>(cos(tmp), sin(tmp));
 			tmp = -2.0 * PI * RPMAS * mImageScale * cpu_uvpts[uu].s1 * (float) ii;
-			DFT_tabley[image_width * uu + ii] = complex<float>(sin(tmp), cos(tmp));
+			DFT_tabley[image_width * uu + ii] = complex<float>(cos(tmp), sin(tmp));
 		}
 	}
 
