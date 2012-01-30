@@ -51,11 +51,11 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsre
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
 
-#ifdef DEBUG_VERBOSE
-	clFinish(mQueue);
-	FTtoT3_CPU(ft_loc, data_phasor, data_bsref, data_sign, n_t3, n_v2, output);
-
-#endif //DEBUG_VERBOSE
+//#ifdef DEBUG_VERBOSE
+//	clFinish(mQueue);
+//	FTtoT3_CPU(ft_loc, data_phasor, data_bsref, data_sign, n_t3, n_v2, output);
+//
+//#endif //DEBUG_VERBOSE
 
 }
 

@@ -33,14 +33,15 @@
 #include "COpenCL.h"
 #include "LibOIEnumerations.h"
 #include "COILibDataList.h"
-#include "CRoutine_Reduce.h"
-#include "CRoutine_Normalize.h"
-#include "CRoutine_ImageToBuffer.h"
-#include "CRoutine_FT.h"
-#include "CRoutine_DFT.h"
-#include "CRoutine_FTtoV2.h"
-#include "CRoutine_FTtoT3.h"
-#include "CRoutine_Chi2.h"
+
+class CRoutine_Reduce_Sum;
+class CRoutine_ImageToBuffer;
+class CRoutine_Normalize;
+class CRoutine_FT;
+class CRoutine_FTtoV2;
+class CRoutine_FTtoT3;
+class CRoutine_Chi2;
+class CRoutine_LogLike;
 
 class CLibOI
 {
@@ -56,13 +57,14 @@ protected:
 
 	// Routines:
 	string mKernelSourcePath;
-	CRoutine_Reduce * mrTotalFlux;
+	CRoutine_Reduce_Sum * mrTotalFlux;
 	CRoutine_ImageToBuffer * mrCopyImage;
 	CRoutine_Normalize * mrNormalize;
 	CRoutine_FT * mrFT;
 	CRoutine_FTtoV2 * mrV2;
 	CRoutine_FTtoT3 * mrT3;
 	CRoutine_Chi2 * mrChi2;
+	CRoutine_LogLike * mrLogLike;
 
 	// Memory objects (OpenCL or otherwise)
 	eImageTypes mImageType;

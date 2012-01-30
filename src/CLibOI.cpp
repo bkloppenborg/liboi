@@ -8,6 +8,17 @@
 #include "CLibOI.h"
 #include <cstdio>
 
+#include "CRoutine_Reduce.h"
+#include "CRoutine_Reduce_Sum.h"
+#include "CRoutine_Normalize.h"
+#include "CRoutine_ImageToBuffer.h"
+#include "CRoutine_FT.h"
+#include "CRoutine_DFT.h"
+#include "CRoutine_FTtoV2.h"
+#include "CRoutine_FTtoT3.h"
+#include "CRoutine_Chi2.h"
+#include "CRoutine_LogLike.h"
+
 CLibOI::CLibOI(cl_device_type type)
 {
 	// init datamembers
@@ -154,7 +165,7 @@ void CLibOI::InitMemory()
 void CLibOI::InitRoutines()
 {
 	// Init all routines.  For now pre-allocate all buffers.
-	mrTotalFlux = new CRoutine_Reduce(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrTotalFlux = new CRoutine_Reduce_Sum(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 	mrTotalFlux->SetSourcePath(mKernelSourcePath);
 	mrTotalFlux->Init(mImageWidth * mImageHeight, true);
 
@@ -185,6 +196,10 @@ void CLibOI::InitRoutines()
 		mrChi2 = new CRoutine_Chi2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 		mrChi2->SetSourcePath(mKernelSourcePath);
 		mrChi2->Init(mMaxData);
+
+		mrLogLike = new CRoutine_LogLike(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrLogLike->SetSourcePath(mKernelSourcePath);
+		mrLogLike->Init(mMaxData);
 	}
 }
 
