@@ -58,6 +58,7 @@ public:
 	~COpenCLRoutine();
 
 	int BuildKernel(string source, string kernel_name);
+	int BuildKernel(string source, string kernel_name, string kernel_filename);
 
 	string ReadSource(string filename);
 

@@ -108,6 +108,6 @@ void CRoutine_Chi2::Init(int num_elements)
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[mChi2SourceID]);
-    BuildKernel(source, "chi2");
+    BuildKernel(source, "chi2", mSource[mChi2SourceID]);
     mChi2KernelID = mKernels.size() - 1;
 }

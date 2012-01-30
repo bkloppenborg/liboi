@@ -25,7 +25,7 @@ void CRoutine_FTtoT3::Init(void)
 {
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[0]);
-    BuildKernel(source, "ft_to_t3");
+    BuildKernel(source, "ft_to_t3", mSource[0]);
 }
 
 void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output)

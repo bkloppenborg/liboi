@@ -24,7 +24,7 @@ void CRoutine_FTtoV2::Init(float image_scale)
 {
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[0]);
-    BuildKernel(source, "ft_to_vis2");
+    BuildKernel(source, "ft_to_vis2", mSource[0]);
 }
 
 void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)

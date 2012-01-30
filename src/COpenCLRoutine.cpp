@@ -37,16 +37,21 @@ COpenCLRoutine::~COpenCLRoutine()
 
 }
 
+/// A more verbose wrapper for BuildKernel, emits the name of the kernel before compilation.
+int COpenCLRoutine::BuildKernel(string source, string kernel_name, string kernel_filename)
+{
+#ifdef DEBUG
+    string message = "Loading and Compiling program " +  kernel_filename + "\n";
+	printf("%s", message.c_str());
+#endif //DEBUG
+
+	return BuildKernel(source, kernel_name);
+}
+
 /// Builds the kernel from the specified string.
 /// Appends the compiled kernel to mKernels and mPrograms, returns the index at which this kernel is located.
 int COpenCLRoutine::BuildKernel(string source, string kernel_name)
 {
-
-#ifdef DEBUG
-    string message = "Loading and Compiling program " +  mSource[0] + "\n";
-	printf("%s\n", message.c_str());
-#endif //DEBUG
-
     const char * tmp = source.c_str();
     cl_program program;
     cl_kernel kernel;

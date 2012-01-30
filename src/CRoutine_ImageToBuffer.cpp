@@ -23,13 +23,8 @@ CRoutine_ImageToBuffer::~CRoutine_ImageToBuffer()
 // Read in the kernel source and build program object.
 void CRoutine_ImageToBuffer::Init()
 {
-#ifdef DEBUG
-    string message = "Loading and Compiling program " + mSource[0] + "\n";
-	printf("%s\n", message.c_str());
-#endif //DEBUG
-
 	string source = ReadSource(mSource[0]);
-	BuildKernel(source, "image2buf_GL_R");
+	BuildKernel(source, "image2buf_GL_R", mSource[0]);
 }
 
 void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int depth)

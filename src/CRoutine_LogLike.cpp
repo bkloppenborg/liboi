@@ -109,6 +109,6 @@ void CRoutine_LogLike::Init(int num_elements)
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[mLogLikeSourceID]);
-    BuildKernel(source, "loglike");
+    BuildKernel(source, "loglike", mSource[mLogLikeSourceID]);
     mLogLikeKernelID = mKernels.size() - 1;
 }

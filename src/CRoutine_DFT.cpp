@@ -23,24 +23,6 @@ CRoutine_DFT::~CRoutine_DFT()
 	// TODO Auto-generated destructor stub
 }
 
-void CRoutine_DFT::Init(float image_scale)
-{
-	mImageScale = image_scale;
-
-	// Compile the image scale into the kernel.
-	double RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per milliarcsecond
-	string source = ReadSource(mSource[0]);
-	float arg = 2.0 * M_PI * RPMAS * mImageScale;
-    stringstream tmp;
-
-    // Insert macro definition for ARG (arg to 10 decimals in SI notation)
-    tmp.str("");
-    tmp << "#define ARG " << setprecision(10) << arg << "\n";
-    tmp << source;
-
-    BuildKernel(tmp.str(), "dft_2d");
-}
-
 /// Computes the discrete Fourier transform of a (real) image for the specified (cl_float2) UV points and stores
 /// the result in output.
 void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output)
@@ -165,4 +147,22 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 	delete[] DFT_tablex;
 	delete[] DFT_tabley;
 	delete[] cl_visi;
+}
+
+void CRoutine_DFT::Init(float image_scale)
+{
+	mImageScale = image_scale;
+
+	// Compile the image scale into the kernel.
+	double RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per milliarcsecond
+	string source = ReadSource(mSource[0]);
+	float arg = 2.0 * M_PI * RPMAS * mImageScale;
+    stringstream tmp;
+
+    // Insert macro definition for ARG (arg to 10 decimals in SI notation)
+    tmp.str("");
+    tmp << "#define ARG " << setprecision(10) << arg << "\n";
+    tmp << source;
+
+    BuildKernel(tmp.str(), "dft_2d", mSource[0]);
 }
