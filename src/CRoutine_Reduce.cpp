@@ -8,7 +8,7 @@
 #include "CRoutine_Reduce.h"
 
 CRoutine_Reduce::CRoutine_Reduce(cl_device_id device, cl_context context, cl_command_queue queue)
-	: COpenCLRoutine(device, context, queue)
+	: CRoutine(device, context, queue)
 {
 	tmp_buff1 = NULL;
 	tmp_buff2 = NULL;

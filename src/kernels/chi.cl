@@ -1,4 +1,4 @@
-__kernel void chi2(
+__kernel void chi(
     __global float * data,
     __global float * data_err,
     __global float * mock_data,
@@ -14,5 +14,5 @@ __kernel void chi2(
 	else
 		temp = 0;
     
-    output[i] = temp * temp;
+    output[i] = temp;
 }

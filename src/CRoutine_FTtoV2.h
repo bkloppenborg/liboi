@@ -8,9 +8,9 @@
 #ifndef CROUTINE_FTTOV2_H_
 #define CROUTINE_FTTOV2_H_
 
-#include "COpenCLRoutine.h"
+#include "CRoutine.h"
 
-class CRoutine_FTtoV2: public COpenCLRoutine
+class CRoutine_FTtoV2: public CRoutine
 {
 public:
 	CRoutine_FTtoV2(cl_device_id device, cl_context context, cl_command_queue queue);

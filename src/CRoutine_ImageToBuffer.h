@@ -8,9 +8,9 @@
 #ifndef CROUTINE_IMAGETOBUFFER_H_
 #define CROUTINE_IMAGETOBUFFER_H_
 
-#include "COpenCLRoutine.h"
+#include "CRoutine.h"
 
-class CRoutine_ImageToBuffer: public COpenCLRoutine
+class CRoutine_ImageToBuffer: public CRoutine
 {
 public:
 	CRoutine_ImageToBuffer(cl_device_id device, cl_context context, cl_command_queue queue);

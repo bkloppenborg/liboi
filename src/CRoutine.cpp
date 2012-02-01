@@ -1,15 +1,15 @@
 /*
- * COpenCLRoutine.cpp
+ * CRoutine.cpp
  *
  *  Created on: Nov 14, 2011
  *      Author: bkloppenborg
  */
 
 #include <cstdio>
-#include "COpenCLRoutine.h"
+#include "CRoutine.h"
 
 
-COpenCLRoutine::COpenCLRoutine(cl_device_id device, cl_context context, cl_command_queue queue)
+CRoutine::CRoutine(cl_device_id device, cl_context context, cl_command_queue queue)
 {
 	mDeviceID = device;
 	mContext = context;
@@ -18,7 +18,7 @@ COpenCLRoutine::COpenCLRoutine(cl_device_id device, cl_context context, cl_comma
 
 }
 
-COpenCLRoutine::~COpenCLRoutine()
+CRoutine::~CRoutine()
 {
 	// Release any kernels or programs
 	int i;
@@ -38,7 +38,7 @@ COpenCLRoutine::~COpenCLRoutine()
 }
 
 /// A more verbose wrapper for BuildKernel, emits the name of the kernel before compilation.
-int COpenCLRoutine::BuildKernel(string source, string kernel_name, string kernel_filename)
+int CRoutine::BuildKernel(string source, string kernel_name, string kernel_filename)
 {
 #ifdef DEBUG
     string message = "Loading and Compiling program " +  kernel_filename + "\n";
@@ -50,7 +50,7 @@ int COpenCLRoutine::BuildKernel(string source, string kernel_name, string kernel
 
 /// Builds the kernel from the specified string.
 /// Appends the compiled kernel to mKernels and mPrograms, returns the index at which this kernel is located.
-int COpenCLRoutine::BuildKernel(string source, string kernel_name)
+int CRoutine::BuildKernel(string source, string kernel_name)
 {
     const char * tmp = source.c_str();
     cl_program program;
@@ -107,12 +107,12 @@ int COpenCLRoutine::BuildKernel(string source, string kernel_name)
 	return mPrograms.size();
 }
 
-string COpenCLRoutine::ReadSource(string filename)
+string CRoutine::ReadSource(string filename)
 {
 	return ReadFile(mKernelPath + '/' +  filename, "Could not read OpenCL kernel source " + mKernelPath + '/' +  filename);
 }
 
-void COpenCLRoutine::SetSourcePath(string path_to_kernels)
+void CRoutine::SetSourcePath(string path_to_kernels)
 {
 	mKernelPath = path_to_kernels;
 }

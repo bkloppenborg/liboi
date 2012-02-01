@@ -8,9 +8,9 @@
 #ifndef CROUTINE_NORMALIZE_H_
 #define CROUTINE_NORMALIZE_H_
 
-#include "COpenCLRoutine.h"
+#include "CRoutine.h"
 
-class CRoutine_Normalize: public COpenCLRoutine
+class CRoutine_Normalize: public CRoutine
 {
 public:
 	CRoutine_Normalize(cl_device_id device, cl_context context, cl_command_queue queue);

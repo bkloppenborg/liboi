@@ -10,9 +10,9 @@
 #ifndef CROUTINE_FT_H_
 #define CROUTINE_FT_H_
 
-#include "COpenCLRoutine.h"
+#include "CRoutine.h"
 
-class CRoutine_FT: public COpenCLRoutine
+class CRoutine_FT: public CRoutine
 {
 public:
 	CRoutine_FT(cl_device_id device, cl_context context, cl_command_queue queue);

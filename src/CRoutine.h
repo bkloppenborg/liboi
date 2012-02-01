@@ -1,5 +1,5 @@
 /*
- * COpenCLRoutine.h
+ * CRoutine.h
  *
  *  Created on: Nov 14, 2011
  *      Author: bkloppenborg
@@ -14,8 +14,8 @@
  *  data for *_CPU should be pulled from the OpenCL device.
  */
 
-#ifndef COPENCLROUTINE_H_
-#define COPENCLROUTINE_H_
+#ifndef CROUTINE_H_
+#define CROUTINE_H_
 
 #include <string>
 #include <vector>
@@ -41,7 +41,7 @@ using namespace std;
 
 
 
-class COpenCLRoutine
+class CRoutine
 {
 protected:
 	cl_device_id mDeviceID;
@@ -54,8 +54,8 @@ protected:
 	string mKernelPath;
 
 public:
-	COpenCLRoutine(cl_device_id mDevice, cl_context mContext, cl_command_queue mQueue);
-	~COpenCLRoutine();
+	CRoutine(cl_device_id mDevice, cl_context mContext, cl_command_queue mQueue);
+	~CRoutine();
 
 	int BuildKernel(string source, string kernel_name);
 	int BuildKernel(string source, string kernel_name, string kernel_filename);

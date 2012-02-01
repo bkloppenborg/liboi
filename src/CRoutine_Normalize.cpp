@@ -8,7 +8,7 @@
 #include "CRoutine_Normalize.h"
 
 CRoutine_Normalize::CRoutine_Normalize(cl_device_id device, cl_context context, cl_command_queue queue)
-	:COpenCLRoutine(device, context, queue)
+	:CRoutine(device, context, queue)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("normalize_float.cl");

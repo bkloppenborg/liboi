@@ -10,7 +10,7 @@
 #include <complex>
 
 CRoutine_FTtoT3::CRoutine_FTtoT3(cl_device_id device, cl_context context, cl_command_queue queue)
-	:COpenCLRoutine(device, context, queue)
+	:CRoutine(device, context, queue)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("ft_to_t3.cl");

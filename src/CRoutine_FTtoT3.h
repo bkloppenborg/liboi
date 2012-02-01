@@ -8,9 +8,9 @@
 #ifndef CROUTINE_FTTOT3_H_
 #define CROUTINE_FTTOT3_H_
 
-#include "COpenCLRoutine.h"
+#include "CRoutine.h"
 
-class CRoutine_FTtoT3: public COpenCLRoutine
+class CRoutine_FTtoT3: public CRoutine
 {
 public:
 	CRoutine_FTtoT3(cl_device_id device, cl_context context, cl_command_queue queue);

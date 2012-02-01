@@ -9,7 +9,7 @@
 #include <cstdio>
 
 CRoutine_ImageToBuffer::CRoutine_ImageToBuffer(cl_device_id device, cl_context context, cl_command_queue queue)
-	:COpenCLRoutine(device, context, queue)
+	:CRoutine(device, context, queue)
 {
 	mSource.push_back("image2buf_GL_R.cl");
 

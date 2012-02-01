@@ -16,8 +16,9 @@
 #include "CRoutine_DFT.h"
 #include "CRoutine_FTtoV2.h"
 #include "CRoutine_FTtoT3.h"
-#include "CRoutine_Chi2.h"
+#include "CRoutine_Chi.h"
 #include "CRoutine_LogLike.h"
+#include "CRoutine_Square.h"
 
 CLibOI::CLibOI(cl_device_type type)
 {
@@ -44,7 +45,9 @@ CLibOI::CLibOI(cl_device_type type)
 	mrFT = NULL;
 	mrV2 = NULL;
 	mrT3 = NULL;
-	mrChi2 = NULL;
+	mrChi = NULL;
+	mrLogLike = NULL;
+	mrSquare = NULL;
 }
 
 CLibOI::~CLibOI()
@@ -93,7 +96,12 @@ void CLibOI::CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int
 /// Computes the chi2 between the current simulated data, and the observed data set specified in data
 float CLibOI::DataToChi2(COILibData * data)
 {
-	return mrChi2->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData());
+	return mrChi->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), mrSquare, true);
+}
+
+float CLibOI::DataToLogLike(COILibData * data)
+{
+	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData());
 }
 
 /// Computes the Fourier transform of the image, then generates Vis2 and T3's.
@@ -127,6 +135,23 @@ float CLibOI::ImageToChi2(int data_num)
 
 	COILibData * data = mDataList[data_num];
 	return ImageToChi2(data);
+}
+
+float CLibOI::ImageToLogLike(COILibData * data)
+{
+	// Simple, call the other functions
+	Normalize();
+	FTToData(data);
+	float llike = DataToLogLike(data);
+	return llike;
+}
+float CLibOI::ImageToLogLike(int data_num)
+{
+	if(data_num > mDataList.size() - 1)
+		return -1;
+
+	COILibData * data = mDataList[data_num];
+	return ImageToLogLike(data);
 }
 
 void CLibOI::Init()
@@ -177,6 +202,10 @@ void CLibOI::InitRoutines()
 	mrNormalize->SetSourcePath(mKernelSourcePath);
 	mrNormalize->Init();
 
+	mrSquare = new CRoutine_Square(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrNormalize->SetSourcePath(mKernelSourcePath);
+	mrNormalize->Init();
+
 	if(mMaxData > 0)
 	{
 		// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
@@ -193,9 +222,9 @@ void CLibOI::InitRoutines()
 		mrT3->SetSourcePath(mKernelSourcePath);
 		mrT3->Init();
 
-		mrChi2 = new CRoutine_Chi2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-		mrChi2->SetSourcePath(mKernelSourcePath);
-		mrChi2->Init(mMaxData);
+		mrChi = new CRoutine_Chi(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrChi->SetSourcePath(mKernelSourcePath);
+		mrChi->Init(mMaxData);
 
 		mrLogLike = new CRoutine_LogLike(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 		mrLogLike->SetSourcePath(mKernelSourcePath);

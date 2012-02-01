@@ -12,9 +12,9 @@
 #define MAX_GROUPS      (64)
 #define MAX_WORK_ITEMS  (64)
 
-#include "COpenCLRoutine.h"
+#include "CRoutine.h"
 
-class CRoutine_Reduce : public COpenCLRoutine
+class CRoutine_Reduce : public CRoutine
 {
 protected:
 	int num_elements;

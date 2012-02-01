@@ -40,8 +40,9 @@ class CRoutine_Normalize;
 class CRoutine_FT;
 class CRoutine_FTtoV2;
 class CRoutine_FTtoT3;
-class CRoutine_Chi2;
+class CRoutine_Chi;
 class CRoutine_LogLike;
+class CRoutine_Square;
 
 class CLibOI
 {
@@ -63,8 +64,9 @@ protected:
 	CRoutine_FT * mrFT;
 	CRoutine_FTtoV2 * mrV2;
 	CRoutine_FTtoT3 * mrT3;
-	CRoutine_Chi2 * mrChi2;
+	CRoutine_Chi * mrChi;
 	CRoutine_LogLike * mrLogLike;
+	CRoutine_Square * mrSquare;
 
 	// Memory objects (OpenCL or otherwise)
 	eImageTypes mImageType;
@@ -93,6 +95,7 @@ public:
 	void CopyImageToBuffer(int layer);
 	void CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int layer);
 	float DataToChi2(COILibData * data);
+	float DataToLogLike(COILibData * data);
 
 public:
 	void FreeOpenCLMem();
@@ -100,6 +103,8 @@ public:
 
 	float ImageToChi2(COILibData * data);
 	float ImageToChi2(int data_num);
+	float ImageToLogLike(COILibData * data);
+	float ImageToLogLike(int data_num);
 	void Init();
 	void InitMemory();
 	void InitRoutines();
