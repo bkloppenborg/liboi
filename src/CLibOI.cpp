@@ -53,9 +53,15 @@ CLibOI::CLibOI(cl_device_type type)
 CLibOI::~CLibOI()
 {
 	// First free datamembers:
-	if(mrTotalFlux) delete mrTotalFlux;
-	if(mrCopyImage) delete mrCopyImage;
-	if(mrNormalize) delete mrNormalize;
+	delete mrTotalFlux;
+	delete mrCopyImage;
+	delete mrNormalize;
+	delete mrFT;
+	delete mrV2;
+	delete mrT3;
+	delete mrChi;
+	delete mrLogLike;
+	delete mrSquare;
 
 	// Now free OpenCL buffers:
 	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
@@ -117,6 +123,31 @@ void CLibOI::FTToData(COILibData * data)
 			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
 }
 
+/// Uses the current active image to compute the chi (i.e. non-squared version) with respect to the
+/// specified data and returns the chi array in output.
+/// This is a convenience function that calls FTToData, DataToChi
+void CLibOI::ImageToChi(COILibData * data, float * output, int & n)
+{
+	// Simple, call the other functions
+	Normalize();
+	FTToData(data);
+
+	n = data->GetNumData();
+	mrChi->GetChi(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, output);
+}
+
+/// Same as ImageToChi above.
+/// Returns false if the data number does not exist, true otherwise.
+bool CLibOI::ImageToChi(int data_num, float * output, int & n)
+{
+	if(data_num > mDataList.size() - 1)
+		return false;
+
+	COILibData * data = mDataList[data_num];
+	ImageToChi(data, output, n);
+	return true;
+}
+
 /// Uses the current active image to compute the chi2 with respect to the specified data.
 /// This is a convenience function that calls FTToData and DataToChi2.
 float CLibOI::ImageToChi2(COILibData * data)
@@ -128,6 +159,7 @@ float CLibOI::ImageToChi2(COILibData * data)
 	return chi2;
 }
 
+/// Same as ImageToChi2 above
 float CLibOI::ImageToChi2(int data_num)
 {
 	if(data_num > mDataList.size() - 1)

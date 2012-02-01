@@ -101,6 +101,8 @@ public:
 	void FreeOpenCLMem();
 	void FTToData(COILibData * data);
 
+	void ImageToChi(COILibData * data, float * output, int & n);
+	bool ImageToChi(int data_num, float * output, int & n);
 	float ImageToChi2(COILibData * data);
 	float ImageToChi2(int data_num);
 	float ImageToLogLike(COILibData * data);

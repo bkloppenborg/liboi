@@ -102,6 +102,23 @@ float CRoutine_Chi::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, in
 	return sum;
 }
 
+/// Computes the chi values and returns them in the array, output, which has size n
+/// Note, the user is responsible for allocating and deallocating output!
+void CRoutine_Chi::GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output)
+{
+	// Compute the chi
+	Chi(data, data_err, model_data, n);
+	clFinish(mQueue);
+
+	// Copy data to the CPU.  Note, we use an intermedate array in case cl_float != float
+	int err = 0;
+	cl_float * tmp = new cl_float[n];
+	err = clEnqueueReadBuffer(mQueue, mChiTemp, CL_TRUE, 0, n * sizeof(cl_float), tmp, 0, NULL, NULL);
+
+	for(int i = 0; i < n; i++)
+		output[i] = float(tmp[i]);
+}
+
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
 void CRoutine_Chi::Init(int num_elements)
 {
