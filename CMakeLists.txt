@@ -5,9 +5,9 @@ project(liboi)
 set(CMAKE_BUILD_TYPE DEBUG)
 # Default debug level (mostly status messages, some copy-back numbers):
 #set(CMAKE_CXX_FLAGS_DEBUG "-g")
-#set(CMAKE_CXX_FLAGS_DEBUG "-g -D DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -D DEBUG")
 # For even more verbose debugging output:
-set(CMAKE_CXX_FLAGS_DEBUG "-g -D DEBUG -D DEBUG_VERBOSE")
+#set(CMAKE_CXX_FLAGS_DEBUG "-g -D DEBUG -D DEBUG_VERBOSE")
 
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 

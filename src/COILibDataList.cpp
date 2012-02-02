@@ -34,6 +34,18 @@ void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue que
     }
 }
 
+/// Returns the total number of data points (UV + T3) in all data sets:
+int COILibDataList::GetNData()
+{
+	int tmp = 0;
+    for(vector<COILibData*>::iterator it = mList.begin(); it != mList.end(); ++it)
+    {
+    	tmp += (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
+    }
+
+    return tmp;
+}
+
 /// Finds the maximum number of data points (Vis2 + T3) and returns that number.
 int COILibDataList::MaxNumData()
 {

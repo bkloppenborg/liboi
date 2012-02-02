@@ -9,18 +9,6 @@
  * TODO: Implement spectral layers.
  *       Probably need to add an ImageToChi2(int data_num, int layer) function.
  *
- * How to Use:
- * 	1) Create a new CLibOI object with the device or type of device you wish to use, e.g.:
- * 		CL = new CLibOI(CL_DEVICE_TYPE_GPU);
- * 	   If you are using CL/GL interop, this must be done from the same thread that
- * 	   currently has access to the OpenGL context.
- * 	2) Call all required Set* functions to define the image location and kernel source
- * 	3) Load any data you wish to include.
- * 	   If no data is loaded, the Fourier Transform, V2, T3 and Chi2 routines will be unavailable.
- * 	4) Call Init().  This allocates the
- * 	5) Use the LibOI functions as needed
- * 	6) Free memory by deleting the CLibOI object
- * 	   (if you don't do this GPU memory will not be deallocated)
  */
 
 #ifndef CLIBOI_H_
@@ -100,6 +88,8 @@ public:
 public:
 	void FreeOpenCLMem();
 	void FTToData(COILibData * data);
+
+	int GetNData() { return mDataList.GetNData(); };
 
 	void ImageToChi(COILibData * data, float * output, int & n);
 	bool ImageToChi(int data_num, float * output, int & n);

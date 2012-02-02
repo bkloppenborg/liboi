@@ -46,9 +46,9 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
     err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to enqueue the ft_to_vis2 kernel.", err);
 
-#ifdef DEBUG_VERBOSE
-    FTtoV2_CPU(ft_loc, n_v2_points, output);
-#endif //DEBUG_VERBOSE
+//#ifdef DEBUG_VERBOSE
+//    FTtoV2_CPU(ft_loc, n_v2_points, output);
+//#endif //DEBUG_VERBOSE
 }
 
 /// Computes the V2 using the input data on the CPU, compares the values and writes out to the console.

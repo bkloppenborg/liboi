@@ -86,7 +86,7 @@ float CRoutine_Reduce::Compute(bool copy_back, cl_mem final_buffer, cl_mem input
 
 	// TODO: Perhaps we should just allocate temporary buffers if things are null and store them in the class?
     if(input_buffer == NULL || final_buffer == NULL)
-    	COpenCL::CheckOCLError("Input / Output parallel sum buffers are NULL!", -1);
+    	COpenCL::CheckOCLError("Input / Output reduction buffers are NULL!", -1);
 
     // See if the temporary buffers are specified, if not use the internal buffers.
     if(partial_sum_buffer == NULL || output_buffer == NULL)
@@ -132,7 +132,7 @@ float CRoutine_Reduce::Compute(bool copy_back, cl_mem final_buffer, cl_mem input
         err |= clSetKernelArg(mKernels[i],  1, sizeof(cl_mem), &pass_input);
         err |= clSetKernelArg(mKernels[i],  2, shared_size,    NULL);
         err |= clSetKernelArg(mKernels[i],  3, sizeof(int),    &entries);
-		COpenCL::CheckOCLError("Failed to set partial sum kernel arguments.", err);
+		COpenCL::CheckOCLError("Failed to set reduction kernel arguments.", err);
 
         // After the first pass, use the partial sums for the next input values
         //

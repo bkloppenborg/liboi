@@ -28,6 +28,8 @@ public:
 
 	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
 
+	int GetNData();
+
 	int MaxNumData();
 	int MaxUVPoints();
 
