@@ -55,7 +55,7 @@ __kernel void ft_to_t3(
     __global long4 * data_bsref,
     __global short4 * data_sign,
     __private int num_v2,
-    __global float2 * T3_output)
+    __global float * T3_output)
 {   
     int i = get_global_id(0);
     
@@ -70,9 +70,9 @@ __kernel void ft_to_t3(
     vbc.s1 *= sign.s1;
     vca.s1 *= sign.s2;
     
-    // TODO: Convert mock_data_bs over to a float2 array.
-    T3_output[num_v2 + i] = MultComplex4(vab, vbc, vca, data_phasor[i]);
-//    float2 temp = MultComplex4(vab, vbc, vca, data_phasor[i]);
-//    T3_output[num_v2 + i].s0 = temp.s0;
-//    T3_output[num_v2 + i].s1 = temp.s1;
+    // Note, we can't convert this over to a float2 as addressing
+    // for float2 is not 2x float
+    float2 temp = MultComplex4(vab, vbc, vca, data_phasor[i]);
+    T3_output[num_v2 + 2*i] = temp.s0;
+    T3_output[num_v2 + 2*i + 1] = temp.s1;
 }
