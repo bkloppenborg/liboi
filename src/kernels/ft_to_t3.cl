@@ -71,8 +71,8 @@ __kernel void ft_to_t3(
     vca.s1 *= sign.s2;
     
     // TODO: Convert mock_data_bs over to a float2 array.
-    T3_output[i] = MultComplex4(vab, vbc, vca, data_phasor[i]);
+    T3_output[num_v2 + i] = MultComplex4(vab, vbc, vca, data_phasor[i]);
 //    float2 temp = MultComplex4(vab, vbc, vca, data_phasor[i]);
-//    T3_output[num_v2 + 2*i] = temp.s0;
-//    T3_output[num_v2 + 2*i + 1] = temp.s1;
+//    T3_output[num_v2 + i].s0 = temp.s0;
+//    T3_output[num_v2 + i].s1 = temp.s1;
 }
