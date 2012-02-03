@@ -12,7 +12,7 @@
 
 
 #define uv_threshold 5.0e-5
-#define infinity 1e34
+#define infinity 1e38
 
 int compare_uv(oi_uv uv, oi_uv withuv, float thresh)
 {
@@ -93,14 +93,16 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 	}
 
 	/* Allocate memory */
-	data->pow = (float*) malloc( (usersel->numvis2 + 1) *sizeof(float));
-	data->powerr = (float*) malloc( (usersel->numvis2 + 1 ) *sizeof(float));
-	data->bisamp = (float*) malloc(usersel->numt3 *sizeof(float));
-	data->bisamperr = (float*) malloc(usersel->numt3 *sizeof(float));
-	data->bisphs = (float*) malloc(usersel->numt3 *sizeof(float));
-	data->bisphserr = (float*) malloc(usersel->numt3 *sizeof(float));
-	data->bsref = (oi_bsref*) malloc(usersel->numt3 *sizeof(oi_bsref));
-	data->uv = (oi_uv*) malloc((1 + usersel->numvis2+3 *usersel->numt3)*sizeof(oi_uv));
+	data->pow = (float *) malloc( (usersel->numvis2 + 1) *sizeof(float));
+	data->powerr = (float *) malloc( (usersel->numvis2 + 1 ) *sizeof(float));
+	data->powtime = (double *) malloc( (usersel->numvis2 + 1 ) *sizeof(double));
+	data->bisamp = (float *) malloc(usersel->numt3 *sizeof(float));
+	data->bisamperr = (float *) malloc(usersel->numt3 *sizeof(float));
+	data->bistime = (double *)malloc( (usersel->numt3 + 1 ) *sizeof(double));
+	data->bisphs =  (float *) malloc(usersel->numt3 *sizeof(float));
+	data->bisphserr =  (float *) malloc(usersel->numt3 *sizeof(float));
+	data->bsref = (oi_bsref *)malloc(usersel->numt3 *sizeof(oi_bsref));
+	data->uv = (oi_uv *)malloc((1 + usersel->numvis2+3 *usersel->numt3)*sizeof(oi_uv));
 	/* Allocate as much space for UV as possible initially and then reallocate in the end */
 
 	/* Read in visibility */
@@ -116,8 +118,7 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 		//		data->powerr[0]=usersel->fluxerr;
 		//		data->uv[0].u=0.;
 		//		data->uv[0].v=0.;
-		while(*status==0)
-		{
+		while(*status==0)		{
 			read_next_oi_vis2(fptr, &vis2, status);
 			fits_get_hdu_num(fptr, &phu);
 			read_oi_wavelength(fptr, vis2.insname, &wave, status);
@@ -136,7 +137,7 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 							{
 								data->pow[data->npow] = (float)vis2.record[i].vis2data[k];
 								data->powerr[data->npow] = (float)vis2.record[i].vis2err[k];
-
+								data->powtime[data->npow] = vis2.record[i].time;
 								data->uv[data->nuv].u = (float)(vis2.record[i].ucoord / wave.eff_wave[k]);
 								data->uv[data->nuv].v = (float)(vis2.record[i].vcoord / wave.eff_wave[k]);
 								//printf("%d %e %e %e\n", k,  wave.eff_wave[k], wave.eff_band[k], wave.eff_band[k] / wave.eff_wave[k]);
@@ -203,7 +204,7 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 
 								data->bisphs[data->nbis] = (float)(t3.record[i].t3phi[k]);
 								data->bisphserr[data->nbis] = (float)(t3.record[i].t3phierr[k]);
-								// data->bistime[data->nbis] = t3.time;
+							        data->bistime[data->nbis] = t3.record[i].time;
 
 								/* Read UV coords and check if they exist. If do not exist -> update UV.
 								* Set the bsref.

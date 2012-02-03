@@ -71,7 +71,8 @@ typedef struct _data
   float *bisphs;
   float *bisamperr;
   float *bisphserr;
-  float *time;
+  double *powtime;
+  double *bistime;
   oi_uv *uv;
   oi_bsref *bsref;
   int npow;
