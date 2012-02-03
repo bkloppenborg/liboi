@@ -12,7 +12,7 @@
 
 
 #define uv_threshold 5.0e-5
-#define infinity 1e99
+#define infinity 1e34
 
 int compare_uv(oi_uv uv, oi_uv withuv, float thresh)
 {
@@ -125,7 +125,7 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 
 			if(*status==0)
 			{
-				if((vis2.record[0].target_id == usersel->target_id))
+				if(vis2.record[0].target_id == usersel->target_id)
 				{
 					for(i=0; i<vis2.numrec; i++)
 					{
@@ -178,7 +178,7 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 
 			if(*status==0)
 			{
-				if((t3.record[0].target_id == usersel->target_id))
+				if(t3.record[0].target_id == usersel->target_id)
 				{
 					for(i=0; i<t3.numrec; i++)
 					{
@@ -376,7 +376,6 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 	char comment[FLEN_COMMENT];
 	char extname[FLEN_VALUE];
 	char zerostring[FLEN_VALUE];
-	char commstring[100];
 	int hdutype;
 	int i,k;
 	int nhu=0;
@@ -408,7 +407,7 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 		{
 			fits_movabs_hdu(fptr,i,&hdutype,status);
 			if (hdutype == BINARY_TBL) {
-				fits_read_key(fptr, TSTRING, "EXTNAME", extname, comment, status);
+				fits_read_key(fptr, TSTRING, (char *)"EXTNAME", extname, comment, status);
 				printf("%s ",extname);
 			}
 		}
@@ -429,7 +428,7 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 		{
 			AGAIN1:
 			printf("\nSELECT AN ID: ");
-			scanf("%d",&usersel->target_id);
+			scanf("%3d",&usersel->target_id);
 			tmpi = 0;
 			for(i=0; i<targets.ntarget; i++)
 			{
@@ -469,7 +468,7 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 			fits_get_hdu_num(fptr, &phu);
 			if(*status==0)
 			{
-				if((vis2.record[0].target_id == usersel->target_id))
+				if(vis2.record[0].target_id == usersel->target_id)
 				{
 					nv2tab++;
 					printf("%-6.3d\t%-14.11s\t%-20.20s\t%-20.20s\t%ld/%d\n",nv2tab,vis2.date_obs,vis2.arrname,
@@ -515,7 +514,7 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 			read_next_oi_t3(fptr, &t3, status);
 			if(*status==0)
 			{
-				if((t3.record[0].target_id == usersel->target_id))
+				if(t3.record[0].target_id == usersel->target_id)
 				{
 					nt3tab++;
 					printf("%-6.3d\t%-14.11s\t%-20.20s\t%-20.20s\t%ld/%d\n",nt3tab,
