@@ -32,6 +32,7 @@ COILibData::COILibData(oi_data * data, string filename)
 	mData_sign_cl = NULL;
 
 	mFileName = filename;
+	mTime = 0;
 
 	InitData(true);
 }

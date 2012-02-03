@@ -57,9 +57,11 @@ void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_mem output)
 	int err = 0;
 	// Pull back values from the OpenCL devices:
 	cl_float2 * cpu_dft = new cl_float2[n_v2_points];
-	err = clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_v2_points * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_v2_points * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
 	cl_float * cl_output = new cl_float[n_v2_points];
-	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_v2_points * sizeof(cl_float), cl_output, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_v2_points * sizeof(cl_float), cl_output, 0, NULL, NULL);
+    COpenCL::CheckOCLError("Failed to copy values back to the CPU, Routine_FTtoV2::FTtoV2_CPU().", err);
+
 
 	cl_float vis2 = 0;
 	cl_float real = 0;

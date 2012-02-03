@@ -34,9 +34,11 @@ float CRoutine_Reduce_Sum::ComputeSum(bool copy_back, cl_mem final_buffer, cl_me
 
 float CRoutine_Reduce_Sum::Compute_CPU(cl_mem input_buffer, int n)
 {
-	int err = 0;
+	int err = CL_SUCCESS;
 	cl_float * tmp = new cl_float[n];
-	err = clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, n * sizeof(cl_float), tmp, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, n * sizeof(cl_float), tmp, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CRoutine_Reduce_Sum::Compute_CPU() ", err);
+
 
 	float sum = 0;
 	printf("Computing Sum on CPU from input_buffer\n");

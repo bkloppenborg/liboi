@@ -68,20 +68,22 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_
 	int err = 0;
 	// Pull all of the data from the OpenCL device:
 	cl_float2 * cpu_dft = new cl_float2[n_uv];
-	err = clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_uv * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_uv * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
 
 	cl_float2 * cpu_phasor = new cl_float2[n_t3];
-	err = clEnqueueReadBuffer(mQueue, data_phasor, CL_TRUE, 0, n_t3 * sizeof(cl_float), cpu_phasor, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_phasor, CL_TRUE, 0, n_t3 * sizeof(cl_float), cpu_phasor, 0, NULL, NULL);
 
 	cl_long4 * cpu_bsref = new cl_long4[n_t3];
-	err = clEnqueueReadBuffer(mQueue, data_bsref, CL_TRUE, 0, n_t3 * sizeof(cl_long4), cpu_bsref, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_bsref, CL_TRUE, 0, n_t3 * sizeof(cl_long4), cpu_bsref, 0, NULL, NULL);
 
 	cl_short4 * cpu_sign = new cl_short4[n_t3];
-	err = clEnqueueReadBuffer(mQueue, data_sign, CL_TRUE, 0, n_t3 * sizeof(cl_short4), cpu_sign, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_sign, CL_TRUE, 0, n_t3 * sizeof(cl_short4), cpu_sign, 0, NULL, NULL);
 
 	// Lastly pull in the output, don't forget to offset the read (output is a big cl_float of vis2 followed by t3's)
 	cl_float2 * cl_output = new cl_float2[n_t3];
-	err = clEnqueueReadBuffer(mQueue, output, CL_TRUE, n_v2 * sizeof(cl_float), n_t3 * sizeof(cl_float2), cl_output, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, output, CL_TRUE, n_v2 * sizeof(cl_float), n_t3 * sizeof(cl_float2), cl_output, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to copy values back to CPU CRoutine_FTtoT3::FTtoT3_CPU().", err);
+
 
 	// Compute the T3, output the difference between CPU and GPU versions:
 	printf("T3 Buffer elements: (CPU, OpenCL, Diff)\n");

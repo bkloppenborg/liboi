@@ -21,6 +21,7 @@ CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_q
 
 	mChiTemp = NULL;
 	mChiOutput = NULL;
+	mChiKernelID = -1;
 }
 
 CRoutine_Chi::~CRoutine_Chi()
@@ -34,7 +35,6 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 	int err = 0;
 	size_t global = (size_t) n;
 	size_t local = 0;
-	float sum = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
 	err = clGetKernelWorkGroupInfo(mKernels[mChiKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
@@ -77,11 +77,12 @@ float CRoutine_Chi::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, in
 {
 	int err = 0;
 	cl_float * cpu_data = new cl_float[n];
-	err = clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, n * sizeof(cl_float), cpu_data, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, n * sizeof(cl_float), cpu_data, 0, NULL, NULL);
 	cl_float * cpu_data_err = new cl_float[n];
-	err = clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, n * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, n * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
 	cl_float * cpu_model_data = new cl_float[n];
-	err = clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, n * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, n * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to copy chi buffers back to the CPU.", err);
 
 	// we do this verbose
 	float sum = 0;
@@ -114,6 +115,7 @@ void CRoutine_Chi::GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 	int err = 0;
 	cl_float * tmp = new cl_float[n];
 	err = clEnqueueReadBuffer(mQueue, mChiTemp, CL_TRUE, 0, n * sizeof(cl_float), tmp, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to copy buffer back to CPU.  CRoutine_Chi::GetChi().", err);
 
 	for(int i = 0; i < n; i++)
 		output[i] = float(tmp[i]);

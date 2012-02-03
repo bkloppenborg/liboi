@@ -60,6 +60,7 @@ protected:
 	int mNT3;
 	int mNUV;
 	int mNData;
+	double mTime;
 
 	// Storage containers for OIFITS data.
 	oi_data * mOIData;

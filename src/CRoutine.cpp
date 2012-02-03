@@ -55,7 +55,7 @@ int CRoutine::BuildKernel(string source, string kernel_name)
     const char * tmp = source.c_str();
     cl_program program;
     cl_kernel kernel;
-    size_t len;
+    size_t len = 0;
     int err;
     //    string tmp_err;
     //    tmp_err.reserve(2048);

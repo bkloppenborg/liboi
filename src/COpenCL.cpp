@@ -238,7 +238,7 @@ string COpenCL::GetOCLErrorString(cl_int err)
 
 void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 {
-	int err;
+	int err = CL_SUCCESS;
 	int i;
 	size_t j;
 	size_t returned_size;

@@ -38,7 +38,7 @@ protected:
 	// Datamembers:
 	COILibDataList mDataList;
 
-	eFTMethods mFTMethod;
+//	eFTMethods mFTMethod;
 	cl_device_type mDeviceType;
 
 	// OpenCL Context, manager, etc.

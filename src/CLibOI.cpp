@@ -25,6 +25,9 @@ CLibOI::CLibOI(cl_device_type type)
 	// init datamembers
 	mOCL = new COpenCL(type);
 
+	mImageHeight = 1;
+	mImageWidth = 1;
+	mImageDepth = 1;
 	mCLImage = NULL;
 	mGLImage = NULL;
 	mFluxBuffer = NULL;
@@ -188,7 +191,6 @@ float CLibOI::ImageToLogLike(int data_num)
 
 void CLibOI::Init()
 {
-	int err = CL_SUCCESS;
 	InitMemory();
 	InitRoutines();
 }
@@ -302,7 +304,6 @@ void CLibOI::Normalize()
 /// If the image is 2D, use zero for the layer.
 float CLibOI::TotalFlux(int layer, bool return_value)
 {
-	int err = CL_SUCCESS;
 	CopyImageToBuffer(layer);
 
 	float flux = mrTotalFlux->ComputeSum(return_value, mFluxBuffer, mCLImage, NULL, NULL);

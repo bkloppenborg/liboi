@@ -32,7 +32,6 @@ void CRoutine_Square::Square(cl_mem input, cl_mem output, int n)
 	int err = 0;
 	size_t global = (size_t) n;
 	size_t local = 0;
-	float sum = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
 	err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
