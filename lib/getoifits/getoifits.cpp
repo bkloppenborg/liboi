@@ -204,7 +204,7 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 
 								data->bisphs[data->nbis] = (float)(t3.record[i].t3phi[k]);
 								data->bisphserr[data->nbis] = (float)(t3.record[i].t3phierr[k]);
-							        data->bistime[data->nbis] = t3.record[i].time;
+								data->bistime[data->nbis] = t3.record[i].time;
 
 								/* Read UV coords and check if they exist. If do not exist -> update UV.
 								* Set the bsref.
