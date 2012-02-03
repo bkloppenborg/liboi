@@ -177,7 +177,7 @@ void COILibData::InitData(bool do_extrapolation)
 			{
 				printf("WARNING: triple amplitude extrapolation from powerspectrum failed because of missing powerspectrum\n");
 				mOIData->bisamp[ii] = 1.0;
-				mOIData->bisamperr[ii] = 1e99;
+				mOIData->bisamperr[ii] = 1e38; // close to max value for a float
 				ndof--;
 			}
 		}
