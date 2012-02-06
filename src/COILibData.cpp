@@ -8,6 +8,8 @@
 #include "COILibData.h"
 #include <cstdio>
 
+#define MJD 2400000.5
+
 using namespace std;
 
 COILibData::COILibData(oi_data * data, string filename)
@@ -43,7 +45,9 @@ COILibData::COILibData(oi_data * data, string filename)
 	for(unsigned int i = 0; i < mNT3; i++)
 		time += mOIData->bistime[i] / mNT3;
 
-	mAveTime = time;
+	// Convert the average time back to a JD
+	mAveTime = time + MJD;
+	printf("Data Average Time: %f\n", mAveTime);
 
 	InitData(true);
 }
