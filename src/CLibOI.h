@@ -89,7 +89,11 @@ public:
 	void FreeOpenCLMem();
 	void FTToData(COILibData * data);
 
+	double GetDataAveTime(int data_num) { return mDataList[data_num]->GetAveTime(); };
 	int GetNData() { return mDataList.GetNData(); };
+	int GetNDataAllocated() { return mDataList.GetNDataAllocated(); };
+	int GetNDataAllocated(int data_num) { return mDataList.GetNDataAllocated(data_num); };
+	int GetNDataSets() { return mDataList.size(); };
 
 	void ImageToChi(COILibData * data, float * output, int & n);
 	bool ImageToChi(int data_num, float * output, int & n);

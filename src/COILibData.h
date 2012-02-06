@@ -60,7 +60,7 @@ protected:
 	int mNT3;
 	int mNUV;
 	int mNData;
-	double mTime;
+	double mAveTime;
 
 	// Storage containers for OIFITS data.
 	oi_data * mOIData;
@@ -74,6 +74,7 @@ public:
 	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
 
 	// Inline the get location functions
+	double GetAveTime(void) { return mAveTime; };
 	string GetFilename(void) { return mFileName; };
 	cl_mem GetLoc_Data() {return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };

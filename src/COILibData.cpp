@@ -32,7 +32,18 @@ COILibData::COILibData(oi_data * data, string filename)
 	mData_sign_cl = NULL;
 
 	mFileName = filename;
-	mTime = 0;
+
+	// Now compute the average time for the data set:
+	// Note, we divide by the number of elements to keep from losing precision in an overflow
+	// probably not the best way to do it though.
+	double time = 0;
+	for(unsigned int i = 0; i < mNVis2; i++)
+		time += mOIData->powtime[i] / mNVis2;
+
+	for(unsigned int i = 0; i < mNT3; i++)
+		time += mOIData->bistime[i] / mNT3;
+
+	mAveTime = time;
 
 	InitData(true);
 }

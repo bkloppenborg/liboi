@@ -34,7 +34,7 @@ void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue que
     }
 }
 
-/// Returns the total number of data points (UV + T3) in all data sets:
+/// Returns the total number of data points (UV + T3) in all data sets
 int COILibDataList::GetNData()
 {
 	int tmp = 0;
@@ -44,6 +44,26 @@ int COILibDataList::GetNData()
     }
 
     return tmp;
+}
+
+/// Returns the total number of float/double entries allocated on the OpenCL device
+/// for all data sets.
+int COILibDataList::GetNDataAllocated()
+{
+	int tmp = 0;
+	for(int i = 0; i < mList.size(); i++)
+		tmp += GetNDataAllocated(i);
+
+    return tmp;
+}
+
+/// Returns the size of the data_num's allocated data block.
+int COILibDataList::GetNDataAllocated(unsigned int data_num)
+{
+	if(data_num < mList.size())
+		return mList[data_num]->GetNumV2() + 2 * mList[data_num]->GetNumT3();
+
+	return 0;
 }
 
 /// Finds the maximum number of data points (Vis2 + T3) and returns that number.
