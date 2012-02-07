@@ -35,19 +35,18 @@ COILibData::COILibData(oi_data * data, string filename)
 
 	mFileName = filename;
 
-	// Now compute the average time for the data set:
-	// Note, we divide by the number of elements to keep from losing precision in an overflow
-	// probably not the best way to do it though.
-	double time = 0;
+	// Now compute the average time for the data set.  We accumulate the times
+	// in a long double to minimize a loss of precision.
+	long double time = 0;
 	for(unsigned int i = 0; i < mNVis2; i++)
-		time += mOIData->powtime[i] / mNVis2;
+		time += mOIData->powmjd[i];
 
 	for(unsigned int i = 0; i < mNT3; i++)
-		time += mOIData->bistime[i] / mNT3;
+		time += mOIData->bismjd[i];
 
-	// Convert the average time back to a JD
-	mAveTime = time + MJD;
-	printf("Data Average Time: %f\n", mAveTime);
+	// Convert the average time to a JD, casting back to a double in the process.
+	mAveJD = double(time / (mNVis2 + mNT3) + MJD);
+	printf("Data Average Time: %f\n", mAveJD);
 
 	InitData(true);
 }

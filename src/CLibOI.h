@@ -89,7 +89,7 @@ public:
 	void FreeOpenCLMem();
 	void FTToData(COILibData * data);
 
-	double GetDataAveTime(int data_num) { return mDataList[data_num]->GetAveTime(); };
+	double GetDataAveJD(int data_num) { return mDataList[data_num]->GetAveJD(); };
 	int GetNData() { return mDataList.GetNData(); };
 	int GetNDataAllocated() { return mDataList.GetNDataAllocated(); };
 	int GetNDataAllocated(int data_num) { return mDataList.GetNDataAllocated(data_num); };
