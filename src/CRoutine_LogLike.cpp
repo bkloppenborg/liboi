@@ -12,6 +12,7 @@ CRoutine_LogLike::CRoutine_LogLike(cl_device_id device, cl_context context, cl_c
 {
 	mSource.push_back("loglike.cl");
 	mLogLikeSourceID = mSource.size() - 1;
+	mLogLikeKernelID = 0;
 
 	mTemp = NULL;
 	mOutput = NULL;
