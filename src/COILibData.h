@@ -27,7 +27,6 @@
 
 extern "C" {
     #include "exchange.h"
-    #include "oifile.h"
 }
 
 #include "getoifits.h"
