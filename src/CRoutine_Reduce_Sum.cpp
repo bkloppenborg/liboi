@@ -26,7 +26,7 @@ CRoutine_Reduce_Sum::~CRoutine_Reduce_Sum()
 // Performs an out-of-plate sum storing temporary values in output_buffer and partial_sum_buffer.
 float CRoutine_Reduce_Sum::ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem input_buffer, cl_mem output_buffer, cl_mem partial_sum_buffer)
 {
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	printf("Computing Parallel Sum. \n");
 #endif // DEBUG
 	return Compute(copy_back, final_buffer, input_buffer, output_buffer, partial_sum_buffer);

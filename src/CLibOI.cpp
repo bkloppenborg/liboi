@@ -277,12 +277,12 @@ void CLibOI::LoadData(string filename)
 void CLibOI::Normalize()
 {
 	// Temporary variables
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	float tmp1, tmp2;
 #endif // DEBUG
 
 	// First compute and store the total flux:
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	tmp1 = TotalFlux(0, true);
 #else // DEBUG
 	TotalFlux(0, false);
@@ -291,7 +291,7 @@ void CLibOI::Normalize()
 	// Now normalize the image
 	mrNormalize->Normalize(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	// If we are debugging, do another call to ensure the buffer was indeed normalized.
 	// Note we call the mrTotalFlux routine directly because TotalFlux copies the image over from the OpenGL buffer.
 	tmp2 = mrTotalFlux->ComputeSum(true, mFluxBuffer, mCLImage, NULL, NULL);

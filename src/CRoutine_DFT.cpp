@@ -27,7 +27,7 @@ CRoutine_DFT::~CRoutine_DFT()
 /// the result in output.
 void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output)
 {
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	printf("Computing the FT using DFT method, %s\n", mSource[0].c_str());
 #endif //DEBUG
 
@@ -39,7 +39,7 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 //    err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
 //	COpenCL::CheckOCLError("Failed to determine the kernel workgroup size for ft_dft2d kernel.", err);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
     // Output some information about kernel sizes:
 	printf("ft_dft2d Kernel Sizes: Global: %i Local %i \n", (int)global, (int)local);
 #endif //DEBUG
