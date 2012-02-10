@@ -23,10 +23,14 @@ CRoutine_LogLike::~CRoutine_LogLike()
 
 }
 
+/// Computes the loglikelihood, returns it as a floating point number.
 float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
 	int err = 0;
-	size_t global = (size_t) n;
+   	// The loglikelihood kernel executes on the entire output buffer
+   	// because the reduce_sum_float kernel uses the entire buffer as input.
+   	// Therefore we zero out the elements not directly involved in this computation.
+	size_t global = (size_t) num_elements;
 	size_t local = 0;
 	float sum = 0;
 

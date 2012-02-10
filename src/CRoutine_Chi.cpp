@@ -33,7 +33,10 @@ CRoutine_Chi::~CRoutine_Chi()
 void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
 	int err = 0;
-	size_t global = (size_t) n;
+   	// The loglikelihood kernel executes on the entire output buffer
+   	// because the reduce_sum_float kernel uses the entire buffer as input.
+   	// Therefore we zero out the elements not directly involved in this computation.
+	size_t global = (size_t) num_elements;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
