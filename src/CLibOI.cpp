@@ -237,8 +237,8 @@ void CLibOI::InitRoutines()
 	mrNormalize->Init();
 
 	mrSquare = new CRoutine_Square(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrNormalize->SetSourcePath(mKernelSourcePath);
-	mrNormalize->Init();
+	mrSquare->SetSourcePath(mKernelSourcePath);
+	mrSquare->Init();
 
 	if(mMaxData > 0)
 	{
