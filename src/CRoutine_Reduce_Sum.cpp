@@ -51,6 +51,7 @@ float CRoutine_Reduce_Sum::Compute_CPU(cl_mem input_buffer, int n)
 	printf("CPU Sum: %f\n", sum);
 
 	delete[] tmp;
+	return sum;
 }
 
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
