@@ -30,6 +30,9 @@ void CRoutine_FTtoT3::Init(void)
 
 void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output)
 {
+	if(n_t3 == 0)
+		return;
+
 	int err = 0;
 	size_t global = (size_t) n_t3;
 	size_t local = 0;
@@ -61,6 +64,9 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsre
 
 void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output)
 {
+	if(n_t3 == 0)
+		return;
+
 	// Approximate the number of UV points.
 	// TODO: Note, this could actually result in memory access errors if n_uv < the number specified below!
 	int n_uv = 3 * n_t3 + n_v2;

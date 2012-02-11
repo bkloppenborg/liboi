@@ -29,6 +29,9 @@ void CRoutine_FTtoV2::Init(float image_scale)
 
 void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
 {
+	if(n_v2_points == 0)
+		return;
+
     int err = 0;
     size_t global = (size_t) n_v2_points;
     size_t local;
@@ -54,6 +57,9 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
 /// Computes the V2 using the input data on the CPU, compares the values and writes out to the console.
 void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_mem output)
 {
+	if(n_v2_points == 0)
+		return;
+
 	int err = 0;
 	// Pull back values from the OpenCL devices:
 	cl_float2 * cpu_dft = new cl_float2[n_v2_points];
