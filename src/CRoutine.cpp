@@ -107,6 +107,16 @@ int CRoutine::BuildKernel(string source, string kernel_name)
 	return mPrograms.size();
 }
 
+/// Dumps the entire contents of the specified buffer to standard out.
+void CRoutine::DumpFloatBuffer(cl_mem buffer, unsigned int size)
+{
+	int err = CL_SUCCESS;
+	cl_float * tmp = new cl_float[size];
+	err |= clEnqueueReadBuffer(mQueue, buffer, CL_TRUE, 0, size * sizeof(cl_float), tmp, 0, NULL, NULL);
+	for(int i = 0; i < size; i++)
+		printf(" %i %f\n", i, tmp[i]);
+}
+
 string CRoutine::ReadSource(string filename)
 {
 	return ReadFile(mKernelPath + '/' +  filename, "Could not read OpenCL kernel source " + mKernelPath + '/' +  filename);

@@ -60,6 +60,8 @@ public:
 	int BuildKernel(string source, string kernel_name);
 	int BuildKernel(string source, string kernel_name, string kernel_filename);
 
+	void DumpFloatBuffer(cl_mem buffer, unsigned int size);
+
 	string ReadSource(string filename);
 
 	void SetSourcePath(string path_to_kernels);

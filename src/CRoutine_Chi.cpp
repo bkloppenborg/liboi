@@ -69,9 +69,19 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n,
 	ComputeSum_CPU(mChi2Output, n);
 #endif // DEBUG_VERBOSE
 
-	// Now fire up the parallel sum kernel and return the output.
-	if(compute_sum)
-		sum = ComputeSum(true, mChiOutput, mChiTemp, tmp_buff1, tmp_buff2);
+	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
+	try
+	{
+		if(compute_sum)
+			sum = ComputeSum(true, mChiOutput, mChiTemp, tmp_buff1, tmp_buff2);
+	}
+	catch (...)
+	{
+		printf("Warning, exception in CRoutine_Chi2.  Writing out buffers:\n");
+		Chi(data, data_err, model_data, n);
+		DumpFloatBuffer(mChiTemp, num_elements);
+		throw;
+	}
 
 	return sum;
 }

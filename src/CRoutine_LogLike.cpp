@@ -26,38 +26,26 @@ CRoutine_LogLike::~CRoutine_LogLike()
 /// Computes the loglikelihood, returns it as a floating point number.
 float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
-	int err = 0;
-   	// The loglikelihood kernel executes on the entire output buffer
-   	// because the reduce_sum_float kernel uses the entire buffer as input.
-   	// Therefore we zero out the elements not directly involved in this computation.
-	size_t global = (size_t) num_elements;
-	size_t local = 0;
 	float sum = 0;
 
-	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(mKernels[mLogLikeKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine workgroup size for loglike kernel.", err);
+	// run the loglike kernel
+	LogLike_internal(data, data_err, model_data, n);
 
-	// Set the arguments to our compute kernel
-	err  = clSetKernelArg(mKernels[mLogLikeKernelID], 0, sizeof(cl_mem), &data);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 1, sizeof(cl_mem), &data_err);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 2, sizeof(cl_mem), &model_data);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 3, sizeof(cl_mem), &mTemp);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 4, sizeof(int), &n);
-	COpenCL::CheckOCLError("Failed to set loglike kernel arguments.", err);
-
-	// Execute the kernel over the entire range of the data set
-	err = clEnqueueNDRangeKernel(mQueue, mKernels[mLogLikeKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to enqueue loglike kernel.", err);
-
+	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
+	try
+	{
+		sum = ComputeSum(true, mOutput, mTemp, tmp_buff1, tmp_buff2);
 #ifdef DEBUG_VERBOSE
-	// Copy back the data, model, and errors:
-	LogLike_CPU(data, data_err, model_data, n);
-	ComputeSum_CPU(mOutput, n);
+		ComputeSum_CPU(mOutput, n);
 #endif // DEBUG_VERBOSE
-
-	// Now fire up the parallel sum kernel and return the output.
-	sum = ComputeSum(true, mOutput, mTemp, tmp_buff1, tmp_buff2);
+	}
+	catch (...)
+	{
+		printf("Warning, exception in CRoutine_LogLike.  Writing out buffers:\n");
+		LogLike_internal(data, data_err, model_data, n);
+		DumpFloatBuffer(mTemp, num_elements);
+		throw;
+	}
 
 	// Todo: Add in model priors.
 
@@ -97,6 +85,37 @@ float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_d
 	// Todo: Add in model priors.
 
 	return sum;
+}
+
+void CRoutine_LogLike::LogLike_internal(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
+{
+	int err = 0;
+	// The loglikelihood kernel executes on the entire output buffer
+	// because the reduce_sum_float kernel uses the entire buffer as input.
+	// Therefore we zero out the elements not directly involved in this computation.
+	size_t global = (size_t) num_elements;
+	size_t local = 0;
+
+	// Get the maximum work-group size for executing the kernel on the device
+	err = clGetKernelWorkGroupInfo(mKernels[mLogLikeKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	COpenCL::CheckOCLError("Failed to determine workgroup size for loglike kernel.", err);
+
+	// Set the arguments to our compute kernel
+	err  = clSetKernelArg(mKernels[mLogLikeKernelID], 0, sizeof(cl_mem), &data);
+	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 1, sizeof(cl_mem), &data_err);
+	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 2, sizeof(cl_mem), &model_data);
+	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 3, sizeof(cl_mem), &mTemp);
+	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 4, sizeof(int), &n);
+	COpenCL::CheckOCLError("Failed to set loglike kernel arguments.", err);
+
+	// Execute the kernel over the entire range of the data set
+	err = clEnqueueNDRangeKernel(mQueue, mKernels[mLogLikeKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to enqueue loglike kernel.", err);
+
+	#ifdef DEBUG_VERBOSE
+	// Copy back the data, model, and errors:
+	LogLike_CPU(data, data_err, model_data, n);
+	#endif // DEBUG_VERBOSE
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.

@@ -22,11 +22,12 @@ protected:
 	int mLogLikeKernelID;
 
 public:
-	CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue);;
+	CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_LogLike();
 
 	float LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 	float LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	void LogLike_internal(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 
 	void Init(int num_elements);
 };
