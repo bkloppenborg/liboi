@@ -240,6 +240,7 @@ void CLibOI::InitRoutines()
 	mrSquare->SetSourcePath(mKernelSourcePath);
 	mrSquare->Init();
 
+	// only initialize these routines if we have data:
 	if(mMaxData > 0)
 	{
 		// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
@@ -250,7 +251,7 @@ void CLibOI::InitRoutines()
 		// Initialize the FTtoV2 and FTtoT3 routines
 		mrV2 = new CRoutine_FTtoV2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 		mrV2->SetSourcePath(mKernelSourcePath);
-		mrV2->Init(mImageScale);
+		mrV2->Init();
 
 		mrT3 = new CRoutine_FTtoT3(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 		mrT3->SetSourcePath(mKernelSourcePath);

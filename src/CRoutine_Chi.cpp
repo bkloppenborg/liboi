@@ -135,16 +135,16 @@ void CRoutine_Chi::GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
-void CRoutine_Chi::Init(int num_elements)
+void CRoutine_Chi::Init(int n)
 {
 	int err = CL_SUCCESS;
 
 	// First initialize the base-class constructor:
-	CRoutine_Reduce_Sum::Init(num_elements, true);
+	CRoutine_Reduce_Sum::Init(n, true);
 
 	// Now allocate some memory
 	if(mChiTemp == NULL)
-		mChiTemp = clCreateBuffer(mContext, CL_MEM_READ_WRITE, num_elements * sizeof(cl_float), NULL, &err);
+		mChiTemp = clCreateBuffer(mContext, CL_MEM_READ_WRITE, n * sizeof(cl_float), NULL, &err);
 
 	if(mChiOutput == NULL)
 		mChiOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);

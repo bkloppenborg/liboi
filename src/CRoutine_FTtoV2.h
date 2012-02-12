@@ -16,7 +16,7 @@ public:
 	CRoutine_FTtoV2(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_FTtoV2();
 
-	void Init(float image_scale);
+	void Init();
 	void FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output);
 	void FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_mem output);
 };

@@ -56,14 +56,9 @@ float CRoutine_Reduce_Sum::Compute_CPU(cl_mem input_buffer, int n)
 
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
 /// allocate_temp_buffers: if true will automatically allocate/deallocate buffers. Otherwise you need to do this elsewhere
-void CRoutine_Reduce_Sum::Init(int num_elements, bool allocate_temp_buffers)
+void CRoutine_Reduce_Sum::Init(int n)
 {
 	// Set the number of elements on which this kernel will operate.
-	this->num_elements = num_elements;
+	this->num_elements = n;
 	BuildKernels();
-
-	// Now allocate any required buffers:
-//	if(allocate_temp_buffers)
-//		AllocateInternalBuffers();
-
 }

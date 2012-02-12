@@ -42,10 +42,8 @@ void CRoutine_Reduce::AllocateInternalBuffers()
 void CRoutine_Reduce::BuildKernels()
 {
     // Init a few variables:
-    int err = 0;
-    int i;
-    cl_program program;
-    cl_kernel kernel;
+    int err = CL_SUCCESS;
+    int i = 0;
 
 #ifdef DEBUG
     string message = "Loading and Compiling program " + mSource[0] + "\n";
@@ -187,7 +185,7 @@ void CRoutine_Reduce::CreateReductionPasscounts(int max_group_size, int max_grou
 
     while(s > 1)
     {
-        int work_items = (s < max_work_items * 2) ? s / 2 : max_work_items;
+        work_items = (s < max_work_items * 2) ? s / 2 : max_work_items;
         s = s / (work_items*2);
         max_levels++;
     }
@@ -206,8 +204,8 @@ void CRoutine_Reduce::CreateReductionPasscounts(int max_group_size, int max_grou
     s = groups;
     while(s > 1)
     {
-        int work_items = (s < max_work_items * 2) ? s / 2 : max_work_items;
-        int groups = s / (work_items * 2);
+        work_items = (s < max_work_items * 2) ? s / 2 : max_work_items;
+        groups = s / (work_items * 2);
         groups = (max_groups < groups) ? max_groups : groups;
 
         group_counts.push_back(groups);

@@ -55,7 +55,6 @@ int CRoutine::BuildKernel(string source, string kernel_name)
     const char * tmp = source.c_str();
     cl_program program;
     cl_kernel kernel;
-    size_t len = 0;
     int err;
     //    string tmp_err;
     //    tmp_err.reserve(2048);
@@ -113,7 +112,7 @@ void CRoutine::DumpFloatBuffer(cl_mem buffer, unsigned int size)
 	int err = CL_SUCCESS;
 	cl_float * tmp = new cl_float[size];
 	err |= clEnqueueReadBuffer(mQueue, buffer, CL_TRUE, 0, size * sizeof(cl_float), tmp, 0, NULL, NULL);
-	for(int i = 0; i < size; i++)
+	for(unsigned int i = 0; i < size; i++)
 		printf(" %i %f\n", i, tmp[i]);
 }
 

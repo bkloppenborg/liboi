@@ -50,7 +50,7 @@ void COpenCL::FindDevice(cl_platform_id & platform, cl_device_id & device, cl_de
 {
 	vector<cl_platform_id> platforms;
 	GetPlatformList(&platforms);
-	int i, j;
+	unsigned int i, j;
 	vector<cl_device_id> devices;
 
 	for(i = 0; i < platforms.size(); i++)
