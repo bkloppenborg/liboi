@@ -140,7 +140,7 @@ void CRoutine_Chi::Init(int n)
 	int err = CL_SUCCESS;
 
 	// First initialize the base-class constructor:
-	CRoutine_Reduce_Sum::Init(n, true);
+	CRoutine_Reduce_Sum::Init(n);
 
 	// Now allocate some memory
 	if(mChiTemp == NULL)

@@ -124,7 +124,7 @@ void CRoutine_LogLike::Init(int num_max_elements)
 	int err = CL_SUCCESS;
 
 	// First initialize the base-class constructor:
-	CRoutine_Reduce_Sum::Init(num_max_elements, true);
+	CRoutine_Reduce_Sum::Init(num_max_elements);
 
 	// Now allocate some memory
 	if(mTemp == NULL)

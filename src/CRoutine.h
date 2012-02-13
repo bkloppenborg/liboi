@@ -39,8 +39,6 @@
 
 using namespace std;
 
-
-
 class CRoutine
 {
 protected:

@@ -16,6 +16,12 @@
 #pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
 #pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
 
+// cl.hpp throws lot of warnings, but we have no control over these.  Tell GCC to ignore them.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC diagnostic ignored "-Wshadow"
+
 // Enable OpenCL exceptions
 #define __CL_ENABLE_EXCEPTIONS
 
@@ -24,6 +30,9 @@
 #else
 	#include <CL/cl.hpp>
 #endif
+
+// Restore the GCC warning state
+#pragma GCC diagnostic pop
 
 #include <GL/gl.h>
 #include <GL/glx.h>
