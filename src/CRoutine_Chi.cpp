@@ -22,6 +22,7 @@ CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_q
 	mChiTemp = NULL;
 	mChiOutput = NULL;
 	mChiKernelID = -1;
+	mCPUChiTemp = NULL;
 }
 
 CRoutine_Chi::~CRoutine_Chi()
@@ -32,6 +33,7 @@ CRoutine_Chi::~CRoutine_Chi()
 	delete[] mCPUChiTemp;
 }
 
+/// Computes chi = (data - model)/(data_err) and stores it in the internal mChiTemp buffer.
 void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
 	int err = CL_SUCCESS;
@@ -84,18 +86,18 @@ void CRoutine_Chi::Chi_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int 
 }
 
 /// Compares the OpenCL and CPU-only chi outputs given the same input data
-bool CRoutine_Chi::Chi_Verify(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
+bool CRoutine_Chi::Chi_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
 	int err = CL_SUCCESS;
 	// execute the chi kernel and cpu versions
 	Chi(data, data_err, model_data, n);
 	Chi_CPU(data, data_err, model_data, n);
 
-	// copy back the data and compare:
-	cl_float tmp[num_elements];
-	err  = clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, num_elements * sizeof(cl_float), &tmp, 0, NULL, NULL);
+	printf("Checking Chi Routines:\n");
+	bool test_result = Verify(mCPUChiTemp, mChiTemp, num_elements, 0);
+	PassFail(test_result);
 
-	return Verify(tmp, mChiTemp, num_elements, 0);
+	return test_result;
 }
 
 /// Helper function, calls the chi and then square routines, stores output in the internal mChiTemp buffer.
@@ -140,7 +142,7 @@ float CRoutine_Chi::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, in
 }
 
 /// Verifies the chi2 and chi2_cpu values match.  Also compares the intermediate chi2 array elements.
-bool CRoutine_Chi::Chi2_Verify(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum)
+bool CRoutine_Chi::Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum)
 {
 	bool chi2_match = true;
 	bool sum_match = true;
@@ -150,18 +152,17 @@ bool CRoutine_Chi::Chi2_Verify(cl_mem data, cl_mem data_err, cl_mem model_data, 
 	cpu_sum = Chi2_CPU(data, data_err, model_data, n, rSquare, true);
 
 	// Compare the CL and CPU chi2 elements:
+	printf("Checking individual Chi2 values:\n");
 	chi2_match = Verify(mCPUChiTemp, mChiTemp, num_elements, 0);
-	if(!chi2_match)
-		printf(" Failed: Chi2 intermediate values do not match!\n");
+	PassFail(chi2_match);
 
-	// Now sum the values
+	printf("Checking summed Chi2 values:\n");
 	float cl_sum = ComputeSum(true, mChiOutput, mChiTemp, tmp_buff1, tmp_buff2);
-
-	if(fabs(cpu_sum - cl_sum) > MAX_ERROR)
-	{
-		sum_match = false;
-		printf(" Failed: Chi2 sums do not match!\n");
-	}
+	bool sum_pass = bool(fabs(cpu_sum - cl_sum)/cpu_sum < MAX_REL_ERROR);
+	printf("  CPU Value:  %0.4f\n", cpu_sum);
+	printf("  CL  Value:  %0.4f\n", cl_sum);
+	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
+	PassFail(sum_pass);
 
 	return sum_match && chi2_match;
 }

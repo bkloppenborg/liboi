@@ -115,6 +115,18 @@ void CRoutine::DumpFloatBuffer(cl_mem buffer, unsigned int size)
 		printf(" %i %f\n", i, tmp[i]);
 }
 
+/// Prints out a simple pass/faile notification.
+void CRoutine::PassFail(bool is_true)
+{
+	printf(" Result: ");
+	if(is_true)
+		printf("Passed");
+	else
+		printf("Failed");
+
+	printf(".\n");
+}
+
 string CRoutine::ReadSource(string filename)
 {
 	return ReadFile(mKernelPath + '/' +  filename, "Could not read OpenCL kernel source " + mKernelPath + '/' +  filename);
@@ -134,11 +146,24 @@ bool CRoutine::Verify(cl_float * cpu_buffer, cl_mem device_buffer, int num_eleme
 	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), &tmp, offset, NULL, NULL);
 
 	double error;
+	double sum;
 	for(int i = 0; i < num_elements; i++)
+	{
+		sum += fabs(cpu_buffer[i]);
 		error += fabs(cpu_buffer[i] - tmp[i]);
+	}
 
-	if(error < MAX_ERROR)
-		return true;
+	printf("  Total Error [sum( |CPU - OpenCL| ) ]: %0.4f\n", error);
+	printf("  Relative Error [error / sum(|CPU}) ]:   %0.4e\n", error / sum);
 
-	return false;
+	if(error != error || (error/sum > MAX_REL_ERROR))
+	{
+		printf("  Error too great/NAN, dumping buffers.\n");
+		for(int i = 0; i < num_elements; i++)
+			printf("    %i %0.4f %0.4f %0.6f\n", i, cpu_buffer[i], tmp[i], cpu_buffer[i] - tmp[i]);
+
+		return false;
+	}
+
+	return true;
 }

@@ -48,7 +48,7 @@
 #include "COpenCL.h"
 #include "LibOIEnumerations.h"
 
-#define MAX_ERROR 1E-6
+#define MAX_REL_ERROR 0.001	// Maximum of 0.1% relative error permitted
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -83,6 +83,8 @@ public:
 	int BuildKernel(string source, string kernel_name, string kernel_filename);
 
 	void DumpFloatBuffer(cl_mem buffer, unsigned int size);
+
+	void PassFail(bool);
 
 	string ReadSource(string filename);
 

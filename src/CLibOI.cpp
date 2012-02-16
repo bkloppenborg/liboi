@@ -319,8 +319,9 @@ void CLibOI::RunVerification(int data_num)
 		return;
 
 	COILibData * data = mDataList[data_num];
+	printf("Checking summed flux values:\n");
+	mrTotalFlux->ComputeSum_Test(false, mFluxBuffer, mCLImage, NULL, NULL);
 
-	mrTotalFlux->ComputeSum(false, mFluxBuffer, mCLImage, NULL, NULL);
 	mrNormalize->Normalize(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
 	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth,
 			mImageHeight, mFluxBuffer, mFTBuffer);
@@ -330,8 +331,8 @@ void CLibOI::RunVerification(int data_num)
 
 	// Now run the chi, chi2, and loglike kernels:
 	int n = data->GetNumData();
-	mrChi->Chi_Verify(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
-	mrChi->Chi2_Verify(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, mrSquare, true);
+	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
+	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, mrSquare, true);
 }
 
 /// Tells OpenCL about the size of the image.

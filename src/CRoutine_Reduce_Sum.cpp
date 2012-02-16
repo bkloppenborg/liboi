@@ -32,26 +32,35 @@ float CRoutine_Reduce_Sum::ComputeSum(bool copy_back, cl_mem final_buffer, cl_me
 	return Compute(copy_back, final_buffer, input_buffer, output_buffer, partial_sum_buffer);
 }
 
-float CRoutine_Reduce_Sum::Compute_CPU(cl_mem input_buffer, int n)
+float CRoutine_Reduce_Sum::ComputeSum_CPU(cl_mem input_buffer)
 {
 	int err = CL_SUCCESS;
-	cl_float * tmp = new cl_float[n];
-	err |= clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, n * sizeof(cl_float), tmp, 0, NULL, NULL);
+	cl_float tmp[num_elements];
+	err |= clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CRoutine_Reduce_Sum::Compute_CPU() ", err);
 
 
 	float sum = 0;
-	printf("Computing Sum on CPU from input_buffer\n");
-	for(int i = 0; i < n; i++)
+	for(int i = 0; i < num_elements; i++)
 	{
-		printf("\t%i %e\n", i, tmp[i]);
-		sum += tmp[i];
+		sum += float(tmp[i]);
 	}
 
-	printf("CPU Sum: %f\n", sum);
-
-	delete[] tmp;
 	return sum;
+}
+
+/// Tests that the CPU and OpenCL versions of ComputeSum return the same value.
+bool CRoutine_Reduce_Sum::ComputeSum_Test(bool copy_back, cl_mem final_buffer, cl_mem input_buffer, cl_mem output_buffer, cl_mem partial_sum_buffer)
+{
+	// First run the CPU version as the CL version modifies the buffers.
+	float cpu_sum = ComputeSum_CPU(input_buffer);
+	float cl_sum = ComputeSum(true, final_buffer, input_buffer, output_buffer, partial_sum_buffer);
+
+	bool sum_pass = bool(fabs(cpu_sum - cl_sum)/cpu_sum < MAX_REL_ERROR);
+	printf("  CPU Value:  %0.4f\n", cpu_sum);
+	printf("  CL  Value:  %0.4f\n", cl_sum);
+	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
+	PassFail(sum_pass);
 }
 
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
