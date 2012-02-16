@@ -82,6 +82,8 @@ __kernel void dft_2d(
     }
         
     // Write the result to the output array
+    tmp.s0 /= flux[0];
+    tmp.s1 /= flux[0];
     output[tid] = tmp;
 }
 
