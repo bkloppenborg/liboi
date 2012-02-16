@@ -62,46 +62,36 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsre
 
 }
 
-void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output)
+void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, int n_uv, cl_mem data_phasor, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, complex<float> * cpu_output)
 {
 	if(n_t3 == 0)
 		return;
 
-	// Approximate the number of UV points.
-	// TODO: Note, this could actually result in memory access errors if n_uv < the number specified below!
-	int n_uv = 3 * n_t3 + n_v2;
-
-	int err = 0;
+	int err = CL_SUCCESS;
 	// Pull all of the data from the OpenCL device:
-	cl_float2 * cpu_dft = new cl_float2[n_uv];
-	err |= clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_uv * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
+	cl_float2 cpu_dft[n_uv];
+	cl_float2 cpu_phasor[n_t3];
+	cl_long4 cpu_bsref[n_t3];
+	cl_short4 cpu_sign[n_t3];
 
-	cl_float2 * cpu_phasor = new cl_float2[n_t3];
-	err |= clEnqueueReadBuffer(mQueue, data_phasor, CL_TRUE, 0, n_t3 * sizeof(cl_float), cpu_phasor, 0, NULL, NULL);
-
-	cl_long4 * cpu_bsref = new cl_long4[n_t3];
+	err  = clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_uv * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_phasor, CL_TRUE, 0, n_t3 * sizeof(cl_float2), cpu_phasor, 0, NULL, NULL);
 	err |= clEnqueueReadBuffer(mQueue, data_bsref, CL_TRUE, 0, n_t3 * sizeof(cl_long4), cpu_bsref, 0, NULL, NULL);
-
-	cl_short4 * cpu_sign = new cl_short4[n_t3];
 	err |= clEnqueueReadBuffer(mQueue, data_sign, CL_TRUE, 0, n_t3 * sizeof(cl_short4), cpu_sign, 0, NULL, NULL);
-
-	// Lastly pull in the output, don't forget to offset the read (output is a big cl_float of vis2 followed by t3's)
-	cl_float2 * cl_output = new cl_float2[n_t3];
-	err |= clEnqueueReadBuffer(mQueue, output, CL_TRUE, n_v2 * sizeof(cl_float), n_t3 * sizeof(cl_float2), cl_output, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy values back to CPU CRoutine_FTtoT3::FTtoT3_CPU().", err);
 
 
 	// Compute the T3, output the difference between CPU and GPU versions:
-	printf("T3 Buffer elements: (CPU, OpenCL, Diff)\n");
 	complex<float> V_ab;
 	complex<float> V_bc;
 	complex<float> V_ca;
 	complex<float> phi;
-	complex<float> T3;
 	cl_long4 uvpoint;
 	cl_short4 sign;
 	for(int i = 0; i < n_t3; i++)
 	{
+		if(i == 479)
+			printf("test");
 		uvpoint = cpu_bsref[i];
 	    sign = cpu_sign[i];
 		// Look up the visibility values, conjugating as necessary:
@@ -110,21 +100,18 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, cl_mem data_phasor, cl_mem data_
 		V_ca = complex<float>(cpu_dft[uvpoint.s2].s0, cpu_dft[uvpoint.s2].s1 * sign.s2);
 		phi = complex<float>(cpu_phasor[i].s0, cpu_phasor[i].s1);
 
-		T3 = V_ab * V_bc * V_ca * phi;
-
-//		printf("\t%i Re: (%f %f %e) Im: (%f %f %e)\n", i,
-//				T3.real(), cl_output[i].s0, T3.real() - cl_output[i].s0,
-//				T3.imag(), cl_output[i].s1, T3.imag()- cl_output[i].s1);
-
-		printf("\t%i Re: (%f %f %e) Im: (%f %f %e)\n", i,
-				0.0, cl_output[i].s0, 0.0,
-				0.0, cl_output[i].s1, 0.0);
+		cpu_output[i] = V_ab * V_bc * V_ca * phi;
 	}
+}
 
-	// Free memory:
-	delete[] cpu_dft;
-	delete[] cpu_phasor;
-	delete[] cpu_bsref;
-	delete[] cpu_sign;
-	delete[] cl_output;
+bool CRoutine_FTtoT3::FTtoT3_Test(cl_mem ft_loc, int n_uv, cl_mem data_phasor, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output)
+{
+	complex<float> cpu_output[n_t3];
+	FTtoT3(ft_loc, data_phasor, data_bsref, data_sign, n_t3, n_v2, output);
+	FTtoT3_CPU(ft_loc, n_uv, data_phasor, data_bsref, data_sign, n_t3, n_v2, cpu_output);
+
+	printf("Checking FT -> T3 Routine:\n");
+	bool t3_pass = Verify(cpu_output, output, n_t3, n_v2 * sizeof(cl_float));
+	PassFail(t3_pass);
+	return t3_pass;
 }

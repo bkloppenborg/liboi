@@ -52,6 +52,7 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <complex>
 
 #ifndef PI
 #ifdef M_PI
@@ -91,6 +92,7 @@ public:
 	void SetSourcePath(string path_to_kernels);
 
 	bool Verify(cl_float * cpu_buffer, cl_mem device_buffer, int n_elements, size_t offset);
+	bool Verify(complex<float> * cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset);
 };
 
 #endif /* COPENCLROUTINE_H_ */

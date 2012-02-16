@@ -144,6 +144,7 @@ bool CRoutine::Verify(cl_float * cpu_buffer, cl_mem device_buffer, int num_eleme
 	cl_float tmp[num_elements];
 
 	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), &tmp, offset, NULL, NULL);
+	COpenCL::CheckOCLError("Could not copy back cl_float values for verification!", err);
 
 	double error;
 	double sum;
@@ -153,14 +154,57 @@ bool CRoutine::Verify(cl_float * cpu_buffer, cl_mem device_buffer, int num_eleme
 		error += fabs(cpu_buffer[i] - tmp[i]);
 	}
 
-	printf("  Total Error [sum( |CPU - OpenCL| ) ]: %0.4f\n", error);
-	printf("  Relative Error [error / sum(|CPU}) ]:   %0.4e\n", error / sum);
+	printf("  Total Error [sum( |CPU - OpenCL| ) ]: %0.4e\n", error);
+	printf("  Relative Error [error / sum(|CPU|) ]:   %0.4e\n", error / sum);
 
 	if(error != error || (error/sum > MAX_REL_ERROR))
 	{
 		printf("  Error too great/NAN, dumping buffers.\n");
 		for(int i = 0; i < num_elements; i++)
 			printf("    %i %0.4f %0.4f %0.6f\n", i, cpu_buffer[i], tmp[i], cpu_buffer[i] - tmp[i]);
+
+		return false;
+	}
+
+	return true;
+}
+
+/// Data verification for OpenCL type cl_float
+bool CRoutine::Verify(complex<float> * cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
+{
+	int err = CL_SUCCESS;
+	cl_float2 tmp[num_elements];
+
+	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float2), &tmp, NULL, NULL, NULL);
+	COpenCL::CheckOCLError("Could not copy back cl_float2 values for verification!", err);
+
+	double error;
+	double sum;
+	for(int i = 0; i < num_elements; i++)
+	{
+		sum += abs(cpu_buffer[i]);
+		error += fabs(cpu_buffer[i].real() - tmp[i].s0) + fabs(cpu_buffer[i].imag() - tmp[i].s1);
+	}
+
+	printf("  Total Error [sum( |CPU - OpenCL| ) ]: %0.4e\n", error);
+	printf("  Relative Error [error / sum(|CPU|) ]:   %0.4e\n", error / sum);
+
+	if(error != error || (error/sum > MAX_REL_ERROR))
+	{
+		complex<float> diff;
+		double tmp_real = 0;
+		double tmp_imag = 0;
+		printf("  Error too great/NAN, dumping buffers.\n");
+		for(int i = 0; i < num_elements; i++)
+		{
+			tmp_real = cpu_buffer[i].real() - tmp[i].s0;
+			tmp_imag = cpu_buffer[i].imag() - tmp[i].s1;
+			diff = complex<float>(tmp_real, tmp_imag);
+			printf("    %i (%0.4e %0.4e) (%0.4e %0.4e) (%0.4e %0.4e)\n", i,
+					cpu_buffer[i].real(), cpu_buffer[i].imag(),
+					tmp[i].s0, tmp[i].s1,
+					diff.real(), diff.imag());
+		}
 
 		return false;
 	}

@@ -321,12 +321,11 @@ void CLibOI::RunVerification(int data_num)
 	COILibData * data = mDataList[data_num];
 	printf("Checking summed flux values:\n");
 	mrTotalFlux->ComputeSum_Test(false, mFluxBuffer, mCLImage, NULL, NULL);
-
-	mrNormalize->Normalize(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
-	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth,
+	mrNormalize->Normalize_Test(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
+	mrFT->FT_Test(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth,
 			mImageHeight, mFluxBuffer, mFTBuffer);
-	mrV2->FTtoV2(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
-	mrT3->FTtoT3(mFTBuffer, data->GetLoc_DataT3Phi(), data->GetLoc_DataBSRef(),
+	mrV2->FTtoV2_Test(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
+	mrT3->FTtoT3_Test(mFTBuffer, data->GetNumUV(), data->GetLoc_DataT3Phi(), data->GetLoc_DataBSRef(),
 			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
 
 	// Now run the chi, chi2, and loglike kernels:

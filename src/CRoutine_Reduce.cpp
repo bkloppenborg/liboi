@@ -115,7 +115,7 @@ float CRoutine_Reduce::Compute(bool copy_back, cl_mem final_buffer, cl_mem input
         size_t local = work_item_counts[i];
         unsigned int operations = operation_counts[i];
         unsigned int entries = entry_counts[i];
-        size_t shared_size = sizeof(float) * local * operations;
+        size_t shared_size = sizeof(cl_float) * local * operations;
 
 #ifdef DEBUG_VERBOSE
 		printf("Pass[%4d] Global[%4d] Local[%4d] Groups[%4d] WorkItems[%4d] Operations[%d] Entries[%d]\n",  i,
@@ -197,11 +197,12 @@ void CRoutine_Reduce::CreateReductionPasscounts(int max_group_size, int max_grou
     entry_counts.push_back(num_elements);
     if(max_group_size < work_items)
     {
-        operation_counts.push_back(work_items);
-        work_item_counts.push_back(max_group_size);
+        operation_counts[0] = work_items;
+        work_item_counts[0] = max_group_size;
     }
 
     s = groups;
+    int level = 1;
     while(s > 1)
     {
         work_items = (s < max_work_items * 2) ? s / 2 : max_work_items;
@@ -215,10 +216,11 @@ void CRoutine_Reduce::CreateReductionPasscounts(int max_group_size, int max_grou
 
         if(max_group_size < work_items)
         {
-            operation_counts.push_back(work_items);
-            work_item_counts.push_back(max_group_size);
+            operation_counts[level] = work_items;
+            work_item_counts[level] = max_group_size;
         }
 
         s = s / (work_items*2);
+        level++;
     }
 }

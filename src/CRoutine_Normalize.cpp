@@ -26,6 +26,7 @@ void CRoutine_Normalize::Init()
 	BuildKernel(source, "normalize_float", mSource[0]);
 }
 
+/// Normalizes the specified image.
 void CRoutine_Normalize::Normalize(cl_mem image, int image_width, int image_height, cl_mem divisor)
 {
 	// Create the image size memory object
@@ -51,7 +52,36 @@ void CRoutine_Normalize::Normalize(cl_mem image, int image_width, int image_heig
     err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, local, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to enqueue normalization kernel.", err);
 
-    // Free memory
-    delete[] global;
     delete[] local;
+    delete[] global;
+}
+
+void CRoutine_Normalize::Normalize_CPU(cl_mem image, int image_width, int image_height, cl_mem divisor, cl_float * output)
+{
+	int n_pixels = image_width * image_height;
+	cl_float cpu_divisor;
+
+	// Copy the data back to the CPU
+	int err = CL_SUCCESS;
+	err |= clEnqueueReadBuffer(mQueue, image, CL_TRUE, 0, n_pixels * sizeof(cl_float), output, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, divisor, CL_TRUE, 0, sizeof(cl_float), &cpu_divisor, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CRoutine_Normalize::Normalize_CPU() ", err);
+
+	for(int i = 0; i < n_pixels; i++)
+		output[i] /= cpu_divisor;
+}
+
+/// Compares the individual elements of the normalized image, CPU vs. GPU.
+bool CRoutine_Normalize::Normalize_Test(cl_mem image, int image_width, int image_height, cl_mem divisor)
+{
+	int n_pixels = image_width * image_height;
+	cl_float cpu_output[n_pixels];
+
+	Normalize_CPU(image, image_width, image_height, divisor, cpu_output);
+	Normalize(image, image_width, image_height, divisor);
+
+	printf("Checking Normalization Routine:\n");
+	bool norm_pass = Verify(cpu_output, image, n_pixels, 0);
+	PassFail(norm_pass);
+	return norm_pass;
 }

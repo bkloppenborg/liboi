@@ -55,33 +55,28 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
 }
 
 /// Computes the V2 using the input data on the CPU, compares the values and writes out to the console.
-void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_mem output)
+void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_float * cpu_output)
 {
 	if(n_v2_points == 0)
 		return;
 
-	int err = 0;
-	// Pull back values from the OpenCL devices:
-	cl_float2 * cpu_dft = new cl_float2[n_v2_points];
+	int err = CL_SUCCESS;
+	cl_float2 cpu_dft[n_v2_points];
 	err |= clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_v2_points * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
-	cl_float * cl_output = new cl_float[n_v2_points];
-	err |= clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_v2_points * sizeof(cl_float), cl_output, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to copy values back to the CPU, Routine_FTtoV2::FTtoV2_CPU().", err);
 
-
-	cl_float vis2 = 0;
-	cl_float real = 0;
-	cl_float imag = 0;
-	printf("Vis2 Buffer elements: (CPU, OpenCL, Diff)\n");
 	for(int i = 0; i < n_v2_points; i++)
-	{
-		real = cpu_dft[i].s0;
-		imag = cpu_dft[i].s1;
-		vis2 = real * real + imag * imag;
-		printf("\t%i (%f %f %e)\n", i, vis2, cl_output[i], vis2 - cl_output[i]);
-	}
+		cpu_output[i] = cpu_dft[i].s0 * cpu_dft[i].s0 + cpu_dft[i].s1 * cpu_dft[i].s1;
+}
 
-	// Free memory
-	delete[] cpu_dft;
-	delete[] cl_output;
+bool CRoutine_FTtoV2::FTtoV2_Test(cl_mem ft_loc, int n_v2_points, cl_mem output)
+{
+	cl_float cpu_output[n_v2_points];
+	FTtoV2(ft_loc, n_v2_points, output);
+	FTtoV2_CPU(ft_loc, n_v2_points, cpu_output);
+
+	printf("Checking FT -> V2 Routine:\n");
+	bool v2_pass = Verify(cpu_output, output, n_v2_points, 0);
+	PassFail(v2_pass);
+	return v2_pass;
 }
