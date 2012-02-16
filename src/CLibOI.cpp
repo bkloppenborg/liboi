@@ -31,7 +31,7 @@ CLibOI::CLibOI(cl_device_type type)
 	mCLImage = NULL;
 	mGLImage = NULL;
 	mFluxBuffer = NULL;
-	mImageType = OpenCLBuffer;	// By default we assume the image is stored in an OpenCL buffer.
+	mImageType = LibOIEnums::OpenCLBuffer;	// By default we assume the image is stored in an OpenCL buffer.
 	mImageScale = 1;
 	mMaxData = 0;
 	mMaxUV = 0;
@@ -80,7 +80,7 @@ void CLibOI::CopyImageToBuffer(int layer)
 {
 	int err = CL_SUCCESS;
 
-	if(mImageType == OpenGLBuffer)
+	if(mImageType == LibOIEnums::OpenGLBuffer)
 	{
 		// Wait for the OpenGL queue to finish.
 		glFinish();
@@ -200,7 +200,7 @@ void CLibOI::InitMemory()
 {
 	int err = CL_SUCCESS;
 
-	if(mImageType == OpenGLBuffer)
+	if(mImageType == LibOIEnums::OpenGLBuffer)
 	{
 		mCLImage = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, mImageWidth * mImageHeight * sizeof(cl_float), NULL, &err);
 		COpenCL::CheckOCLError("Could not create temporary OpenCL image buffer", err);
@@ -311,6 +311,29 @@ float CLibOI::TotalFlux(int layer, bool return_value)
 	return flux;
 }
 
+/// Runs the verification functions of each kernel.  Assumes all initialization has been complete
+/// and at least one data set has been loaded.
+void CLibOI::RunVerification(int data_num)
+{
+	if(data_num > mDataList.size() - 1)
+		return;
+
+	COILibData * data = mDataList[data_num];
+
+	mrTotalFlux->ComputeSum(false, mFluxBuffer, mCLImage, NULL, NULL);
+	mrNormalize->Normalize(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
+	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth,
+			mImageHeight, mFluxBuffer, mFTBuffer);
+	mrV2->FTtoV2(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
+	mrT3->FTtoT3(mFTBuffer, data->GetLoc_DataT3Phi(), data->GetLoc_DataBSRef(),
+			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
+
+	// Now run the chi, chi2, and loglike kernels:
+	int n = data->GetNumData();
+	mrChi->Chi_Verify(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
+	mrChi->Chi2_Verify(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, mrSquare, true);
+}
+
 /// Tells OpenCL about the size of the image.
 /// The image must have a depth of at least one.
 void   CLibOI::SetImageInfo(int width, int height, int depth, float scale)
@@ -333,7 +356,7 @@ void   CLibOI::SetImage_CLMEM(cl_mem image)
 /// Registers it as the currentt image object against which liboi operations will be undertaken.
 void CLibOI::SetImage_GLFB(GLuint framebuffer)
 {
-	this->mImageType = OpenGLBuffer;
+	this->mImageType = LibOIEnums::OpenGLBuffer;
 	int err = CL_SUCCESS;
 	mGLImage = clCreateFromGLBuffer(mOCL->GetContext(), CL_MEM_READ_ONLY, framebuffer, &err);
 	COpenCL::CheckOCLError("Could not create OpenCL image object from framebuffer", err);
@@ -344,7 +367,7 @@ void CLibOI::SetImage_GLFB(GLuint framebuffer)
 void CLibOI::SetImage_GLTB(GLuint texturebuffer)
 {
 	// TODO: Permit loading of 3D textures for spectral imaging.
-	this->mImageType = OpenGLBuffer;
+	this->mImageType = LibOIEnums::OpenGLBuffer;
 	int err = CL_SUCCESS;
 
 	// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.

@@ -20,13 +20,19 @@ class CRoutine_Chi: public CRoutine_Reduce_Sum
 	cl_mem mChiTemp;
 	cl_mem mChiOutput;
 
+	cl_float * mCPUChiTemp;
+
 public:
 	CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue);
 	~CRoutine_Chi();
 
 	void Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	void Chi_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	bool Chi_Verify(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+
 	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum);
-	float Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	float Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum);
+	bool Chi2_Verify(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum);
 
 	void GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
 

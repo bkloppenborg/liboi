@@ -5,13 +5,35 @@
  *      Author: bkloppenborg
  *
  *
- *  Base class for all OpenCL routines.  Each routine should implement
- *  both the optimized OpenCL function AND a completely unoptimized CPU-only version
- *  of the same code.  Names are typically:
- *    Function(...) 	// OpenCL Version
- *    Function_CPU(...) // CPU-only version.
- *  so that the OpenCL routines may be tested against known-good algorithms.  Input
- *  data for *_CPU should be pulled from the OpenCL device.
+ *  Base class for all LibOI routines.  Each inheriting class should implement at least
+ *  three functions:
+ *
+ *    Foo(...)	 		// Default function for LibOI to call
+ *    Foo_CL(...)  		// Called by Function, runs OpenCL routine
+ *    Foo_CPU(...) 		// Takes same input as Foo_CL, calculates values on CPU.
+ *    Foo_Verify(...)	// Checks OpenCL results against CPU calculations
+ *    Init(...)			// Initializes the routine, building kernels, allocating any memory.
+ *
+ *  Foo() is just a common interface to the function, it should check CRoutine::mOpMode and
+ *  route to the appropriate kernel function.
+ *
+ *  The *_CL function should run the OpenCL kernels on the OpenCL device identified
+ *  by mDeviceID, mContext, and mQueue.  The OpenCL routines should be fully optimized.
+ *  Any memory access optimizations in the OpenCL kernels should be documented in the
+ *  kernels source.  With _CL kernels, most cl_mem objects should be in DEVICE memory.
+ *
+ *  The *_CPU function is a nearly UNOPTIMIZED version of the *_CL kernels that is used to
+ *  test the validity of the *_CL kernel results.  Ideally the *_CPU kernel should be well
+ *  documented, closely mirror what is done on the OpenCL device and be easy to follow.  These
+ *  functions should copy over OpenCL memory and use it as input and store the calculations in
+ *  class-level members (if needed in a later step).
+ *
+ *  Lastly, the *_Verify function should execute the *_CL and *_CPU versions of the functions
+ *  and compare intermediate results using one of the CRoutine::Compare* functions.  Assume
+ *  that all cl_mem objects are in DEVICE memory and that they need to be copied to the host
+ *  before using them in the _CPU functions.  This is a slow process, but guarantees that
+ *  the CL and CPU functions produce the same output given the same input.
+ *
  */
 
 #ifndef CROUTINE_H_
@@ -24,7 +46,9 @@
 #include <cstdio>
 #include "ReadTextFile.h"
 #include "COpenCL.h"
+#include "LibOIEnumerations.h"
 
+#define MAX_ERROR 1E-6
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -63,6 +87,8 @@ public:
 	string ReadSource(string filename);
 
 	void SetSourcePath(string path_to_kernels);
+
+	bool Verify(cl_float * cpu_buffer, cl_mem device_buffer, int n_elements, size_t offset);
 };
 
 #endif /* COPENCLROUTINE_H_ */

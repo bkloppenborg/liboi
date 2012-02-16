@@ -57,7 +57,7 @@ protected:
 	CRoutine_Square * mrSquare;
 
 	// Memory objects (OpenCL or otherwise)
-	eImageTypes mImageType;
+	LibOIEnums::ImageTypes mImageType;
 	cl_mem mCLImage;
 	cl_mem mGLImage;
 	int mImageWidth;
@@ -110,6 +110,8 @@ public:
 	void Normalize();
 
 	float TotalFlux(int layer, bool return_value);
+
+	void RunVerification(int data_num);
 
 	void SetImageInfo(int width, int height, int depth, float scale);
 	void SetImage_CLMEM(cl_mem image);

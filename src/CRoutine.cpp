@@ -15,7 +15,6 @@ CRoutine::CRoutine(cl_device_id device, cl_context context, cl_command_queue que
 	mContext = context;
 	mQueue = queue;
 	mKernelPath = "";
-
 }
 
 CRoutine::~CRoutine()
@@ -124,4 +123,22 @@ string CRoutine::ReadSource(string filename)
 void CRoutine::SetSourcePath(string path_to_kernels)
 {
 	mKernelPath = path_to_kernels;
+}
+
+/// Data verification for OpenCL type cl_float
+bool CRoutine::Verify(cl_float * cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
+{
+	int err = CL_SUCCESS;
+	cl_float tmp[num_elements];
+
+	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), &tmp, offset, NULL, NULL);
+
+	double error;
+	for(int i = 0; i < num_elements; i++)
+		error += fabs(cpu_buffer[i] - tmp[i]);
+
+	if(error < MAX_ERROR)
+		return true;
+
+	return false;
 }

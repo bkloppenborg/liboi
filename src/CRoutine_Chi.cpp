@@ -28,11 +28,13 @@ CRoutine_Chi::~CRoutine_Chi()
 {
 	if(mChiTemp) clReleaseMemObject(mChiTemp);
 	if(mChiOutput) clReleaseMemObject(mChiOutput);
+
+	delete[] mCPUChiTemp;
 }
 
 void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
-	int err = 0;
+	int err = CL_SUCCESS;
    	// The loglikelihood kernel executes on the entire output buffer
    	// because the reduce_sum_float kernel uses the entire buffer as input.
    	// Therefore we zero out the elements not directly involved in this computation.
@@ -56,18 +58,52 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 	COpenCL::CheckOCLError("Failed to enqueue chi kernel.", err);
 }
 
+void CRoutine_Chi::Chi_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
+{
+	int err = CL_SUCCESS;
+	cl_float cpu_data[num_elements];
+	cl_float cpu_data_err[num_elements];
+	cl_float cpu_model_data[num_elements];
+	cl_float tmp = 0;
+
+	err  = clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, num_elements * sizeof(cl_float), &cpu_data, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, num_elements * sizeof(cl_float), &cpu_data_err, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, num_elements * sizeof(cl_float), &cpu_model_data, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to copy chi buffers back to the CPU.", err);
+
+	// Now compute the chi, store it.
+	for(int i = 0; i < num_elements; i++)
+	{
+		tmp = 0;
+
+		if(i < n)
+			tmp = (cpu_data[i] - cpu_model_data[i]) / cpu_data_err[i];
+
+		mCPUChiTemp[i] = tmp;
+	}
+}
+
+/// Compares the OpenCL and CPU-only chi outputs given the same input data
+bool CRoutine_Chi::Chi_Verify(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
+{
+	int err = CL_SUCCESS;
+	// execute the chi kernel and cpu versions
+	Chi(data, data_err, model_data, n);
+	Chi_CPU(data, data_err, model_data, n);
+
+	// copy back the data and compare:
+	cl_float tmp[num_elements];
+	err  = clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, num_elements * sizeof(cl_float), &tmp, 0, NULL, NULL);
+
+	return Verify(tmp, mChiTemp, num_elements, 0);
+}
+
 /// Helper function, calls the chi and then square routines, stores output in the internal mChiTemp buffer.
 float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum)
 {
 	float sum = 0;
 	Chi(data, data_err, model_data, n);
 	rSquare->Square(mChiTemp, mChiTemp, n);
-
-#ifdef DEBUG_VERBOSE
-	// Copy back the data, model, and errors:
-	Chi2_CPU(data, data_err, model_data, n);
-	ComputeSum_CPU(mChi2Output, n);
-#endif // DEBUG_VERBOSE
 
 	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
 	try
@@ -86,34 +122,48 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n,
 	return sum;
 }
 
-float CRoutine_Chi::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
+float CRoutine_Chi::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum)
 {
-	int err = 0;
-	cl_float * cpu_data = new cl_float[n];
-	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, n * sizeof(cl_float), cpu_data, 0, NULL, NULL);
-	cl_float * cpu_data_err = new cl_float[n];
-	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, n * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
-	cl_float * cpu_model_data = new cl_float[n];
-	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, n * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to copy chi buffers back to the CPU.", err);
-
-	// we do this verbose
 	float sum = 0;
-	float tmp = 0;
-	for(int i = 0; i < n; i++)
+
+	// Now square
+	for(int i = 0; i < num_elements; i++)
 	{
-		tmp = (cpu_data[i] - cpu_model_data[i]) / cpu_data_err[i];
-		printf("%i %f %f %e %e \n", i, cpu_data[i], cpu_model_data[i], cpu_data[i] - cpu_model_data[i], cpu_data_err[i]);
-		sum += tmp * tmp;
+		mCPUChiTemp[i] *= mCPUChiTemp[i];
+		sum += mCPUChiTemp[i];
 	}
 
-	printf("Chi2: %f\n", sum);
+	if(compute_sum)
+		return sum;
 
-	delete[] cpu_data;
-	delete[] cpu_data_err;
-	delete[] cpu_model_data;
+	return 0;
+}
 
-	return sum;
+/// Verifies the chi2 and chi2_cpu values match.  Also compares the intermediate chi2 array elements.
+bool CRoutine_Chi::Chi2_Verify(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum)
+{
+	bool chi2_match = true;
+	bool sum_match = true;
+	float cpu_sum;
+	// Run the OpenCL functiosn first, DON'T compute the sum(yet).
+	Chi2(data, data_err, model_data, n, rSquare, false);
+	cpu_sum = Chi2_CPU(data, data_err, model_data, n, rSquare, true);
+
+	// Compare the CL and CPU chi2 elements:
+	chi2_match = Verify(mCPUChiTemp, mChiTemp, num_elements, 0);
+	if(!chi2_match)
+		printf(" Failed: Chi2 intermediate values do not match!\n");
+
+	// Now sum the values
+	float cl_sum = ComputeSum(true, mChiOutput, mChiTemp, tmp_buff1, tmp_buff2);
+
+	if(fabs(cpu_sum - cl_sum) > MAX_ERROR)
+	{
+		sum_match = false;
+		printf(" Failed: Chi2 sums do not match!\n");
+	}
+
+	return sum_match && chi2_match;
 }
 
 /// Computes the chi values and returns them in the array, output, which has size n
@@ -124,14 +174,13 @@ void CRoutine_Chi::GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 	Chi(data, data_err, model_data, n);
 	clFinish(mQueue);
 
-	// Copy data to the CPU.  Note, we use an intermedate array in case cl_float != float
+	// Copy data to the CPU.  Note, we use an intermediate array in case cl_float != float
 	int err = 0;
-	cl_float * tmp = new cl_float[n];
-	err = clEnqueueReadBuffer(mQueue, mChiTemp, CL_TRUE, 0, n * sizeof(cl_float), tmp, 0, NULL, NULL);
+	err = clEnqueueReadBuffer(mQueue, mChiTemp, CL_TRUE, 0, n * sizeof(cl_float), mCPUChiTemp, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy buffer back to CPU.  CRoutine_Chi::GetChi().", err);
 
 	for(int i = 0; i < n; i++)
-		output[i] = float(tmp[i]);
+		output[i] = float(mCPUChiTemp[i]);
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
@@ -148,6 +197,9 @@ void CRoutine_Chi::Init(int n)
 
 	if(mChiOutput == NULL)
 		mChiOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
+
+	if(mCPUChiTemp == NULL)
+		mCPUChiTemp = new cl_float[n];
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[mChiSourceID]);
