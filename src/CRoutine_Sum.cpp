@@ -159,6 +159,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool co
 		it++;
 	}
 
+	// If a few elements remain, we will need to compute their sum on the CPU:
     if (s > 1)
     {
     	cl_float h_odata[s];
@@ -171,7 +172,15 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool co
             gpu_result += h_odata[i];
         }
 
+        // Copy this value back to the GPU
+    	clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+
         needReadBack = false;
+    }
+    else
+    {
+    	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
+    	clEnqueueCopyBuffer(mQueue, mTempBuffer, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
     }
 
 	clFinish(mQueue);
@@ -181,6 +190,10 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool co
 		// copy final sum from device to host
 		clEnqueueReadBuffer(mQueue, mTempBuffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 	}
+
+
+	// Now copy the data over to the final GPU location.
+	clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 
 	// Release the kernels
 	clReleaseKernel(reductionKernel);
