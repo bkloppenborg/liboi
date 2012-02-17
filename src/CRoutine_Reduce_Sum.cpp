@@ -32,6 +32,7 @@ float CRoutine_Reduce_Sum::ComputeSum(bool copy_back, cl_mem final_buffer, cl_me
 	return Compute(copy_back, final_buffer, input_buffer, output_buffer, partial_sum_buffer);
 }
 
+/// Computes the sum of the OpenCL buffer, input_buffer, using Kahan summation to minimize precision losses.
 float CRoutine_Reduce_Sum::ComputeSum_CPU(cl_mem input_buffer)
 {
 	int err = CL_SUCCESS;
@@ -39,13 +40,17 @@ float CRoutine_Reduce_Sum::ComputeSum_CPU(cl_mem input_buffer)
 	err |= clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CRoutine_Reduce_Sum::Compute_CPU() ", err);
 
-
-	float sum = 0;
-	for(int i = 0; i < num_elements; i++)
+	// Use Kahan summation to minimize lost precision.
+	// http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+	float sum = tmp[0];
+	float c = float(0.0);
+	for (int i = 1; i < num_elements; i++)
 	{
-		sum += float(tmp[i]);
+		float y = tmp[i] - c;
+		float t = sum + y;
+		c = (t - sum) - y;
+		sum = t;
 	}
-
 	return sum;
 }
 
