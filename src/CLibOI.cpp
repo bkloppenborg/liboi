@@ -8,8 +8,7 @@
 #include "CLibOI.h"
 #include <cstdio>
 
-#include "CRoutine_Reduce.h"
-#include "CRoutine_Reduce_Sum.h"
+#include "CRoutine_Sum.h"
 #include "CRoutine_Normalize.h"
 #include "CRoutine_ImageToBuffer.h"
 #include "CRoutine_FT.h"
@@ -224,7 +223,7 @@ void CLibOI::InitMemory()
 void CLibOI::InitRoutines()
 {
 	// Init all routines.  For now pre-allocate all buffers.
-	mrTotalFlux = new CRoutine_Reduce_Sum(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+	mrTotalFlux = new CRoutine_Sum(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 	mrTotalFlux->SetSourcePath(mKernelSourcePath);
 	mrTotalFlux->Init(mImageWidth * mImageHeight);
 

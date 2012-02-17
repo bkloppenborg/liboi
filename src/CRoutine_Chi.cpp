@@ -13,7 +13,7 @@
 using namespace std;
 
 CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue)
-	:CRoutine_Reduce_Sum(device, context, queue)
+	:CRoutine_Sum(device, context, queue)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("chi.cl");
@@ -190,7 +190,7 @@ void CRoutine_Chi::Init(int n)
 	int err = CL_SUCCESS;
 
 	// First initialize the base-class constructor:
-	CRoutine_Reduce_Sum::Init(n);
+	CRoutine_Sum::Init(n);
 
 	// Now allocate some memory
 	if(mChiTemp == NULL)

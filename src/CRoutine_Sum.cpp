@@ -1,5 +1,5 @@
 /*
- * CRoutine_Reduce_Sum.cpp
+ * CRoutine_Sum.cpp
  *
  *  Created on: Nov 14, 2011
  *      Author: bkloppenborg
@@ -7,21 +7,27 @@
 
 #include <cstdio>
 #include <sstream>
-#include "CRoutine_Reduce_Sum.h"
+#include "CRoutine_Sum.h"
 
 using namespace std;
 
-CRoutine_Reduce_Sum::CRoutine_Reduce_Sum(cl_device_id device, cl_context context, cl_command_queue queue)
-	: CRoutine_Reduce(device, context, queue)
+CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_queue queue)
+	: CRoutine(device, context, queue)
 {
 	// Specify the source location, set temporary buffers to null
 	mSource.push_back("reduce_sum_float.cl");
 	mTempBuffer = NULL;
+	num_elements = 0;
 }
 
-CRoutine_Reduce_Sum::~CRoutine_Reduce_Sum()
+CRoutine_Sum::~CRoutine_Sum()
 {
 	if(mTempBuffer) clReleaseMemObject(mTempBuffer);
+}
+
+void CRoutine_Sum::BuildKernels()
+{
+
 }
 
 unsigned int nextPow2( unsigned int x ) {
@@ -57,7 +63,7 @@ void getNumBlocksAndThreads(int whichKernel, int n, int maxBlocks, int maxThread
         blocks = min(maxBlocks, blocks);
 }
 
-cl_kernel CRoutine_Reduce_Sum::getReductionKernel(int whichKernel, int blockSize, int isPowOf2)
+cl_kernel CRoutine_Sum::getReductionKernel(int whichKernel, int blockSize, int isPowOf2)
 {
 
     stringstream tmp;
@@ -74,7 +80,7 @@ cl_kernel CRoutine_Reduce_Sum::getReductionKernel(int whichKernel, int blockSize
 }
 
 // Performs an out-of-plate sum storing temporary values in output_buffer and partial_sum_buffer.
-float CRoutine_Reduce_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool copy_back)
+float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool copy_back)
 {
 	int err = CL_SUCCESS;
 	int whichKernel = 6;
@@ -188,7 +194,7 @@ float CRoutine_Reduce_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, 
 }
 
 /// Computes the sum of the OpenCL buffer, input_buffer, using Kahan summation to minimize precision losses.
-float CRoutine_Reduce_Sum::ComputeSum_CPU(cl_mem input_buffer)
+float CRoutine_Sum::ComputeSum_CPU(cl_mem input_buffer)
 {
 	int err = CL_SUCCESS;
 	cl_float tmp[num_elements];
@@ -210,7 +216,7 @@ float CRoutine_Reduce_Sum::ComputeSum_CPU(cl_mem input_buffer)
 }
 
 /// Tests that the CPU and OpenCL versions of ComputeSum return the same value.
-bool CRoutine_Reduce_Sum::ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer, bool copy_back)
+bool CRoutine_Sum::ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer, bool copy_back)
 {
 	// First run the CPU version as the CL version modifies the buffers.
 	float cpu_sum = ComputeSum_CPU(input_buffer);
@@ -225,7 +231,7 @@ bool CRoutine_Reduce_Sum::ComputeSum_Test(cl_mem input_buffer, cl_mem final_buff
 
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
 /// allocate_temp_buffers: if true will automatically allocate/deallocate buffers. Otherwise you need to do this elsewhere
-void CRoutine_Reduce_Sum::Init(int n)
+void CRoutine_Sum::Init(int n)
 {
 	int err = CL_SUCCESS;
 	// Set the number of elements on which this kernel will operate.

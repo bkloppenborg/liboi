@@ -22,7 +22,7 @@
 #include "LibOIEnumerations.h"
 #include "COILibDataList.h"
 
-class CRoutine_Reduce_Sum;
+class CRoutine_Sum;
 class CRoutine_ImageToBuffer;
 class CRoutine_Normalize;
 class CRoutine_FT;
@@ -46,7 +46,7 @@ protected:
 
 	// Routines:
 	string mKernelSourcePath;
-	CRoutine_Reduce_Sum * mrTotalFlux;
+	CRoutine_Sum * mrTotalFlux;
 	CRoutine_ImageToBuffer * mrCopyImage;
 	CRoutine_Normalize * mrNormalize;
 	CRoutine_FT * mrFT;

@@ -8,11 +8,11 @@
 #ifndef CROUTINE_CHI_H_
 #define CROUTINE_CHI_H_
 
-#include "CRoutine_Reduce_Sum.h"
+#include "CRoutine_Sum.h"
 
 class CRoutine_Square;
 
-class CRoutine_Chi: public CRoutine_Reduce_Sum
+class CRoutine_Chi: public CRoutine_Sum
 {
 	int mChiSourceID;
 	int mChiKernelID;

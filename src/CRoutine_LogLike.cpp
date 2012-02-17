@@ -8,7 +8,7 @@
 #include "CRoutine_LogLike.h"
 
 CRoutine_LogLike::CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue)
-	:CRoutine_Reduce_Sum(device, context, queue)
+	:CRoutine_Sum(device, context, queue)
 {
 	mSource.push_back("loglike.cl");
 	mLogLikeSourceID = mSource.size() - 1;
@@ -124,7 +124,7 @@ void CRoutine_LogLike::Init(int num_max_elements)
 	int err = CL_SUCCESS;
 
 	// First initialize the base-class constructor:
-	CRoutine_Reduce_Sum::Init(num_max_elements);
+	CRoutine_Sum::Init(num_max_elements);
 
 	// Now allocate some memory
 	if(mTemp == NULL)

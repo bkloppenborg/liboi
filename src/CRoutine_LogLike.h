@@ -10,9 +10,9 @@
 #ifndef CROUTINE_LOGLIKE_H_
 #define CROUTINE_LOGLIKE_H_
 
-#include "CRoutine_Reduce_Sum.h"
+#include "CRoutine_Sum.h"
 
-class CRoutine_LogLike: public CRoutine_Reduce_Sum
+class CRoutine_LogLike: public CRoutine_Sum
 {
 protected:
 	cl_mem mTemp;
