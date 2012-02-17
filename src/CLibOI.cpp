@@ -307,7 +307,7 @@ float CLibOI::TotalFlux(int layer, bool return_value)
 {
 	CopyImageToBuffer(layer);
 
-	float flux = mrTotalFlux->ComputeSum(return_value, mFluxBuffer, mCLImage, NULL, NULL);
+	float flux = mrTotalFlux->ComputeSum(mCLImage, mFluxBuffer, return_value);
 	return flux;
 }
 
@@ -320,18 +320,18 @@ void CLibOI::RunVerification(int data_num)
 
 	COILibData * data = mDataList[data_num];
 	printf("Checking summed flux values:\n");
-	mrTotalFlux->ComputeSum_Test(false, mFluxBuffer, mCLImage, NULL, NULL);
-	mrNormalize->Normalize_Test(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
-	mrFT->FT_Test(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth,
-			mImageHeight, mFluxBuffer, mFTBuffer);
-	mrV2->FTtoV2_Test(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
-	mrT3->FTtoT3_Test(mFTBuffer, data->GetNumUV(), data->GetLoc_DataT3Phi(), data->GetLoc_DataBSRef(),
-			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
-
-	// Now run the chi, chi2, and loglike kernels:
-	int n = data->GetNumData();
-	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
-	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, mrSquare, true);
+	mrTotalFlux->ComputeSum_Test(mCLImage, mFluxBuffer, false);
+//	mrNormalize->Normalize_Test(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
+//	mrFT->FT_Test(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth,
+//			mImageHeight, mFluxBuffer, mFTBuffer);
+//	mrV2->FTtoV2_Test(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
+//	mrT3->FTtoT3_Test(mFTBuffer, data->GetNumUV(), data->GetLoc_DataT3Phi(), data->GetLoc_DataBSRef(),
+//			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
+//
+//	// Now run the chi, chi2, and loglike kernels:
+//	int n = data->GetNumData();
+//	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
+//	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, mrSquare, true);
 }
 
 /// Tells OpenCL about the size of the image.

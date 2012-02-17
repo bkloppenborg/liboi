@@ -12,16 +12,19 @@
 
 class CRoutine_Reduce_Sum: public CRoutine_Reduce
 {
+protected:
+	cl_mem mTempBuffer;
 
 public:
 	CRoutine_Reduce_Sum(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_Reduce_Sum();
 
 public:
+	cl_kernel getReductionKernel(int whichKernel, int blockSize, int isPowOf2);
 
-	float ComputeSum(bool copy_back, cl_mem final_buffer, cl_mem input_buffer, cl_mem output_buffer, cl_mem partial_sum_buffer);
+	float ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool copy_back);
 	float ComputeSum_CPU(cl_mem input_buffer);
-	bool  ComputeSum_Test(bool copy_back, cl_mem final_buffer, cl_mem input_buffer, cl_mem output_buffer, cl_mem partial_sum_buffer);
+	bool  ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer, bool copy_back);
 	void Init(int n);
 
 

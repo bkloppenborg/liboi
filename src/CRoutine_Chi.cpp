@@ -111,7 +111,7 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n,
 	try
 	{
 		if(compute_sum)
-			sum = ComputeSum(true, mChiOutput, mChiTemp, tmp_buff1, tmp_buff2);
+			sum = ComputeSum(mChiTemp, mChiOutput, true);
 	}
 	catch (...)
 	{
@@ -157,7 +157,7 @@ bool CRoutine_Chi::Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, in
 	PassFail(chi2_match);
 
 	printf("Checking summed Chi2 values:\n");
-	float cl_sum = ComputeSum(true, mChiOutput, mChiTemp, tmp_buff1, tmp_buff2);
+	float cl_sum = ComputeSum(mChiTemp, mChiOutput, true);
 	bool sum_pass = bool(fabs(cpu_sum - cl_sum)/cpu_sum < MAX_REL_ERROR);
 	printf("  CPU Value:  %0.4f\n", cpu_sum);
 	printf("  CL  Value:  %0.4f\n", cl_sum);
