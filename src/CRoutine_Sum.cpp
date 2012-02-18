@@ -16,7 +16,7 @@ CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_q
 {
 	// Specify the source location, set temporary buffers to null
 	mSource.push_back("reduce_sum_float.cl");
-	mTempBuffer = NULL;
+	mTempSumBuffer = NULL;
 	num_elements = 0;
 	mFinalS = 0;
 	mReductionPasses = 0;
@@ -24,7 +24,7 @@ CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_q
 
 CRoutine_Sum::~CRoutine_Sum()
 {
-	if(mTempBuffer) clReleaseMemObject(mTempBuffer);
+	if(mTempSumBuffer) clReleaseMemObject(mTempSumBuffer);
 }
 
 unsigned int nextPow2( unsigned int x ) {
@@ -134,7 +134,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
 	int threads;
 	int blocks;
 	cl_mem buff1 = input_buffer;
-	cl_mem buff2 = mTempBuffer;
+	cl_mem buff2 = mTempSumBuffer;
     size_t globalWorkSize[1];
     size_t localWorkSize[1];
 
@@ -168,7 +168,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
     {
     	cl_float h_odata[mFinalS];
         // copy result from device to host
-        clEnqueueReadBuffer(mQueue, mTempBuffer, CL_TRUE, 0, mFinalS * sizeof(cl_float),
+        clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, mFinalS * sizeof(cl_float),
                             h_odata, 0, NULL, NULL);
 
         for(int i=0; i < mFinalS; i++)
@@ -184,7 +184,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
     else
     {
     	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
-    	clEnqueueCopyBuffer(mQueue, mTempBuffer, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
+    	clEnqueueCopyBuffer(mQueue, mTempSumBuffer, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
     }
 
 	clFinish(mQueue);
@@ -192,7 +192,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
 	if (needReadBack)
 	{
 		// copy final sum from device to host
-		clEnqueueReadBuffer(mQueue, mTempBuffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+		clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 	}
 
 	// Now copy the data over to the final GPU location.
@@ -230,7 +230,7 @@ bool CRoutine_Sum::ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer)
 	float cpu_sum = ComputeSum_CPU(input_buffer);
 	float cl_sum = ComputeSum(input_buffer, final_buffer);
 
-	bool sum_pass = bool(fabs(cpu_sum - cl_sum)/cpu_sum < MAX_REL_ERROR);
+	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
 	printf("  CPU Value:  %0.4f\n", cpu_sum);
 	printf("  CL  Value:  %0.4f\n", cl_sum);
 	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
@@ -247,6 +247,6 @@ void CRoutine_Sum::Init(int n)
 	this->num_elements = n;
 	BuildKernels();
 
-	mTempBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, num_elements * sizeof(cl_float), NULL, &err);
+	mTempSumBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, num_elements * sizeof(cl_float), NULL, &err);
 	COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
 }

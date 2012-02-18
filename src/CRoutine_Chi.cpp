@@ -158,7 +158,7 @@ bool CRoutine_Chi::Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, in
 
 	printf("Checking summed Chi2 values:\n");
 	float cl_sum = ComputeSum(mChiTemp, mChiOutput);
-	bool sum_pass = bool(fabs(cpu_sum - cl_sum)/cpu_sum < MAX_REL_ERROR);
+	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
 	printf("  CPU Value:  %0.4f\n", cpu_sum);
 	printf("  CL  Value:  %0.4f\n", cl_sum);
 	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
