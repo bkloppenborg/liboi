@@ -115,11 +115,6 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 															   * DFT_tabley[ image_width * uu + jj];
 			}
 		}
-
-		if (flux > 0)
-		{
-			visi[uu] /= flux;
-		}
 	}
 }
 

@@ -14,4 +14,7 @@ __kernel void normalize_float(
     // instead of a division.
     
     image[n] = image[n] / divisor[0];
+    
+    if(image[n] < 0)
+    	image[n] = 0;
 }
