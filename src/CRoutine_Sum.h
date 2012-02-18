@@ -14,7 +14,7 @@ class CRoutine_Sum: public CRoutine
 {
 protected:
 	int num_elements;
-	cl_mem mTempBuffer;
+	cl_mem mTempSumBuffer;
 	vector<int> mBlocks;
 	vector<int> mThreads;
 	int mFinalS;
@@ -33,8 +33,6 @@ public:
 	float ComputeSum_CPU(cl_mem input_buffer);
 	bool  ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer);
 	void Init(int n);
-
-
 };
 
 #endif /* CROUTINE_REDUCE_SUM_H_ */
