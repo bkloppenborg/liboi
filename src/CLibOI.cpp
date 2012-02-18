@@ -306,7 +306,7 @@ float CLibOI::TotalFlux(int layer, bool return_value)
 {
 	CopyImageToBuffer(layer);
 
-	float flux = mrTotalFlux->ComputeSum(mCLImage, mFluxBuffer, return_value);
+	float flux = mrTotalFlux->ComputeSum(mCLImage, mFluxBuffer);
 	return flux;
 }
 
@@ -319,7 +319,7 @@ void CLibOI::RunVerification(int data_num)
 
 	COILibData * data = mDataList[data_num];
 	printf("Checking summed flux values:\n");
-	mrTotalFlux->ComputeSum_Test(mCLImage, mFluxBuffer, false);
+	mrTotalFlux->ComputeSum_Test(mCLImage, mFluxBuffer);
 	mrNormalize->Normalize_Test(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);
 	mrFT->FT_Test(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth,
 			mImageHeight, mFluxBuffer, mFTBuffer);

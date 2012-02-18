@@ -34,7 +34,7 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
 	try
 	{
-		sum = ComputeSum(mTemp, mOutput, true);
+		sum = ComputeSum(mTemp, mOutput);
 #ifdef DEBUG_VERBOSE
 		ComputeSum_CPU(mOutput, n);
 #endif // DEBUG_VERBOSE
