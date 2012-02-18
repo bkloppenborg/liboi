@@ -14,7 +14,7 @@ CRoutine_LogLike::CRoutine_LogLike(cl_device_id device, cl_context context, cl_c
 	mLogLikeSourceID = mSource.size() - 1;
 	mLogLikeKernelID = 0;
 
-	mTemp = NULL;
+	mTempLogLike = NULL;
 	mOutput = NULL;
 }
 
@@ -27,69 +27,7 @@ CRoutine_LogLike::~CRoutine_LogLike()
 float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
 	float sum = 0;
-
-	// run the loglike kernel
-	LogLike_internal(data, data_err, model_data, n);
-
-	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
-	try
-	{
-		sum = ComputeSum(mTemp, mOutput);
-#ifdef DEBUG_VERBOSE
-		ComputeSum_CPU(mOutput, n);
-#endif // DEBUG_VERBOSE
-	}
-	catch (...)
-	{
-		printf("Warning, exception in CRoutine_LogLike.  Writing out buffers:\n");
-		LogLike_internal(data, data_err, model_data, n);
-		DumpFloatBuffer(mTemp, num_elements);
-		throw;
-	}
-
-	// Todo: Add in model priors.
-
-	return -1*n * log(2 * PI) + sum;
-}
-
-float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
-{
 	int err = CL_SUCCESS;
-	cl_float * cpu_data = new cl_float[n];
-	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, n * sizeof(cl_float), cpu_data, 0, NULL, NULL);
-	cl_float * cpu_data_err = new cl_float[n];
-	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, n * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
-	cl_float * cpu_model_data = new cl_float[n];
-	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, n * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to copy values back to the CPU, CRoutine_LogLike::LogLike_CPU().", err);
-
-
-	// we do this verbose
-	float sum = 0;
-	float tmp = 0;
-	for(int i = 0; i < n; i++)
-	{
-		tmp = (cpu_data[i] - cpu_model_data[i]) / cpu_data_err[i];
-		tmp *= -tmp;
-		tmp -= -2 * log(cpu_data_err[i]);
-//		printf("%i %f %f %e %e \n", i, cpu_data[i], cpu_model_data[i], cpu_data[i] - cpu_model_data[i], cpu_data_err[i]);
-		sum += tmp;
-	}
-
-	printf("LogLike: %f\n", sum);
-
-	delete[] cpu_data;
-	delete[] cpu_data_err;
-	delete[] cpu_model_data;
-
-	// Todo: Add in model priors.
-
-	return sum;
-}
-
-void CRoutine_LogLike::LogLike_internal(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
-{
-	int err = 0;
 	// The loglikelihood kernel executes on the entire output buffer
 	// because the reduce_sum_float kernel uses the entire buffer as input.
 	// Therefore we zero out the elements not directly involved in this computation.
@@ -104,7 +42,7 @@ void CRoutine_LogLike::LogLike_internal(cl_mem data, cl_mem data_err, cl_mem mod
 	err  = clSetKernelArg(mKernels[mLogLikeKernelID], 0, sizeof(cl_mem), &data);
 	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 1, sizeof(cl_mem), &data_err);
 	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 2, sizeof(cl_mem), &model_data);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 3, sizeof(cl_mem), &mTemp);
+	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 3, sizeof(cl_mem), &mTempLogLike);
 	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 4, sizeof(int), &n);
 	COpenCL::CheckOCLError("Failed to set loglike kernel arguments.", err);
 
@@ -112,10 +50,72 @@ void CRoutine_LogLike::LogLike_internal(cl_mem data, cl_mem data_err, cl_mem mod
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[mLogLikeKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue loglike kernel.", err);
 
-	#ifdef DEBUG_VERBOSE
-	// Copy back the data, model, and errors:
-	LogLike_CPU(data, data_err, model_data, n);
-	#endif // DEBUG_VERBOSE
+	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
+	try
+	{
+		sum = ComputeSum(mTempLogLike, mOutput);
+	}
+	catch (...)
+	{
+		printf("Warning, exception in CRoutine_LogLike.  Writing out buffers:\n");
+		LogLike(data, data_err, model_data, n);
+		DumpFloatBuffer(mTempLogLike, num_elements);
+		throw;
+	}
+
+	// Todo: Add in model priors.
+	return -1*n * log(2 * PI) + sum;
+}
+
+float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output)
+{
+	int err = CL_SUCCESS;
+	cl_float cpu_data[num_elements];
+	cl_float cpu_data_err[num_elements];
+	cl_float cpu_model_data[num_elements];
+	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, num_elements * sizeof(cl_float), cpu_data, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, num_elements * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, num_elements * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to copy values back to the CPU, CRoutine_LogLike::LogLike_CPU().", err);
+
+	// we do this verbose
+	float sum = 0;
+	float temp = 0;
+	for(int i = 0; i < num_elements; i++)
+	{
+		temp = 0;
+
+		if(i < n)
+		{
+			temp = (cpu_data[i] - cpu_model_data[i]) / cpu_data_err[i];
+		    temp = -2 * log(cpu_data_err[i]) - temp * temp;
+		}
+
+		output[i] = temp;
+		sum += output[i];
+	}
+
+	// TODO: Add in model priors
+	return -1*n * log(2 * PI) + sum;
+}
+
+bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
+{
+	float cpu_output[num_elements];
+	float cl_sum = LogLike(data, data_err, model_data, n);
+	float cpu_sum = LogLike_CPU(data, data_err, model_data, n, cpu_output);
+
+	// Compare the CL and CPU chi2 elements:
+	printf("Checking individual loglike values:\n");
+	bool loglike_match = Verify(cpu_output, mTempLogLike, num_elements, 0);
+	PassFail(loglike_match);
+
+	printf("Checking summed loglike values:\n");
+	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
+	printf("  CPU Value:  %0.4f\n", cpu_sum);
+	printf("  CL  Value:  %0.4f\n", cl_sum);
+	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
+	PassFail(sum_pass);
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
@@ -126,15 +126,11 @@ void CRoutine_LogLike::Init(int num_max_elements)
 	// First initialize the base-class constructor:
 	CRoutine_Sum::Init(num_max_elements);
 
-	// Now allocate some memory
-	if(mTemp == NULL)
-		mTemp = clCreateBuffer(mContext, CL_MEM_READ_WRITE, num_elements * sizeof(cl_float), NULL, &err);
-
-	if(mOutput == NULL)
-		mOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
-
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[mLogLikeSourceID]);
     BuildKernel(source, "loglike", mSource[mLogLikeSourceID]);
     mLogLikeKernelID = mKernels.size() - 1;
+
+    mTempLogLike = clCreateBuffer(mContext, CL_MEM_READ_WRITE, num_elements * sizeof(cl_float), NULL, &err);
+	COpenCL::CheckOCLError("Could not create loglike temporary buffer.", err);
 }

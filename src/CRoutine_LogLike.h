@@ -15,7 +15,7 @@
 class CRoutine_LogLike: public CRoutine_Sum
 {
 protected:
-	cl_mem mTemp;
+	cl_mem mTempLogLike;
 	cl_mem mOutput;
 
 	int mLogLikeSourceID;
@@ -26,8 +26,8 @@ public:
 	virtual ~CRoutine_LogLike();
 
 	float LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
-	float LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
-	void LogLike_internal(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	float LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
+	bool LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 
 	void Init(int num_elements);
 };

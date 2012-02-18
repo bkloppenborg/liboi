@@ -331,6 +331,7 @@ void CLibOI::RunVerification(int data_num)
 	int n = data->GetNumData();
 	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
 	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, mrSquare, true);
+	mrLogLike->LogLike_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
 }
 
 /// Tells OpenCL about the size of the image.
