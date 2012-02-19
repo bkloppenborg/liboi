@@ -199,7 +199,7 @@ void CLibOI::InitMemory()
 {
 	int err = CL_SUCCESS;
 
-	if(mImageType == LibOIEnums::OpenGLBuffer)
+	if(mImageType == LibOIEnums::OpenGLBuffer && mCLImage == NULL)
 	{
 		mCLImage = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, mImageWidth * mImageHeight * sizeof(cl_float), NULL, &err);
 		COpenCL::CheckOCLError("Could not create temporary OpenCL image buffer", err);
@@ -210,7 +210,8 @@ void CLibOI::InitMemory()
 	mMaxUV = mDataList.MaxUVPoints();
 
 	// Allocate some memory on the OpenCL device
-	mFluxBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
+	if(mFluxBuffer == NULL)
+		mFluxBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
 
 	if(mMaxData > 0)
 	{
@@ -223,46 +224,74 @@ void CLibOI::InitMemory()
 void CLibOI::InitRoutines()
 {
 	// Init all routines.  For now pre-allocate all buffers.
-	mrTotalFlux = new CRoutine_Sum(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrTotalFlux->SetSourcePath(mKernelSourcePath);
-	mrTotalFlux->Init(mImageWidth * mImageHeight);
+	// Remember, Init can be called multiple times, so only init if not inited already.
+	if(mrTotalFlux == NULL)
+	{
+		mrTotalFlux = new CRoutine_Sum(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrTotalFlux->SetSourcePath(mKernelSourcePath);
+		mrTotalFlux->Init(mImageWidth * mImageHeight);
+	}
 
-	mrCopyImage = new CRoutine_ImageToBuffer(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrCopyImage->SetSourcePath(mKernelSourcePath);
-	mrCopyImage->Init();
+	if(mrCopyImage == NULL)
+	{
+		mrCopyImage = new CRoutine_ImageToBuffer(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrCopyImage->SetSourcePath(mKernelSourcePath);
+		mrCopyImage->Init();
+	}
 
-	mrNormalize = new CRoutine_Normalize(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrNormalize->SetSourcePath(mKernelSourcePath);
-	mrNormalize->Init();
+	if(mrNormalize == NULL)
+	{
+		mrNormalize = new CRoutine_Normalize(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrNormalize->SetSourcePath(mKernelSourcePath);
+		mrNormalize->Init();
+	}
 
-	mrSquare = new CRoutine_Square(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-	mrSquare->SetSourcePath(mKernelSourcePath);
-	mrSquare->Init();
+	if(mrSquare == NULL)
+	{
+		mrSquare = new CRoutine_Square(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrSquare->SetSourcePath(mKernelSourcePath);
+		mrSquare->Init();
+	}
 
 	// only initialize these routines if we have data:
 	if(mMaxData > 0)
 	{
-		// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
-		mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-		mrFT->SetSourcePath(mKernelSourcePath);
-		mrFT->Init(mImageScale);
+		if(mrFT == NULL)
+		{
+			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
+			mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+			mrFT->SetSourcePath(mKernelSourcePath);
+			mrFT->Init(mImageScale);
+		}
 
-		// Initialize the FTtoV2 and FTtoT3 routines
-		mrV2 = new CRoutine_FTtoV2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-		mrV2->SetSourcePath(mKernelSourcePath);
-		mrV2->Init();
+		if(mrV2 == NULL)
+		{
+			// Initialize the FTtoV2 and FTtoT3 routines
+			mrV2 = new CRoutine_FTtoV2(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+			mrV2->SetSourcePath(mKernelSourcePath);
+			mrV2->Init();
+		}
 
-		mrT3 = new CRoutine_FTtoT3(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-		mrT3->SetSourcePath(mKernelSourcePath);
-		mrT3->Init();
+		if(mrT3 == NULL)
+		{
+			mrT3 = new CRoutine_FTtoT3(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+			mrT3->SetSourcePath(mKernelSourcePath);
+			mrT3->Init();
+		}
 
-		mrChi = new CRoutine_Chi(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-		mrChi->SetSourcePath(mKernelSourcePath);
-		mrChi->Init(mMaxData);
+		if(mrChi == NULL)
+		{
+			mrChi = new CRoutine_Chi(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+			mrChi->SetSourcePath(mKernelSourcePath);
+			mrChi->Init(mMaxData);
+		}
 
-		mrLogLike = new CRoutine_LogLike(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-		mrLogLike->SetSourcePath(mKernelSourcePath);
-		mrLogLike->Init(mMaxData);
+		if(mrLogLike == NULL)
+		{
+			mrLogLike = new CRoutine_LogLike(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+			mrLogLike->SetSourcePath(mKernelSourcePath);
+			mrLogLike->Init(mMaxData);
+		}
 	}
 }
 
