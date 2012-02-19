@@ -17,7 +17,7 @@ CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_q
 	// Specify the source location, set temporary buffers to null
 	mSource.push_back("reduce_sum_float.cl");
 	mTempSumBuffer = NULL;
-	num_elements = 0;
+	mNElements = 0;
 	mFinalS = 0;
 	mReductionPasses = 0;
 }
@@ -62,20 +62,15 @@ void getNumBlocksAndThreads(int whichKernel, int n, int maxBlocks, int maxThread
 
 void CRoutine_Sum::BuildKernels()
 {
-	int err = CL_SUCCESS;
 	int whichKernel = 6;
-	float gpu_result = 0;
-	bool needReadBack = true;
-	cl_kernel finalReductionKernel[10];
-	int finalReductionIterations=0;
 	int numBlocks = 0;
 	int numThreads = 0;
 	int maxThreads = 128;
 	int maxBlocks = 64;
 	int cpuFinalThreshold = 1;
 
-	getNumBlocksAndThreads(whichKernel, num_elements, maxBlocks, maxThreads, numBlocks, numThreads);
-	BuildReductionKernel(whichKernel, numThreads, isPow2(num_elements) );
+	getNumBlocksAndThreads(whichKernel, mNElements, maxBlocks, maxThreads, numBlocks, numThreads);
+	BuildReductionKernel(whichKernel, numThreads, isPow2(mNElements) );
 	mBlocks.push_back(numBlocks);
 	mThreads.push_back(numThreads);
 	mReductionPasses += 1;
@@ -118,21 +113,12 @@ cl_kernel CRoutine_Sum::BuildReductionKernel(int whichKernel, int blockSize, int
 float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
 {
 	int err = CL_SUCCESS;
-	int whichKernel = 6;
 	float gpu_result = 0;
 	bool needReadBack = true;
-	cl_kernel finalReductionKernel[10];
-	int finalReductionIterations=0;
-	int numBlocks = 0;
 	int numThreads = mThreads[0];
-	int maxThreads = 128;
-	int maxBlocks = 64;
-	int cpuFinalThreshold = 1;
 
-
-	int kernel_id = 0;
-	int threads;
-	int blocks;
+	int threads = 0;
+	int blocks = 0;
 	cl_mem buff1 = input_buffer;
 	cl_mem buff2 = mTempSumBuffer;
     size_t globalWorkSize[1];
@@ -153,7 +139,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
 		cl_kernel reductionKernel = mKernels[kernel_id];
 		clSetKernelArg(reductionKernel, 0, sizeof(cl_mem), (void *) &buff1);
 		clSetKernelArg(reductionKernel, 1, sizeof(cl_mem), (void *) &buff2);
-		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &num_elements);
+		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &mNElements);
 		clSetKernelArg(reductionKernel, 3, sizeof(cl_float) * numThreads, NULL);
 		err = clEnqueueNDRangeKernel(mQueue,reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to enqueue final parallel reduction kernel.", err);
@@ -205,15 +191,15 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
 float CRoutine_Sum::ComputeSum_CPU(cl_mem input_buffer)
 {
 	int err = CL_SUCCESS;
-	cl_float tmp[num_elements];
-	err |= clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
+	cl_float tmp[mNElements];
+	err |= clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, mNElements * sizeof(cl_float), tmp, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CRoutine_Reduce_Sum::Compute_CPU() ", err);
 
 	// Use Kahan summation to minimize lost precision.
 	// http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 	float sum = tmp[0];
 	float c = float(0.0);
-	for (int i = 1; i < num_elements; i++)
+	for (int i = 1; i < mNElements; i++)
 	{
 		float y = tmp[i] - c;
 		float t = sum + y;
@@ -246,9 +232,9 @@ void CRoutine_Sum::Init(int n)
 {
 	int err = CL_SUCCESS;
 	// Set the number of elements on which this kernel will operate.
-	this->num_elements = n;
+	mNElements = n;
 	BuildKernels();
 
-	mTempSumBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, num_elements * sizeof(cl_float), NULL, &err);
+	mTempSumBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
 	COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
 }

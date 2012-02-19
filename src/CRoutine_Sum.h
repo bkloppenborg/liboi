@@ -13,7 +13,7 @@
 class CRoutine_Sum: public CRoutine
 {
 protected:
-	int num_elements;
+	int mNElements;
 	cl_mem mTempSumBuffer;
 	vector<int> mBlocks;
 	vector<int> mThreads;

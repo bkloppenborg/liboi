@@ -31,7 +31,7 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	// The loglikelihood kernel executes on the entire output buffer
 	// because the reduce_sum_float kernel uses the entire buffer as input.
 	// Therefore we zero out the elements not directly involved in this computation.
-	size_t global = (size_t) num_elements;
+	size_t global = (size_t) mNElements;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
@@ -59,7 +59,7 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	{
 		printf("Warning, exception in CRoutine_LogLike.  Writing out buffers:\n");
 		LogLike(data, data_err, model_data, n);
-		DumpFloatBuffer(mTempLogLike, num_elements);
+		DumpFloatBuffer(mTempLogLike, mNElements);
 		throw;
 	}
 
@@ -70,18 +70,18 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output)
 {
 	int err = CL_SUCCESS;
-	cl_float cpu_data[num_elements];
-	cl_float cpu_data_err[num_elements];
-	cl_float cpu_model_data[num_elements];
-	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, num_elements * sizeof(cl_float), cpu_data, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, num_elements * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, num_elements * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
+	cl_float cpu_data[mNElements];
+	cl_float cpu_data_err[mNElements];
+	cl_float cpu_model_data[mNElements];
+	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, mNElements * sizeof(cl_float), cpu_data, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, mNElements * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, mNElements * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy values back to the CPU, CRoutine_LogLike::LogLike_CPU().", err);
 
 	// we do this verbose
 	float sum = 0;
 	float temp = 0;
-	for(int i = 0; i < num_elements; i++)
+	for(int i = 0; i < mNElements; i++)
 	{
 		temp = 0;
 
@@ -101,13 +101,13 @@ float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_d
 
 bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
-	float cpu_output[num_elements];
+	float cpu_output[mNElements];
 	float cl_sum = LogLike(data, data_err, model_data, n);
 	float cpu_sum = LogLike_CPU(data, data_err, model_data, n, cpu_output);
 
 	// Compare the CL and CPU chi2 elements:
 	printf("Checking individual loglike values:\n");
-	bool loglike_match = Verify(cpu_output, mTempLogLike, num_elements, 0);
+	bool loglike_match = Verify(cpu_output, mTempLogLike, mNElements, 0);
 	PassFail(loglike_match);
 
 	printf("Checking summed loglike values:\n");
@@ -133,6 +133,6 @@ void CRoutine_LogLike::Init(int num_max_elements)
     BuildKernel(source, "loglike", mSource[mLogLikeSourceID]);
     mLogLikeKernelID = mKernels.size() - 1;
 
-    mTempLogLike = clCreateBuffer(mContext, CL_MEM_READ_WRITE, num_elements * sizeof(cl_float), NULL, &err);
+    mTempLogLike = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
 	COpenCL::CheckOCLError("Could not create loglike temporary buffer.", err);
 }

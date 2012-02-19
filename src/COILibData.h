@@ -67,10 +67,10 @@ protected:
 	float * mData;
 	float * mData_err;
 	complex<float> * mData_phasor;
-	int mNVis2;
-	int mNT3;
-	int mNUV;
-	int mNData;
+	unsigned int mNVis2;
+	unsigned int mNT3;
+	unsigned int mNUV;
+	unsigned int mNData;
 	double mAveJD;
 
 	// Storage containers for OIFITS data.

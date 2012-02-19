@@ -17,7 +17,7 @@ public:
 	virtual ~CRoutine_Square();
 
 	void Init();
-	void Square(cl_mem input, cl_mem output, int n);
+	void Square(cl_mem input, cl_mem output, int buffer_size, int data_size);
 };
 
 #endif /* CROUTINE_SQUARE_H_ */

@@ -60,13 +60,13 @@ protected:
 	LibOIEnums::ImageTypes mImageType;
 	cl_mem mCLImage;
 	cl_mem mGLImage;
-	int mImageWidth;
-	int mImageHeight;
-	int mImageDepth;
+	unsigned int mImageWidth;
+	unsigned int mImageHeight;
+	unsigned int mImageDepth;
 	float mImageScale;
 
-	int mMaxData;
-	int mMaxUV;
+	unsigned int mMaxData;
+	unsigned int mMaxUV;
 
 	// Temporary buffers:
 	cl_mem mFluxBuffer;

@@ -147,17 +147,21 @@ bool CRoutine::Verify(cl_float * cpu_buffer, cl_mem device_buffer, int num_eleme
 	COpenCL::CheckOCLError("Could not copy back cl_float values for verification!", err);
 
 	double error = 0;
-	double sum = 0;
+	double cpu_sum = 0;
+	double cl_sum = 0;
 	for(int i = 0; i < num_elements; i++)
 	{
-		sum += fabs(cpu_buffer[i]);
-		error += fabs(cpu_buffer[i] - tmp[i]);
+		cpu_sum += fabs(float(cpu_buffer[i]));
+		cl_sum += fabs(float(tmp[i]));
+		error += fabs(float(cpu_buffer[i]) - float(tmp[i]));
 	}
 
+	printf("  sum(CPU):    %f\n", cpu_sum);
+	printf("  sum(OpenCL): %f\n", cl_sum);
 	printf("  Total Error [sum( |CPU - OpenCL| ) ]: %0.4e\n", error);
-	printf("  Relative Error [error / sum(|CPU|) ]:   %0.4e\n", error / sum);
+	printf("  Relative Error [error / sum(|CPU|) ]:   %0.4e\n", error / cpu_sum);
 
-	if(error != error || (error/sum > MAX_REL_ERROR))
+	if(error != error || (error/cpu_sum > MAX_REL_ERROR))
 	{
 		printf("  Error too great/NAN, dumping buffers.\n");
 		for(int i = 0; i < num_elements; i++)

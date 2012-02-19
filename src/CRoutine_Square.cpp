@@ -27,10 +27,10 @@ void CRoutine_Square::Init()
     BuildKernel(source, "square", mSource[0]);
 }
 
-void CRoutine_Square::Square(cl_mem input, cl_mem output, int n)
+void CRoutine_Square::Square(cl_mem input, cl_mem output, int buffer_size, int data_size)
 {
 	int err = 0;
-	size_t global = (size_t) n;
+	size_t global = (size_t) buffer_size;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
@@ -40,7 +40,7 @@ void CRoutine_Square::Square(cl_mem input, cl_mem output, int n)
 	// Set the arguments to our compute kernel
 	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &input);
 	err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &output);
-	err |= clSetKernelArg(mKernels[0], 2, sizeof(int), &n);
+	err |= clSetKernelArg(mKernels[0], 2, sizeof(int), &data_size);
 	COpenCL::CheckOCLError("Failed to set square kernel arguments.", err);
 
 	// Execute the kernel over the entire range of the data set
