@@ -146,8 +146,8 @@ bool CRoutine::Verify(cl_float * cpu_buffer, cl_mem device_buffer, int num_eleme
 	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), &tmp, offset, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy back cl_float values for verification!", err);
 
-	double error;
-	double sum;
+	double error = 0;
+	double sum = 0;
 	for(int i = 0; i < num_elements; i++)
 	{
 		sum += fabs(cpu_buffer[i]);
@@ -178,8 +178,8 @@ bool CRoutine::Verify(complex<float> * cpu_buffer, cl_mem device_buffer, int num
 	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float2), &tmp, NULL, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy back cl_float2 values for verification!", err);
 
-	double error;
-	double sum;
+	double error = 0;
+	double sum = 0;
 	for(int i = 0; i < num_elements; i++)
 	{
 		sum += abs(cpu_buffer[i]);
