@@ -106,12 +106,15 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, int n_uv, cl_mem data_phasor, cl
 
 bool CRoutine_FTtoT3::FTtoT3_Test(cl_mem ft_loc, int n_uv, cl_mem data_phasor, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output)
 {
-	complex<float> cpu_output[n_t3];
+	complex<float> * cpu_output = new complex<float>[n_t3];
 	FTtoT3(ft_loc, data_phasor, data_bsref, data_sign, n_t3, n_v2, output);
 	FTtoT3_CPU(ft_loc, n_uv, data_phasor, data_bsref, data_sign, n_t3, n_v2, cpu_output);
 
 	printf("Checking FT -> T3 Routine:\n");
 	bool t3_pass = Verify(cpu_output, output, n_t3, n_v2 * sizeof(cl_float));
 	PassFail(t3_pass);
+
+	delete[] cpu_output;
+
 	return t3_pass;
 }
