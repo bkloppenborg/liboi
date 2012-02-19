@@ -175,7 +175,7 @@ bool CRoutine::Verify(complex<float> * cpu_buffer, cl_mem device_buffer, int num
 	int err = CL_SUCCESS;
 	cl_float2 tmp[num_elements];
 
-	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float2), &tmp, NULL, NULL, NULL);
+	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float2), &tmp, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy back cl_float2 values for verification!", err);
 
 	double error = 0;
