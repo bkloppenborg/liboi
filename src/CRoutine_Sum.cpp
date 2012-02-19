@@ -236,6 +236,8 @@ bool CRoutine_Sum::ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer)
 	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
 	printf("  Rel. Error: %0.4e\n", (cpu_sum - cl_sum) / cpu_sum);
 	PassFail(sum_pass);
+
+	return sum_pass;
 }
 
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
