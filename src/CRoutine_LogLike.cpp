@@ -116,6 +116,8 @@ bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_d
 	printf("  CL  Value:  %0.4f\n", cl_sum);
 	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
 	PassFail(sum_pass);
+
+	return sum_pass;
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.

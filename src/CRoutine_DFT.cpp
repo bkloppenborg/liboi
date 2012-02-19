@@ -88,8 +88,8 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 
 	// First create the DFT tables:
 	int dft_size = n_uv_points * image_width;
-	complex<float> DFT_tablex[dft_size];
-	complex<float> DFT_tabley[dft_size];
+	complex<float> * DFT_tablex = new complex<float>[dft_size];
+	complex<float> * DFT_tabley = new complex<float>[dft_size];
 	float tmp = 0;
 
 	for (uu = 0; uu < n_uv_points; uu++)
@@ -116,18 +116,24 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 			}
 		}
 	}
+
+	delete[] DFT_tablex;
+	delete[] DFT_tabley;
 }
 
 bool CRoutine_DFT::FT_Test(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output)
 {
 	// Run the OpenCL DFT routine:
-	complex<float> cpu_output[n_uv_points];
+	complex<float> * cpu_output = new complex<float>[n_uv_points];
 	FT(uv_points, n_uv_points, image, image_width, image_height, image_flux, output);
 	FT_CPU(uv_points, n_uv_points, image, image_width, image_height, image_flux, cpu_output);
 
 	printf("Checking FT (DFT) Routine:\n");
 	bool norm_pass = Verify(cpu_output, output, n_uv_points, 0);
 	PassFail(norm_pass);
+
+	delete[] cpu_output;
+
 	return norm_pass;
 }
 
