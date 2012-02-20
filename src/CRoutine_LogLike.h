@@ -25,7 +25,7 @@ public:
 	CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_LogLike();
 
-	float LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	float LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum);
 	float LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
 	bool LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 

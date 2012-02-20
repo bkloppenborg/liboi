@@ -109,7 +109,7 @@ float CLibOI::DataToChi2(COILibData * data)
 
 float CLibOI::DataToLogLike(COILibData * data)
 {
-	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData());
+	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true);
 }
 
 /// Computes the Fourier transform of the image, then generates Vis2 and T3's.

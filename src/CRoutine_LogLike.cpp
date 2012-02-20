@@ -24,7 +24,7 @@ CRoutine_LogLike::~CRoutine_LogLike()
 }
 
 /// Computes the loglikelihood, returns it as a floating point number.
-float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
+float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum)
 {
 	float sum = 0;
 	int err = CL_SUCCESS;
@@ -53,12 +53,13 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
 	try
 	{
-		sum = ComputeSum(mTempLogLike, mOutput);
+		if(compute_sum)
+			sum = ComputeSum(mTempLogLike, mOutput);
 	}
 	catch (...)
 	{
 		printf("Warning, exception in CRoutine_LogLike.  Writing out buffers:\n");
-		LogLike(data, data_err, model_data, n);
+		LogLike(data, data_err, model_data, n, false);
 		DumpFloatBuffer(mTempLogLike, mNElements);
 		throw;
 	}
@@ -102,7 +103,7 @@ float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_d
 bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
 	float cpu_output[mNElements];
-	float cl_sum = LogLike(data, data_err, model_data, n);
+	LogLike(data, data_err, model_data, n, false);
 	float cpu_sum = LogLike_CPU(data, data_err, model_data, n, cpu_output);
 
 	// Compare the CL and CPU chi2 elements:
@@ -111,6 +112,7 @@ bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_d
 	PassFail(loglike_match);
 
 	printf("Checking summed loglike values:\n");
+	float cl_sum = ComputeSum(mTempLogLike, mOutput);
 	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
 	printf("  CPU Value:  %0.4f\n", cpu_sum);
 	printf("  CL  Value:  %0.4f\n", cl_sum);
