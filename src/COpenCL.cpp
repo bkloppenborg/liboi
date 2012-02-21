@@ -104,6 +104,7 @@ void COpenCL::GetPlatformList(vector<cl_platform_id> * platforms)
 	CheckOCLError("Unable to get a list of platforms on this computer.", err);
 
 	platforms->assign(&tmp[0], &tmp[n]);
+	delete[] tmp;
 }
 
 /// Returns a list of devices on the specified platform.
