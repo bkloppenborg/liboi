@@ -19,8 +19,7 @@ class COILibDataList : public CVectorList<COILibData*>
 {
 
 public:
-	// Operator overloads:
-	//COILibData * operator[](int i) { return mList[i]; }
+
 
 public:
 	COILibDataList();
@@ -36,6 +35,7 @@ public:
 	int MaxUVPoints();
 
 	void ReadFile(string filename);
+	void RemoveData(unsigned int data_num);
 };
 
 #endif /* COILIBDATALIST_H_ */

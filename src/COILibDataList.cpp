@@ -15,15 +15,8 @@ COILibDataList::COILibDataList()
 
 COILibDataList::~COILibDataList()
 {
-//	// Deallocate the models
-//	for(int i = data.size() - 1; i > -1; i--)
-//		delete data[i];
-}
 
-//void COILibDataList::Append(COILibData * data)
-//{
-//	this->data.push_back(data);
-//}
+}
 
 /// Copies all data sources to the OpenCL device using the specified command queue.
 void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
@@ -117,4 +110,11 @@ void COILibDataList::ReadFile(string filename)
 	printf("OIFITS File read\n");
 
 	Append(new COILibData(tmp, filename));
+}
+
+/// Removes the specified data file from device and host memory
+void COILibDataList::RemoveData(unsigned int data_num)
+{
+
+	Remove(data_num);
 }

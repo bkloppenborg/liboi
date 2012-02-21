@@ -41,6 +41,7 @@ public:
 	{
 		if(i < mList.size())
 		{
+			delete mList[i];
 			mList.erase(mList.begin() + i);
 		}
 	}

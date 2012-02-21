@@ -45,6 +45,7 @@ protected:
 	COpenCL * mOCL;
 
 	// Routines:
+	bool mDataRoutinesInitialized;
 	string mKernelSourcePath;
 	CRoutine_Sum * mrTotalFlux;
 	CRoutine_ImageToBuffer * mrCopyImage;
@@ -111,6 +112,7 @@ public:
 
 	float TotalFlux(bool return_value);
 
+	void RemoveData(int data_num);
 	void RunVerification(int data_num);
 
 	void SetImageInfo(int width, int height, int depth, float scale);

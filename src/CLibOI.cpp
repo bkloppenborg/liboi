@@ -41,6 +41,7 @@ CLibOI::CLibOI(cl_device_type type)
 	mSimDataBuffer = NULL;
 
 	// Routines
+	mDataRoutinesInitialized = false;
 	mrTotalFlux = NULL;
 	mrCopyImage = NULL;
 	mrNormalize = NULL;
@@ -257,6 +258,7 @@ void CLibOI::InitRoutines()
 	// only initialize these routines if we have data:
 	if(mMaxData > 0)
 	{
+		mDataRoutinesInitialized = true;
 		if(mrFT == NULL)
 		{
 			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
@@ -297,10 +299,14 @@ void CLibOI::InitRoutines()
 }
 
 /// Reads in an OIFITS file and stores it into OpenCL memory
+/// Note, this routine will not load data any routine that uses data is initialized.
 void CLibOI::LoadData(string filename)
 {
-	mDataList.ReadFile(filename);
-	mDataList[mDataList.size() - 1]->CopyToOpenCLDevice(mOCL->GetContext(), mOCL->GetQueue());
+	if(!mDataRoutinesInitialized)
+	{
+		mDataList.ReadFile(filename);
+		mDataList[mDataList.size() - 1]->CopyToOpenCLDevice(mOCL->GetContext(), mOCL->GetQueue());
+	}
 }
 
 /// Normalizes a floating point buffer by dividing by the sum of the buffer
@@ -338,6 +344,12 @@ float CLibOI::TotalFlux(bool return_value)
 
 	float flux = mrTotalFlux->ComputeSum(mCLImage, mFluxBuffer, true);
 	return flux;
+}
+
+/// Removes the specified data set from memory.
+void CLibOI::RemoveData(int data_num)
+{
+	mDataList.RemoveData(data_num);
 }
 
 /// Runs the verification functions of each kernel.  Assumes all initialization has been complete
