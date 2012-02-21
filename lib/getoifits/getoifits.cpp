@@ -578,42 +578,43 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 		  }
 	      }
 
-	  AGAIN2: //waveband selection
+	  AGAIN2: //waveband selection -- Modified for SIMTOI 
+	    
 	    if( ( usersel->minband < 0.) || (usersel->maxband <= usersel->minband) ) // waveband not set (well) externally
 	      {
-		if(wave.nwave > 1)
-		  {
-		    printf("Select a wavelength range (default value = 1 50000) :");
+		//if(wave.nwave > 1)
+		//  {
+		    //printf("Select a wavelength range (default value = 1 50000) :\n");
 		    //fgets(commstring,100,stdin);
 		    //tmpi = sscanf(commstring,"%f %f", &usersel->minband, &usersel->maxband);
 		    // TODO: Undo the automatic selection here:
-		    tmpi = sscanf("1 50000","%f %f", &usersel->minband, &usersel->maxband);
-		  }
-		else
-		  {
-		    tmpi = -1;
-		    printf("Only one spectral channel. ");
-		  }
+		    //tmpi = sscanf("1 50000","%f %f", &usersel->minband, &usersel->maxband);
+		//  }
+		//else
+		//  {
+		//    tmpi = -1;
+		    //    printf("Only one spectral channel. ");
+		    // }
 		
-		if(tmpi == 2)
-		  {
-		    if((usersel->maxband <= usersel->minband)||(usersel->minband < 0.0))
-		      {
-			printf("Invalid band selection!\n");
-			goto AGAIN2;
-		      }
-		  }
-		else if(tmpi == -1)
-		  {
-		    printf("Automatic selection of the full channel\n");
+		    //	if(tmpi == 2)
+		    // {
+		    // if((usersel->maxband <= usersel->minband)||(usersel->minband < 0.0))
+		    //  {
+		    //			printf("Invalid band selection!\n");
+		    //		goto AGAIN2;
+		    //  }
+		    // }
+		    //else if(tmpi == -1)
+		    //  {
+		    printf("Automatic selection of all spectral data\n");
 		    usersel->minband = 1. ; /* (wave.eff_wave[0]-wave.eff_band[0]/2.)*billion ; */
 		    usersel->maxband = 50000. ; /*(wave.eff_wave[0]+wave.eff_band[0]/2.)*billion ; */
-		  }
-		else
-		  {
-		    printf("Invalid band selection!\n");
-		    goto AGAIN2;
-		  }
+		    // }
+		    //	else
+		    // {
+		    // printf("Invalid band selection!\n");
+		    // goto AGAIN2;
+		    //  }
 	      }
 	    
 	  }
@@ -692,7 +693,7 @@ int get_oi_fits_selection(oi_usersel* usersel, int* status)
 		  }
 	      }
 		*status = 0;
-		if((usersel->numt3==0)&&(usersel->numvis2==0))
+		if((usersel->numt3 == 0)&&( usersel->numvis2==0))
 		{
 		  printf("Error: no data available within the selected waveband limits\n");
 		  usersel->minband= -1.;
