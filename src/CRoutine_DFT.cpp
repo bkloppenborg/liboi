@@ -36,8 +36,8 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
     size_t local = 128;                     // local domain size for our calculation
 
     // Get the maximum work-group size for executing the kernel on the device
-//    err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-//	COpenCL::CheckOCLError("Failed to determine the kernel workgroup size for ft_dft2d kernel.", err);
+    err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	COpenCL::CheckOCLError("Failed to determine the kernel workgroup size for ft_dft2d kernel.", err);
 
 #ifdef DEBUG_VERBOSE
     // Output some information about kernel sizes:

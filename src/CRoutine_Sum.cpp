@@ -110,11 +110,10 @@ cl_kernel CRoutine_Sum::BuildReductionKernel(int whichKernel, int blockSize, int
 }
 
 // Performs an out-of-plate sum storing temporary values in output_buffer and partial_sum_buffer.
-float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
+float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
 {
 	int err = CL_SUCCESS;
 	float gpu_result = 0;
-	bool needReadBack = true;
 	int numThreads = mThreads[0];
 
 	int threads = 0;
@@ -165,7 +164,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
         // Copy this value back to the GPU
     	clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 
-        needReadBack = false;
+        return_value = false;	// don't need to read the value anymore, it is already stored locally.
     }
     else
     {
@@ -175,14 +174,14 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer)
 
 	clFinish(mQueue);
 
-	if (needReadBack)
+	if (return_value)
 	{
 		// copy final sum from device to host
 		clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 	}
 
 	// Now copy the data over to the final GPU location.
-	clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+	//clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 
 	return gpu_result;
 }
@@ -214,7 +213,7 @@ bool CRoutine_Sum::ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer)
 {
 	// First run the CPU version as the CL version modifies the buffers.
 	float cpu_sum = ComputeSum_CPU(input_buffer);
-	float cl_sum = ComputeSum(input_buffer, final_buffer);
+	float cl_sum = ComputeSum(input_buffer, final_buffer, true);
 
 	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
 	printf("  CPU Value:  %0.4f\n", cpu_sum);

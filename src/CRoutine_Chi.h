@@ -30,7 +30,7 @@ public:
 	void Chi_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 	bool Chi_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 
-	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum);
+	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum, bool return_value);
 	float Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum);
 	bool Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum);
 

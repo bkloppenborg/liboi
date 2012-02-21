@@ -104,12 +104,12 @@ void CLibOI::CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int
 /// Computes the chi2 between the current simulated data, and the observed data set specified in data
 float CLibOI::DataToChi2(COILibData * data)
 {
-	return mrChi->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), mrSquare, true);
+	return mrChi->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), mrSquare, true, true);
 }
 
 float CLibOI::DataToLogLike(COILibData * data)
 {
-	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true);
+	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true, true);
 }
 
 /// Computes the Fourier transform of the image, then generates Vis2 and T3's.
@@ -312,9 +312,9 @@ void CLibOI::Normalize()
 
 	// First compute and store the total flux:
 #ifdef DEBUG_VERBOSE
-	tmp1 = TotalFlux(0, true);
+	tmp1 = TotalFlux(true);
 #else // DEBUG
-	TotalFlux(0, false);
+	TotalFlux(false);
 #endif // DEBUG
 
 	// Now normalize the image
@@ -329,13 +329,13 @@ void CLibOI::Normalize()
 #endif //DEBUG
 }
 
-/// Computes the total flux for the current image.
+/// Computes the total flux for the current image/layer
 /// If the image is 2D, use zero for the layer.
-float CLibOI::TotalFlux(int layer, bool return_value)
+float CLibOI::TotalFlux(bool return_value)
 {
-	CopyImageToBuffer(layer);
+	//CopyImageToBuffer(layer);
 
-	float flux = mrTotalFlux->ComputeSum(mCLImage, mFluxBuffer);
+	float flux = mrTotalFlux->ComputeSum(mCLImage, mFluxBuffer, true);
 	return flux;
 }
 

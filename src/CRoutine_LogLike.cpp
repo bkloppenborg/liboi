@@ -24,7 +24,7 @@ CRoutine_LogLike::~CRoutine_LogLike()
 }
 
 /// Computes the loglikelihood, returns it as a floating point number.
-float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum)
+float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value)
 {
 	float sum = 0;
 	int err = CL_SUCCESS;
@@ -54,12 +54,12 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	try
 	{
 		if(compute_sum)
-			sum = ComputeSum(mTempLogLike, mOutput);
+			sum = ComputeSum(mTempLogLike, mOutput, return_value);
 	}
 	catch (...)
 	{
 		printf("Warning, exception in CRoutine_LogLike.  Writing out buffers:\n");
-		LogLike(data, data_err, model_data, n, false);
+		LogLike(data, data_err, model_data, n, false, false);
 		DumpFloatBuffer(mTempLogLike, mNElements);
 		throw;
 	}
@@ -103,7 +103,7 @@ float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_d
 bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
 	float cpu_output[mNElements];
-	LogLike(data, data_err, model_data, n, false);
+	LogLike(data, data_err, model_data, n, false, false);
 	float cpu_sum = LogLike_CPU(data, data_err, model_data, n, cpu_output);
 
 	// Compare the CL and CPU chi2 elements:
@@ -112,7 +112,7 @@ bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_d
 	PassFail(loglike_match);
 
 	printf("Checking summed loglike values:\n");
-	float cl_sum = ComputeSum(mTempLogLike, mOutput);
+	float cl_sum = ComputeSum(mTempLogLike, mOutput, true);
 	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
 	printf("  CPU Value:  %0.4f\n", cpu_sum);
 	printf("  CL  Value:  %0.4f\n", cl_sum);

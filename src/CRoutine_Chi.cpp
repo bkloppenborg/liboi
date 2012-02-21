@@ -100,7 +100,7 @@ bool CRoutine_Chi::Chi_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int
 }
 
 /// Helper function, calls the chi and then square routines, stores output in the internal mChiTemp buffer.
-float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum)
+float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum, bool return_value)
 {
 	float sum = 0;
 	Chi(data, data_err, model_data, n);
@@ -110,7 +110,7 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n,
 	try
 	{
 		if(compute_sum)
-			sum = ComputeSum(mChiTemp, mChiOutput);
+			sum = ComputeSum(mChiTemp, mChiOutput, return_value);
 	}
 	catch (...)
 	{
@@ -157,7 +157,7 @@ bool CRoutine_Chi::Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, in
 	bool sum_match = true;
 	float cpu_sum = 0;
 	// Run the OpenCL function first without computing the sum.
-	Chi2(data, data_err, model_data, n, rSquare, false);
+	Chi2(data, data_err, model_data, n, rSquare, false, false);
 	cpu_sum = Chi2_CPU(data, data_err, model_data, n, rSquare, true);
 
 	// Compare the CL and CPU chi2 elements:
@@ -166,7 +166,7 @@ bool CRoutine_Chi::Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, in
 	PassFail(chi2_match);
 
 	printf("Checking summed Chi2 values:\n");
-	float cl_sum = ComputeSum(mChiTemp, mChiOutput);
+	float cl_sum = ComputeSum(mChiTemp, mChiOutput, true);
 	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
 	printf("  CPU Value:  %0.4f\n", cpu_sum);
 	printf("  CL  Value:  %0.4f\n", cl_sum);

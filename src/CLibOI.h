@@ -109,7 +109,7 @@ public:
 
 	void Normalize();
 
-	float TotalFlux(int layer, bool return_value);
+	float TotalFlux(bool return_value);
 
 	void RunVerification(int data_num);
 
