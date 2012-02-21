@@ -69,6 +69,7 @@ CLibOI::~CLibOI()
 	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
 	if(mFTBuffer) clReleaseMemObject(mFTBuffer);
 	if(mSimDataBuffer) clReleaseMemObject(mSimDataBuffer);
+	if(mGLImage) clReleaseMemObject(mGLImage);
 
 	delete mOCL;
 }
