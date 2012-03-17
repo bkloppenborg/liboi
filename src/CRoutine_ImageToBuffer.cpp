@@ -31,10 +31,10 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int wi
 {
 	// TODO: We need to redo this for 3D data sets and for non-square images.
 	// TODO: Figure out how to determine these sizes dynamically.
-	size_t * global = new size_t[2];
+	size_t global[2];
+//	size_t local[2];
 	global[0] = global[1] = width;
-	size_t * local = new size_t[2];
-	local[0] = local[1] = 16;
+//	local[0] = local[1] = 16;
 
 	// Enqueue the kernel.
 	int err = CL_SUCCESS;
@@ -45,29 +45,6 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int wi
 
 
     err = CL_SUCCESS;
-    err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, local, 0, NULL, NULL);
+    err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, NULL, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to enqueue image copying kernel.", err);
-
-#ifdef DEBUG_VERBOSE
-        	// Copy back the input/output buffers.
-        	float tmp_sum = 0;
-        	int num_elements = width * height;
-        	cl_float * tmp = new cl_float[num_elements];
-        	err = clEnqueueReadBuffer(mQueue, cl_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
-
-        	for(int i = 0; i < num_elements; i++)
-        	{
-        		if(i % 10 == 0)
-        			printf("%f ", tmp[i]);
-
-        		tmp_sum += tmp[i];
-        	}
-
-        	printf("\n");
-        	printf("Sum of Image copied to CPU: %f \n", tmp_sum);
-#endif //DEBUG_VERBOSE
-
-    // Free memory
-    delete[] global;
-    delete[] local;
 }

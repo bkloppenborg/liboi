@@ -114,6 +114,24 @@ float CLibOI::DataToLogLike(COILibData * data)
 	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true, true);
 }
 
+/// Copies the current image in mCLImage to the floating point buffer, image, iff the sizes match exactly.
+void CLibOI::ExportImage(float * image, unsigned int width, unsigned int height, unsigned int depth)
+{
+	if(width != mImageWidth || height != mImageHeight || depth != mImageDepth)
+		return;
+
+	int err = CL_SUCCESS;
+	int num_elements = mImageWidth * mImageHeight * mImageDepth;
+	cl_float tmp[num_elements];
+	err |= clEnqueueReadBuffer(mOCL->GetQueue(), mCLImage, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CLibOI::ExportImage() ", err);
+
+	// Copy to the output buffer, converting as we go.
+	for(unsigned int i = 0; i < num_elements; i++)
+		image[i] = tmp[i];
+
+}
+
 /// Computes the Fourier transform of the image, then generates Vis2 and T3's.
 /// This routine assumes the image has been normalized using Normalize() (and that the total flux is stored in mFluxBuffer)
 void CLibOI::FTToData(COILibData * data)
@@ -374,6 +392,59 @@ void CLibOI::RunVerification(int data_num)
 	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
 	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, mrSquare, true);
 	mrLogLike->LogLike_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
+}
+
+/// Saves the current image in the OpenCL memory buffer to the specified FITS file
+/// If the OpenCL memory has not been initialzed, this function immediately returns
+void   CLibOI::SaveImage(string filename)
+{
+	if(mCLImage == NULL)
+		return;
+
+	// TODO: Adapt for multi-spectral images
+
+	// Create storage space for the image, copy it.
+	float image[mImageWidth * mImageHeight * mImageDepth];
+	ExportImage(image, mImageWidth, mImageHeight, mImageDepth);
+
+	// write out the FITS file:
+	fitsfile *fptr;
+	int error = 0;
+	int* status = &error;
+	long fpixel = 1, naxis = 2, nelements;
+	long naxes[2];
+
+	/*Initialise storage*/
+	naxes[0] = (long) mImageWidth;
+	naxes[1] = (long) mImageHeight;
+	nelements = mImageWidth * mImageWidth;
+
+	/*Create new file*/
+	if (*status == 0)
+		fits_create_file(&fptr, filename.c_str(), status);
+
+	/*Create primary array image*/
+	if (*status == 0)
+		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, status);
+	/*Write a keywords (datafile, target, image pixelation) */
+//	if (*status == 0)
+//		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);
+//	if (*status == 0)
+//		fits_update_key(fptr, TSTRING, "TARGET", "FakeImage", "Target Name", status);
+//	if (*status == 0)
+//		fits_update_key(fptr, TFLOAT, "SCALE", &scale, "Scale (mas/pixel)", status);
+
+
+	/*Write image*/
+	if (*status == 0)
+		fits_write_img(fptr, TFLOAT, fpixel, nelements, &image[0], status);
+
+	/*Close file*/
+	if (*status == 0)
+		fits_close_file(fptr, status);
+
+	/*Report any errors*/
+	fits_report_error(stderr, *status);
 }
 
 /// Tells OpenCL about the size of the image.

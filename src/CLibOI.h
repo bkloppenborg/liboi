@@ -87,6 +87,7 @@ public:
 	float DataToLogLike(COILibData * data);
 
 public:
+	void ExportImage(float * image, unsigned int width, unsigned int height, unsigned int depth);
 	void FreeOpenCLMem();
 	void FTToData(COILibData * data);
 
@@ -115,6 +116,7 @@ public:
 	void RemoveData(int data_num);
 	void RunVerification(int data_num);
 
+	void SaveImage(string filename);
 	void SetImageInfo(int width, int height, int depth, float scale);
 	void SetImage_CLMEM(cl_mem image);
 	void SetImage_GLFB(GLuint framebuffer);
