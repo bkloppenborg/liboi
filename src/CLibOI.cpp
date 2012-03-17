@@ -402,6 +402,7 @@ void   CLibOI::SaveImage(string filename)
 		return;
 
 	// TODO: Adapt for multi-spectral images
+	Normalize();
 
 	// Create storage space for the image, copy it.
 	float image[mImageWidth * mImageHeight * mImageDepth];
