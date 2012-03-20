@@ -45,9 +45,34 @@ extern "C" {
 #include <string>
 #include <complex>
 #include "COpenCL.h"
-
+#include "CVectorList.h"
 
 using namespace std;
+
+// Define storage classes for exporting data (used only in GetV2, GetT3)
+class CV2Data
+{
+public:
+	float u;
+	float v;
+	float v2;
+	float v2_err;
+};
+
+class CT3Data
+{
+public:
+	float u1;
+	float u2;
+	float u3;
+	float v1;
+	float v2;
+	float v3;
+	float t3_amp;
+	float t3_amp_err;
+	float t3_phi;
+	float t3_phi_err;
+};
 
 class COILibData
 {
@@ -93,15 +118,16 @@ public:
 	cl_mem GetLoc_DataT3Phi() { return mData_phasor_cl; };
 	cl_mem GetLoc_DataT3Sign() { return mData_sign_cl; };
 	cl_mem GetLoc_DataUVPoints() { return mData_uvpnt_cl; };
-
-	int GetNumData() { return mNData; };
-	int GetNumT3() { return mNT3; };
-	int GetNumUV() { return mNUV; };
-	int GetNumV2() { return mNVis2; };
+	unsigned int GetNumData() { return mNData; };
+	unsigned int GetNumT3() { return mNT3; };
+	unsigned int GetNumUV() { return mNUV; };
+	unsigned int GetNumV2() { return mNVis2; };
+	void GetT3(CVectorList<CT3Data*> & t3);
+	void GetV2(CVectorList<CV2Data*> & v2);
 
 	void InitData(bool do_extrapolation);
 
-	float square(float number) {return number*number; };
+	static float square(float number) {return number*number; };
 };
 
 #endif /* COILIBDATA_H_ */

@@ -96,11 +96,17 @@ public:
 	int GetNDataAllocated() { return mDataList.GetNDataAllocated(); };
 	int GetNDataAllocated(int data_num) { return mDataList.GetNDataAllocated(data_num); };
 	int GetNDataSets() { return mDataList.size(); };
+	int GetMaxDataSize() { return mMaxData; };
+	void GetSimulatedData(float * output_buffer, unsigned int buffer_size);
+	void GetT3(unsigned int data_set, CVectorList<CT3Data*> & t3);
+	void GetV2(unsigned int data_set, CVectorList<CV2Data*> & v2);
 
 	void ImageToChi(COILibData * data, float * output, int & n);
 	bool ImageToChi(int data_num, float * output, int & n);
 	float ImageToChi2(COILibData * data);
 	float ImageToChi2(int data_num);
+	void ImageToData(int data_num);
+	void ImageToData(COILibData * data);
 	float ImageToLogLike(COILibData * data);
 	float ImageToLogLike(int data_num);
 	void Init();

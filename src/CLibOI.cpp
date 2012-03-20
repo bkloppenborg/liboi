@@ -7,6 +7,7 @@
 
 #include "CLibOI.h"
 #include <cstdio>
+#include <algorithm>
 
 #include "CRoutine_Sum.h"
 #include "CRoutine_Normalize.h"
@@ -145,6 +146,37 @@ void CLibOI::FTToData(COILibData * data)
 			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
 }
 
+/// Copies up to buffer_size elements from mSimDataBuffer to output_buffer
+/// Note, the data is exported as a floating point array with the first
+/// N(V2) elements being visibilities and 2*N(T3) elements being T3's
+void CLibOI::GetSimulatedData(float * output_buffer, unsigned int buffer_size)
+{
+	int num_elements = min(int(buffer_size), mDataList.MaxNumData());
+
+	// Pull the data down from the OpenCL device in it's native format, convert to float afterward
+	int err = CL_SUCCESS;
+	cl_float tmp[num_elements];
+	err |= clEnqueueReadBuffer(mOCL->GetQueue(), mSimDataBuffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CLibOI::ExportImage() ", err);
+
+	for(int i = 0; i < num_elements; i++)
+		output_buffer[i] = tmp[i];
+}
+
+/// Returns the T3 data in a structured vector, does nothing if data_set is out of range.
+void CLibOI::GetT3(unsigned int data_set, CVectorList<CT3Data*> & t3)
+{
+	if(data_set < mDataList.size())
+		mDataList[data_set]->GetT3(t3);
+}
+
+/// Returns the V2 data in a structured vector, does nothing if data_set is out of range.
+void CLibOI::GetV2(unsigned int data_set, CVectorList<CV2Data*> & v2)
+{
+	if(data_set < mDataList.size())
+		mDataList[data_set]->GetV2(v2);
+}
+
 /// Uses the current active image to compute the chi (i.e. non-squared version) with respect to the
 /// specified data and returns the chi array in output.
 /// This is a convenience function that calls FTToData, DataToChi
@@ -189,6 +221,25 @@ float CLibOI::ImageToChi2(int data_num)
 
 	COILibData * data = mDataList[data_num];
 	return ImageToChi2(data);
+}
+
+/// Uses the currently loaded image and specified data set to
+/// compute simulated data.
+void CLibOI::ImageToData(int data_num)
+{
+	if(data_num > mDataList.size() - 1)
+		return;
+
+	COILibData * data = mDataList[data_num];
+	ImageToData(data);
+}
+
+/// Uses the currently loaded image and specified data set to
+/// compute simulated data.
+void CLibOI::ImageToData(COILibData * data)
+{
+	Normalize();
+	FTToData(data);
 }
 
 float CLibOI::ImageToLogLike(COILibData * data)

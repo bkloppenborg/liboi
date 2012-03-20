@@ -67,7 +67,6 @@ COILibData::~COILibData()
 	delete[] mData;
 	delete[] mData_err;
 	delete[] mData_phasor;
-
 }
 
 /// Copies the data from CPU memory over to the OpenCL device memory, creating memory objects when necessary.
@@ -217,3 +216,47 @@ void COILibData::InitData(bool do_extrapolation)
 	}
 
 }
+
+/// Exports the T3 data as a vector of CT3Data.
+void COILibData::GetT3(CVectorList<CT3Data*> & t3)
+{
+	t3.Clear();
+	CT3Data * tmp;
+
+	for(int i = 0; i < mNT3; i++)
+	{
+		tmp = new CT3Data();
+		tmp->u1 = mOIData->uv[ mOIData->bsref[i].ab.uvpnt ].u;
+		tmp->v1 = mOIData->uv[ mOIData->bsref[i].ab.uvpnt ].v;;
+		tmp->u2 = mOIData->uv[ mOIData->bsref[i].bc.uvpnt ].u;
+		tmp->v2 = mOIData->uv[ mOIData->bsref[i].bc.uvpnt ].v;;
+		tmp->u3 = mOIData->uv[ mOIData->bsref[i].ca.uvpnt ].u;
+		tmp->v3 = mOIData->uv[ mOIData->bsref[i].ca.uvpnt ].v;;
+		tmp->t3_amp = mData[mNVis2 + 2*i];
+		tmp->t3_amp_err = mData_err[mNVis2 + 2*i];
+		tmp->t3_phi = mOIData->bisphs[i];
+		tmp->t3_phi_err = mOIData->bisphserr[i];
+
+		t3.Append(tmp);
+	}
+}
+
+/// Exports the V2 data as a vector of CV2Data
+void COILibData::GetV2(CVectorList<CV2Data*> & v2)
+{
+	v2.Clear();
+	CV2Data * tmp;
+
+	for(int i = 0; i < mNVis2; i++)
+	{
+		tmp = new CV2Data();
+		tmp->u = mOIData->uv[i].u;
+		tmp->v = mOIData->uv[i].v;
+		tmp->v2 = mData[i];
+		tmp->v2_err = mData_err[i];
+
+		v2.Append(tmp);
+	}
+}
+
+
