@@ -52,6 +52,8 @@ void COpenCL::FindDevice(cl_platform_id & platform, cl_device_id & device, cl_de
 	GetPlatformList(&platforms);
 	unsigned int i, j;
 	vector<cl_device_id> devices;
+	platform = 0;
+	device = 0;
 
 	for(i = 0; i < platforms.size(); i++)
 	{
@@ -140,7 +142,14 @@ void COpenCL::Init(cl_device_type type)
 	cl_device_id device;
 
 	FindDevice(platform, device, type);
-	this->Init(platform, device, type);
+
+	// TODO: Remove this later
+	printf("Found Platform %x\n", platform);
+
+	if(platform != 0)
+		this->Init(platform, device, type);
+	else
+		throw "Could not find correct OpenCL platform!";
 }
 
 /// Initializes the class.  Creates contexts and command queues.

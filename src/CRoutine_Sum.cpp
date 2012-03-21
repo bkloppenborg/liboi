@@ -113,7 +113,7 @@ cl_kernel CRoutine_Sum::BuildReductionKernel(int whichKernel, int blockSize, int
 float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
 {
 	int err = CL_SUCCESS;
-	float gpu_result = 0;
+	cl_float gpu_result = 0;
 	int numThreads = mThreads[0];
 
 	int threads = 0;
@@ -183,7 +183,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 	// Now copy the data over to the final GPU location.
 	//clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 
-	return gpu_result;
+	return float(gpu_result);
 }
 
 /// Computes the sum of the OpenCL buffer, input_buffer, using Kahan summation to minimize precision losses.

@@ -20,7 +20,8 @@ CRoutine_LogLike::CRoutine_LogLike(cl_device_id device, cl_context context, cl_c
 
 CRoutine_LogLike::~CRoutine_LogLike()
 {
-
+	if(mTempLogLike) clReleaseMemObject(mTempLogLike);
+	if(mOutput) clReleaseMemObject(mOutput);
 }
 
 /// Computes the loglikelihood, returns it as a floating point number.
@@ -64,7 +65,6 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 		throw;
 	}
 
-	// Todo: Add in model priors.
 	return -1*n * log(2 * PI) + sum;
 }
 
@@ -135,6 +135,11 @@ void CRoutine_LogLike::Init(int num_max_elements)
     BuildKernel(source, "loglike", mSource[mLogLikeSourceID]);
     mLogLikeKernelID = mKernels.size() - 1;
 
-    mTempLogLike = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
+	if(mOutput == NULL)
+		mOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
+
+	if(mTempLogLike == NULL)
+		mTempLogLike = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
+
 	COpenCL::CheckOCLError("Could not create loglike temporary buffer.", err);
 }

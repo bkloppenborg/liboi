@@ -72,6 +72,7 @@ CLibOI::~CLibOI()
 	if(mFTBuffer) clReleaseMemObject(mFTBuffer);
 	if(mSimDataBuffer) clReleaseMemObject(mSimDataBuffer);
 	if(mGLImage) clReleaseMemObject(mGLImage);
+	if(mCLImage) clReleaseMemObject(mCLImage);
 
 	delete mOCL;
 }
@@ -409,8 +410,6 @@ void CLibOI::Normalize()
 /// If the image is 2D, use zero for the layer.
 float CLibOI::TotalFlux(bool return_value)
 {
-	//CopyImageToBuffer(layer);
-
 	float flux = mrTotalFlux->ComputeSum(mCLImage, mFluxBuffer, true);
 	return flux;
 }
