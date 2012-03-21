@@ -143,6 +143,8 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 		err = clEnqueueNDRangeKernel(mQueue,reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to enqueue final parallel reduction kernel.", err);
 
+		//clFinish(mQueue);
+
 		buff1 = buff2;
 	}
 

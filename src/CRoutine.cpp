@@ -112,7 +112,11 @@ void CRoutine::DumpFloatBuffer(cl_mem buffer, unsigned int size)
 	cl_float * tmp = new cl_float[size];
 	err |= clEnqueueReadBuffer(mQueue, buffer, CL_TRUE, 0, size * sizeof(cl_float), tmp, 0, NULL, NULL);
 	for(unsigned int i = 0; i < size; i++)
-		printf(" %i %f\n", i, tmp[i]);
+	{
+		printf(" %i %f ", i, tmp[i]);
+		if(i > 0 && i % 10 == 0)
+			printf("\n");
+	}
 }
 
 /// Prints out a simple pass/faile notification.
