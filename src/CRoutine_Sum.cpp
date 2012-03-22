@@ -8,10 +8,11 @@
 #include <cstdio>
 #include <sstream>
 #include "CRoutine_Sum.h"
+#include "CRoutine_Zero.h"
 
 using namespace std;
 
-CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_queue queue)
+CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
 	: CRoutine(device, context, queue)
 {
 	// Specify the source location, set temporary buffers to null
@@ -20,6 +21,9 @@ CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_q
 	mNElements = 0;
 	mFinalS = 0;
 	mReductionPasses = 0;
+
+	// External routines, do not delete/deallocate here.
+	mrZero = rZero;
 }
 
 CRoutine_Sum::~CRoutine_Sum()
@@ -95,7 +99,6 @@ void CRoutine_Sum::BuildKernels()
 
 cl_kernel CRoutine_Sum::BuildReductionKernel(int whichKernel, int blockSize, int isPowOf2)
 {
-
     stringstream tmp;
     tmp << "#define T float" << std::endl;
     tmp << "#define blockSize " << blockSize << std::endl;
@@ -112,6 +115,9 @@ cl_kernel CRoutine_Sum::BuildReductionKernel(int whichKernel, int blockSize, int
 // Performs an out-of-plate sum storing temporary values in output_buffer and partial_sum_buffer.
 float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
 {
+	// First zero out the temporary sum buffer.
+	mrZero->Zero(mTempSumBuffer, mNElements);
+
 	int err = CL_SUCCESS;
 	cl_float gpu_result = 0;
 	int numThreads = mThreads[0];
@@ -130,18 +136,25 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 
 		globalWorkSize[0] = blocks * threads;
 		localWorkSize[0] = threads;
+		cl_kernel reductionKernel = mKernels[kernel_id];
+
+//		printf("\n Kernel: %x Blocks: %i Threads %i \n", reductionKernel, blocks, threads);
+//		printf("\n Buff1:\n");
+//		DumpFloatBuffer(buff1, mNElements);
 
 #ifdef DEBUG_VERBOSE
 		printf("Global: %i Local: %i\n", globalWorkSize[0], localWorkSize[0]);
 #endif // DEBUG_VERBOSE
 
-		cl_kernel reductionKernel = mKernels[kernel_id];
 		clSetKernelArg(reductionKernel, 0, sizeof(cl_mem), (void *) &buff1);
 		clSetKernelArg(reductionKernel, 1, sizeof(cl_mem), (void *) &buff2);
 		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &mNElements);
 		clSetKernelArg(reductionKernel, 3, sizeof(cl_float) * numThreads, NULL);
 		err = clEnqueueNDRangeKernel(mQueue,reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to enqueue final parallel reduction kernel.", err);
+
+//		printf("\n\n Buff2:\n\n");
+//		DumpFloatBuffer(buff2, mNElements);
 
 		//clFinish(mQueue);
 
@@ -236,6 +249,9 @@ void CRoutine_Sum::Init(int n)
 	mNElements = n;
 	BuildKernels();
 
-	mTempSumBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
-	COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
+	if(mTempSumBuffer == NULL)
+	{
+		mTempSumBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
+		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
+	}
 }

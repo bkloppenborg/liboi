@@ -31,6 +31,7 @@ class CRoutine_FTtoT3;
 class CRoutine_Chi;
 class CRoutine_LogLike;
 class CRoutine_Square;
+class CRoutine_Zero;
 
 class CLibOI
 {
@@ -47,6 +48,7 @@ protected:
 	// Routines:
 	bool mDataRoutinesInitialized;
 	string mKernelSourcePath;
+	CRoutine_Zero * mrZeroBuffer;
 	CRoutine_Sum * mrTotalFlux;
 	CRoutine_ImageToBuffer * mrCopyImage;
 	CRoutine_Normalize * mrNormalize;

@@ -7,8 +7,8 @@
 
 #include "CRoutine_LogLike.h"
 
-CRoutine_LogLike::CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue)
-	:CRoutine_Sum(device, context, queue)
+CRoutine_LogLike::CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
+	:CRoutine_Sum(device, context, queue, rZero)
 {
 	mSource.push_back("loglike.cl");
 	mLogLikeSourceID = mSource.size() - 1;

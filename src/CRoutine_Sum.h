@@ -10,18 +10,23 @@
 
 #include "CRoutine.h"
 
+class CRoutine_Zero;
+
 class CRoutine_Sum: public CRoutine
 {
 protected:
-	int mNElements;
+	unsigned int mNElements;
 	cl_mem mTempSumBuffer;
 	vector<int> mBlocks;
 	vector<int> mThreads;
 	int mFinalS;
 	int mReductionPasses;
 
+	// External routines, deleted elsewhere
+	CRoutine_Zero * mrZero;
+
 public:
-	CRoutine_Sum(cl_device_id device, cl_context context, cl_command_queue queue);
+	CRoutine_Sum(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero);
 	virtual ~CRoutine_Sum();
 
 public:

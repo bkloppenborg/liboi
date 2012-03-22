@@ -138,15 +138,14 @@ cl_device_type COpenCL::GetDeviceType(cl_device_id device_id)
 /// Initializes the class using the first device found with the specified type.
 void COpenCL::Init(cl_device_type type)
 {
-	cl_platform_id platform;
-	cl_device_id device;
+	cl_platform_id platform = 0;
+	cl_device_id device = 0;
 
 	FindDevice(platform, device, type);
 
-	// TODO: Remove this later
-	printf("Found Platform %x\n", platform);
+	PrintPlatformInfo(platform);
 
-	if(platform != 0)
+	if(platform != 0 && device != 0)
 		this->Init(platform, device, type);
 	else
 		throw "Could not find correct OpenCL platform!";

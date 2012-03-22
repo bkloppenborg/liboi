@@ -19,6 +19,7 @@
 #include "CRoutine_Chi.h"
 #include "CRoutine_LogLike.h"
 #include "CRoutine_Square.h"
+#include "CRoutine_Zero.h"
 
 CLibOI::CLibOI(cl_device_type type)
 {
@@ -52,6 +53,7 @@ CLibOI::CLibOI(cl_device_type type)
 	mrChi = NULL;
 	mrLogLike = NULL;
 	mrSquare = NULL;
+	mrZeroBuffer = NULL;
 }
 
 CLibOI::~CLibOI()
@@ -66,6 +68,7 @@ CLibOI::~CLibOI()
 	delete mrChi;
 	delete mrLogLike;
 	delete mrSquare;
+	delete mrZeroBuffer;
 
 	// Now free OpenCL buffers:
 	if(mFluxBuffer) clReleaseMemObject(mFluxBuffer);
@@ -108,7 +111,7 @@ void CLibOI::CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int
 /// Computes the chi2 between the current simulated data, and the observed data set specified in data
 float CLibOI::DataToChi2(COILibData * data)
 {
-	return mrChi->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), mrSquare, true, true);
+	return mrChi->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true, true);
 }
 
 float CLibOI::DataToLogLike(COILibData * data)
@@ -297,9 +300,23 @@ void CLibOI::InitRoutines()
 {
 	// Init all routines.  For now pre-allocate all buffers.
 	// Remember, Init can be called multiple times, so only init if not inited already.
+	if(mrZeroBuffer == NULL)
+	{
+		mrZeroBuffer = new CRoutine_Zero(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrZeroBuffer->SetSourcePath(mKernelSourcePath);
+		mrZeroBuffer->Init();
+	}
+
+	if(mrSquare == NULL)
+	{
+		mrSquare = new CRoutine_Square(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrSquare->SetSourcePath(mKernelSourcePath);
+		mrSquare->Init();
+	}
+
 	if(mrTotalFlux == NULL)
 	{
-		mrTotalFlux = new CRoutine_Sum(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+		mrTotalFlux = new CRoutine_Sum(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue(), mrZeroBuffer);
 		mrTotalFlux->SetSourcePath(mKernelSourcePath);
 		mrTotalFlux->Init(mImageWidth * mImageHeight);
 	}
@@ -318,12 +335,6 @@ void CLibOI::InitRoutines()
 		mrNormalize->Init();
 	}
 
-	if(mrSquare == NULL)
-	{
-		mrSquare = new CRoutine_Square(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-		mrSquare->SetSourcePath(mKernelSourcePath);
-		mrSquare->Init();
-	}
 
 	// only initialize these routines if we have data:
 	if(mMaxData > 0)
@@ -354,14 +365,14 @@ void CLibOI::InitRoutines()
 
 		if(mrChi == NULL)
 		{
-			mrChi = new CRoutine_Chi(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+			mrChi = new CRoutine_Chi(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue(), mrZeroBuffer, mrSquare);
 			mrChi->SetSourcePath(mKernelSourcePath);
 			mrChi->Init(mMaxData);
 		}
 
 		if(mrLogLike == NULL)
 		{
-			mrLogLike = new CRoutine_LogLike(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+			mrLogLike = new CRoutine_LogLike(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue(), mrZeroBuffer);
 			mrLogLike->SetSourcePath(mKernelSourcePath);
 			mrLogLike->Init(mMaxData);
 		}
@@ -440,7 +451,7 @@ void CLibOI::RunVerification(int data_num)
 	// Now run the chi, chi2, and loglike kernels:
 	int n = data->GetNumData();
 	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
-	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, mrSquare, true);
+	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, true);
 	mrLogLike->LogLike_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
 }
 

@@ -12,12 +12,14 @@
 
 using namespace std;
 
-CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue)
-	:CRoutine_Sum(device, context, queue)
+CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero, CRoutine_Square * rSquare)
+	:CRoutine_Sum(device, context, queue, rZero)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("chi.cl");
 	mChiSourceID = mSource.size() - 1;
+
+	mrSquare = rSquare;
 
 	mChiTemp = NULL;
 	mChiOutput = NULL;
@@ -27,6 +29,8 @@ CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_q
 
 CRoutine_Chi::~CRoutine_Chi()
 {
+	// Note, the routines are deleted elsewhere, leave them alone.
+
 	if(mChiTemp) clReleaseMemObject(mChiTemp);
 	if(mChiOutput) clReleaseMemObject(mChiOutput);
 
@@ -100,11 +104,11 @@ bool CRoutine_Chi::Chi_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int
 }
 
 /// Helper function, calls the chi and then square routines, stores output in the internal mChiTemp buffer.
-float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum, bool return_value)
+float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value)
 {
 	float sum = 0;
 	Chi(data, data_err, model_data, n);
-	rSquare->Square(mChiTemp, mChiTemp, mNElements, n);
+	mrSquare->Square(mChiTemp, mChiTemp, mNElements, n);
 
 	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
 	try
@@ -116,7 +120,7 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n,
 	{
 		printf("Warning, exception in CRoutine_Chi2.  Writing out buffers:\n");
 		Chi(data, data_err, model_data, n);
-		rSquare->Square(mChiTemp, mChiTemp, mNElements, n);
+		mrSquare->Square(mChiTemp, mChiTemp, mNElements, n);
 		DumpFloatBuffer(mChiTemp, mNElements);
 		throw;
 	}
@@ -124,7 +128,7 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n,
 	return sum;
 }
 
-float CRoutine_Chi::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum)
+float CRoutine_Chi::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum)
 {
 	float sum = 0;
 	float temp = 0;
@@ -151,14 +155,14 @@ float CRoutine_Chi::Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, in
 }
 
 /// Verifies the chi2 and chi2_cpu values match.  Also compares the intermediate chi2 array elements.
-bool CRoutine_Chi::Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n, CRoutine_Square * rSquare, bool compute_sum)
+bool CRoutine_Chi::Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum)
 {
 	bool chi2_match = true;
 	bool sum_match = true;
 	float cpu_sum = 0;
 	// Run the OpenCL function first without computing the sum.
-	Chi2(data, data_err, model_data, n, rSquare, false, false);
-	cpu_sum = Chi2_CPU(data, data_err, model_data, n, rSquare, true);
+	Chi2(data, data_err, model_data, n, false, false);
+	cpu_sum = Chi2_CPU(data, data_err, model_data, n, true);
 
 	// Compare the CL and CPU chi2 elements:
 	printf("Checking individual Chi2 values:\n");

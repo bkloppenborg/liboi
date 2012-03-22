@@ -12,6 +12,8 @@
 
 #include "CRoutine_Sum.h"
 
+class CRoutine_Zero;
+
 class CRoutine_LogLike: public CRoutine_Sum
 {
 protected:
@@ -22,7 +24,7 @@ protected:
 	int mLogLikeKernelID;
 
 public:
-	CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue);
+	CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero);
 	virtual ~CRoutine_LogLike();
 
 	float LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value);
