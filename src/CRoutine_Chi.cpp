@@ -67,18 +67,18 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 void CRoutine_Chi::Chi_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
 	int err = CL_SUCCESS;
-	cl_float cpu_data[mNElements];
-	cl_float cpu_data_err[mNElements];
-	cl_float cpu_model_data[mNElements];
+	cl_float cpu_data[n];
+	cl_float cpu_data_err[n];
+	cl_float cpu_model_data[n];
 	cl_float tmp = 0;
 
-	err  = clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, mNElements * sizeof(cl_float), &cpu_data, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, mNElements * sizeof(cl_float), &cpu_data_err, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, mNElements * sizeof(cl_float), &cpu_model_data, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to copy chi buffers back to the CPU.", err);
+	err  = clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, n * sizeof(cl_float), &cpu_data, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, n * sizeof(cl_float), &cpu_data_err, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, n * sizeof(cl_float), &cpu_model_data, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to copy data buffers back to the CPU. CRoutine_Chi::Chi_CPU()", err);
 
 	// Now compute the chi, store it.
-	for(int i = 0; i < mNElements; i++)
+	for(int i = 0; i < n; i++)
 	{
 		tmp = 0;
 
@@ -97,7 +97,7 @@ bool CRoutine_Chi::Chi_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int
 	Chi_CPU(data, data_err, model_data, n);
 
 	printf("Checking individual Chi values:\n");
-	bool test_result = Verify(mCPUChiTemp, mChiTemp, mNElements, 0);
+	bool test_result = Verify(mCPUChiTemp, mChiTemp, n, 0);
 	PassFail(test_result);
 
 	return test_result;
@@ -108,7 +108,7 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n,
 {
 	float sum = 0;
 	Chi(data, data_err, model_data, n);
-	mrSquare->Square(mChiTemp, mChiTemp, mNElements, n);
+	mrSquare->Square(mChiTemp, mChiTemp, n, n);
 
 	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
 	try
@@ -121,7 +121,7 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n,
 		printf("Warning, exception in CRoutine_Chi2.  Writing out buffers:\n");
 		Chi(data, data_err, model_data, n);
 		mrSquare->Square(mChiTemp, mChiTemp, mNElements, n);
-		DumpFloatBuffer(mChiTemp, mNElements);
+		DumpFloatBuffer(mChiTemp, n);
 		throw;
 	}
 

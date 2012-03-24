@@ -71,18 +71,18 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output)
 {
 	int err = CL_SUCCESS;
-	cl_float cpu_data[mNElements];
-	cl_float cpu_data_err[mNElements];
-	cl_float cpu_model_data[mNElements];
-	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, mNElements * sizeof(cl_float), cpu_data, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, mNElements * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, mNElements * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
+	cl_float cpu_data[n];
+	cl_float cpu_data_err[n];
+	cl_float cpu_model_data[n];
+	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, n * sizeof(cl_float), cpu_data, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, n * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, n * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy values back to the CPU, CRoutine_LogLike::LogLike_CPU().", err);
 
 	// we do this verbose
 	float sum = 0;
 	float temp = 0;
-	for(int i = 0; i < mNElements; i++)
+	for(int i = 0; i < n; i++)
 	{
 		temp = 0;
 
@@ -102,13 +102,13 @@ float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_d
 
 bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
-	float cpu_output[mNElements];
+	float cpu_output[n];
 	LogLike(data, data_err, model_data, n, false, false);
 	float cpu_sum = LogLike_CPU(data, data_err, model_data, n, cpu_output);
 
 	// Compare the CL and CPU chi2 elements:
 	printf("Checking individual loglike values:\n");
-	bool loglike_match = Verify(cpu_output, mTempLogLike, mNElements, 0);
+	bool loglike_match = Verify(cpu_output, mTempLogLike, n, 0);
 	PassFail(loglike_match);
 
 	printf("Checking summed loglike values:\n");
