@@ -1,9 +1,44 @@
-// A Kernel to compute the Discrete Fourier Transform of an image.
+/*
+ * ft_dft2d.cl
+ *
+ *  Created on: Dec 2, 2011
+ *      Author: bkloppenborg
+ *  
+ *  Description:
+ *      OpenCL Kernel for computing a discrete Fourier transform
+ *
+ *  NOTE: 
+ *      To use this kernel you must inline the following variable:
+ *      ARG using a #define statement:
+ *          float ARG = 2.0 * PI * RPMAS * image_scale
+ *      where PI = 3.14159265358979323, RPMAS = (PI/180.0)/3600000.0
+ */
 
-// NOTE: To use this kernel you must inline the following variable:
-// ARG using a #define statement:
-// float ARG = 2.0 * PI * RPMAS * image_scale
-// where PI = 3.14159265358979323, RPMAS = (PI/180.0)/3600000.0
+/* 
+ * Copyright (c) 2011 Brian Kloppenborg
+ *
+ * The authors request, but do not require, that you acknowledge the
+ * use of this software in any publications.  See 
+ * https://github.com/bkloppenborg/liboi/wiki
+ * for example citations
+ *
+ * This file is part of the OpenCL Interferometry Library (LIBOI).
+ * 
+ * LIBOI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License 
+ * as published by the Free Software Foundation, either version 3 
+ * of the License, or (at your option) any later version.
+ * 
+ * LIBOI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public 
+ * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 
 
 // Function prototypes:

@@ -10,3 +10,14 @@
 *.lai
 *.la
 *.a
+
+# Temporary files from editors
+*~
+
+# Various source locations:
+bin/*
+build/*
+lib/textio/
+.cproject
+.project
+.settings/
