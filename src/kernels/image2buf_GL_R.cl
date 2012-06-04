@@ -15,10 +15,10 @@
 /* 
  * Copyright (c) 2012 Brian Kloppenborg
  *
- * The authors request, but do not require, that you acknowledge the
- * use of this software in any publications.  See 
- * https://github.com/bkloppenborg/liboi/wiki
- * for example citations
+ * If you use this software as part of a scientific publication, please cite as:
+ *
+ * Kloppenborg, B.; Baron, F. (2012), "LibOI: The OpenCL Interferometry Library" 
+ * (Version X). Available from  <https://github.com/bkloppenborg/liboi>.
  *
  * This file is part of the OpenCL Interferometry Library (LIBOI).
  * 
