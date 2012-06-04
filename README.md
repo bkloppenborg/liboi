@@ -4,7 +4,7 @@
 
 The OpenCL Interferometry Library (liboi) is a C / C++ library that aims to 
 provide software developers with access to routines that are commonly used 
-in interferometry.  The software heavily relises on the heterogeneous computing enviornment targeted by the Open Compute Language (OpenCL) to target a wide range of traditional and multi-core CPUs; servers, hand-held/embedded devices, specialized hardware, and Graphical Processing Units (GPUs).
+in interferometry.  The software heavily relies on the heterogeneous computing environment targeted by the Open Compute Language (OpenCL) to target a wide range of traditional and multi-core CPUs; servers, hand-held/embedded devices, specialized hardware, and Graphical Processing Units (GPUs).
 
 ## Features
 
@@ -16,11 +16,10 @@ The library currently provides:
 
 ## Licensing and Acknowledgements
 
-Liboi is free software, distributed under the [GNU Lesser General Public License (version 3)](<http://www.gnu.org/licenses/lgpl.html). 
+Liboi is free software, distributed under the [GNU Lesser General Public License (Version 3)](<http://www.gnu.org/licenses/lgpl.html). 
 
 If you use this software as part of a scientific publication, please cite as:
 
 Kloppenborg, B.; Baron, F. (2012), "LibOI: The OpenCL Interferometry Library"
 (Version X). Available from  <https://github.com/bkloppenborg/liboi>.
-
 
