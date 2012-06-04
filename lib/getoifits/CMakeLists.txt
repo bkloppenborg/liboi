@@ -6,5 +6,5 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../oifitslib)
 
 set(SOURCES getoifits.cpp)
 
-add_library(getoifits ${SOURCES})
+add_library(getoifits SHARED ${SOURCES})
 target_link_libraries(getoifits oifits)

@@ -17,7 +17,6 @@
 # Various source locations:
 bin/*
 build/*
-lib/textio/
 .cproject
 .project
 .settings/

@@ -16,8 +16,8 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 
 # Call CMake on the subdirectories
 if(NOT TARGET textio)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/textio)
 	include_directories(${CMAKE_SOURCE_DIR}/lib/textio/include)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/textio)
 endif(NOT TARGET textio)
 
 # Call CMake on the subdirectories

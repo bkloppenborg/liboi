@@ -12,4 +12,4 @@ set(OIFITS_INCLUDE_DIRS "${CFITSIO_INCLUDE_DIR}" CACHE INTERNAL "")
 # This is all that is required for getoifits
 set(SOURCES read_fits.c write_fits.c free_fits.c)
 #set(SOURCES read_fits.c write_fits.c free_fits.c oifile.c oifilter.c oicheck.c oimerge.c)
-add_library(oifits ${SOURCES} ${CFITSIO_LIBRARIES})
+add_library(oifits SHARED ${SOURCES} ${CFITSIO_LIBRARIES})
