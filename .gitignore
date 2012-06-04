@@ -17,6 +17,6 @@
 # Various source locations:
 bin/*
 build/*
-.cproject
-.project
-.settings/
+!/.cproject
+!/.project
+!/.settings/
