@@ -17,6 +17,8 @@
 # Various source locations:
 bin/*
 build/*
-!/.cproject
-!/.project
-!/.settings/
+
+# Eclipse files:
+.cproject
+.project
+.settings/
