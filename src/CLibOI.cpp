@@ -185,7 +185,7 @@ void CLibOI::GetSimulatedData(unsigned int data_set, float * output_buffer, unsi
 	if(data_set > mDataList.size())
 		return;
 
-	unsigned int num_elements = min(int(buffer_size), mDataList[data_set]->GetNElements() );
+	unsigned int num_elements = min(int(buffer_size), int(mDataList[data_set]->GetNumData()) );
 	unsigned int num_v2 = mDataList[data_set]->GetNumV2();
 	unsigned int num_t3 = mDataList[data_set]->GetNumT3();
 
@@ -207,6 +207,7 @@ void CLibOI::GetSimulatedData(unsigned int data_set, float * output_buffer, unsi
 	complex<float> t3_model_tmp;
 	complex<float> t3_phase_tmp;
 	complex<float> t3_out;
+	float data_phi = 0;
 	for(int i = 0; i < num_t3; i++)
 	{
 		// Compute the complex model t3:
