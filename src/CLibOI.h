@@ -123,7 +123,7 @@ public:
 	int GetNDataAllocated(int data_num) { return mDataList.GetNDataAllocated(data_num); };
 	int GetNDataSets() { return mDataList.size(); };
 	int GetMaxDataSize() { return mMaxData; };
-	void GetSimulatedData(float * output_buffer, unsigned int buffer_size);
+	void GetSimulatedData(unsigned int data_set, float * output_buffer, unsigned int buffer_size);
 	void GetT3(unsigned int data_set, CVectorList<CT3Data*> & t3);
 	void GetV2(unsigned int data_set, CVectorList<CV2Data*> & v2);
 
