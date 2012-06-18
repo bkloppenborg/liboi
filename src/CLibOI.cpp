@@ -180,9 +180,18 @@ void CLibOI::FTToData(COILibData * data)
 /// Copies up to buffer_size elements from mSimDataBuffer to output_buffer
 /// Note, the data is exported as a floating point array with the first
 /// N(V2) elements being visibilities and 2*N(T3) elements being T3's
-void CLibOI::GetSimulatedData(float * output_buffer, unsigned int buffer_size)
+void CLibOI::GetSimulatedData(unsigned int data_set, float * output_buffer, unsigned int buffer_size)
 {
-	int num_elements = min(int(buffer_size), mDataList.MaxNumData());
+	if(data_set > mDataList.size())
+		return;
+
+	unsigned int num_elements = min(int(buffer_size), mDataList[data_set]->GetNElements() );
+	unsigned int num_v2 = mDataList[data_set]->GetNumV2();
+	unsigned int num_t3 = mDataList[data_set]->GetNumT3();
+
+	// Pull over the T3 data
+	CVectorList<CT3Data*> t3_data;
+	mDataList[data_set]->GetT3(t3_data);
 
 	// Pull the data down from the OpenCL device in it's native format, convert to float afterward
 	int err = CL_SUCCESS;
@@ -190,8 +199,33 @@ void CLibOI::GetSimulatedData(float * output_buffer, unsigned int buffer_size)
 	err |= clEnqueueReadBuffer(mOCL->GetQueue(), mSimDataBuffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CLibOI::ExportImage() ", err);
 
-	for(int i = 0; i < num_elements; i++)
-		output_buffer[i] = tmp[i];
+	// First copy over the V2:
+	for(int i = 0; i < num_v2; i++)
+		output_buffer[i] = float(tmp[i]);
+
+	// Now do the T3's
+	complex<float> t3_model_tmp;
+	complex<float> t3_phase_tmp;
+	complex<float> t3_out;
+	for(int i = 0; i < num_t3; i++)
+	{
+		// Compute the complex model t3:
+		t3_model_tmp = complex<float>(float(tmp[2*i]), float(tmp[2*i + 1]));
+
+		// Compute the phasor (undoes rotation in COILibData::InitData)
+		data_phi = t3_data[i]->t3_phi;
+		t3_phase_tmp = complex<float>(cos(data_phi), -sin(data_phi));
+
+		// Rotate the model back to the
+		t3_out = t3_model_tmp / t3_phase_tmp;
+
+		output_buffer[num_v2 + 2*i] = abs(t3_out);
+		output_buffer[num_v2 + 2*i + 1] = arg(t3_out);
+	}
+
+	// Zero out the remainder of the buffer:
+	for(int i = num_elements; i < buffer_size; i++)
+		output_buffer[i] = 0;
 }
 
 /// Returns the T3 data in a structured vector, does nothing if data_set is out of range.
