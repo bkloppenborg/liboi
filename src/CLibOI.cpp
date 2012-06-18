@@ -211,10 +211,10 @@ void CLibOI::GetSimulatedData(unsigned int data_set, float * output_buffer, unsi
 	for(int i = 0; i < num_t3; i++)
 	{
 		// Compute the complex model t3:
-		t3_model_tmp = complex<float>(float(tmp[2*i]), float(tmp[2*i + 1]));
+		t3_model_tmp = complex<float>(float(tmp[num_v2 + 2*i]), float(tmp[num_v2 + 2*i + 1]));
 
 		// Compute the phasor (undoes rotation in COILibData::InitData)
-		data_phi = t3_data[i]->t3_phi;
+		data_phi = t3_data[i]->t3_phi * PI / 180;
 		t3_phase_tmp = complex<float>(cos(data_phi), -sin(data_phi));
 
 		// Rotate the model back to the
