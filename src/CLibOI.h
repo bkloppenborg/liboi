@@ -131,6 +131,8 @@ public:
 	bool ImageToChi(int data_num, float * output, int & n);
 	float ImageToChi2(COILibData * data);
 	float ImageToChi2(int data_num);
+	void ImageToChi2(COILibData * data, float * output, int & n);
+	bool ImageToChi2(int data_num, float * output, int & n);
 	void ImageToData(int data_num);
 	void ImageToData(COILibData * data);
 	float ImageToLogLike(COILibData * data);
