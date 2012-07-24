@@ -64,7 +64,7 @@ protected:
 	COILibDataList mDataList;
 
 //	eFTMethods mFTMethod;
-	cl_device_type mDeviceType;
+	//cl_device_type mDeviceType;
 
 	// OpenCL Context, manager, etc.
 	COpenCL * mOCL;
