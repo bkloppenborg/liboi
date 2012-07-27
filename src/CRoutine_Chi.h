@@ -63,6 +63,7 @@ public:
 	bool Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum);
 
 	void GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
+	void GetChi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
 
 	void Init(int num_elements);
 };

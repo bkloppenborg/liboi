@@ -244,7 +244,7 @@ void CLibOI::GetV2(unsigned int data_set, CVectorList<CV2Data*> & v2)
 }
 
 /// Uses the current active image to compute the chi (i.e. non-squared version) with respect to the
-/// specified data and returns the chi array in output.
+/// specified data and returns the chi elements in the floating point array, output.
 /// This is a convenience function that calls FTToData, DataToChi
 void CLibOI::ImageToChi(COILibData * data, float * output, int & n)
 {
@@ -287,6 +287,31 @@ float CLibOI::ImageToChi2(int data_num)
 
 	COILibData * data = mDataList[data_num];
 	return ImageToChi2(data);
+}
+
+/// Uses the current active image to compute the chi2 with respect to the
+/// specified data and returns the chi elements in the floating point array, output.
+/// This is a convenience function that calls FTToData, DataToChi
+void CLibOI::ImageToChi2(COILibData * data, float * output, int & n)
+{
+	// Simple, call the other functions
+	Normalize();
+	FTToData(data);
+
+	n = data->GetNumData();
+	mrChi->GetChi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, output);
+}
+
+/// Same as ImageToChi above.
+/// Returns false if the data number does not exist, true otherwise.
+bool CLibOI::ImageToChi2(int data_num, float * output, int & n)
+{
+	if(data_num > mDataList.size() - 1)
+		return false;
+
+	COILibData * data = mDataList[data_num];
+	ImageToChi2(data, output, n);
+	return true;
 }
 
 /// Uses the currently loaded image and specified data set to
