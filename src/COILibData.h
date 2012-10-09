@@ -68,7 +68,7 @@ extern "C" {
 #include "getoifits.h"
 #include <string>
 #include <complex>
-#include "CVectorList.h"
+#include <memory>
 #include "COpenCL.h"
 
 using namespace std;
@@ -97,6 +97,9 @@ public:
 	float t3_phi;
 	float t3_phi_err;
 };
+
+typedef shared_ptr<CV2Data> CV2DataPtr;
+typedef shared_ptr<CT3Data> CT3DataPtr;
 
 class COILibData
 {
@@ -146,8 +149,8 @@ public:
 	unsigned int GetNumT3() { return mNT3; };
 	unsigned int GetNumUV() { return mNUV; };
 	unsigned int GetNumV2() { return mNVis2; };
-	void GetT3(CVectorList<CT3Data*> & t3);
-	void GetV2(CVectorList<CV2Data*> & v2);
+	void GetT3(vector<CT3DataPtr> & t3);
+	void GetV2(vector<CV2DataPtr> & v2);
 
 	void InitData(bool do_extrapolation);
 

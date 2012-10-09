@@ -35,15 +35,17 @@
 #include <string>
 
 #include "COILibData.h"
-#include "CVectorList.h"
+#include <memory>
 
 using namespace std;
 
-class COILibDataList : public CVectorList<COILibData*>
+typedef shared_ptr<COILibData> COILibDataPtr;
+
+class COILibDataList
 {
 
 public:
-
+	vector<COILibDataPtr> mList;
 
 public:
 	COILibDataList();
@@ -60,6 +62,9 @@ public:
 
 	void ReadFile(string filename);
 	void RemoveData(unsigned int data_num);
+
+	COILibDataPtr operator[](int i) { return mList[i]; }
+	unsigned int size() { return mList.size(); }
 };
 
 #endif /* COILIBDATALIST_H_ */
