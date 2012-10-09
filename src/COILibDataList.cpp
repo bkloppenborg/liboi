@@ -48,7 +48,7 @@ COILibDataList::~COILibDataList()
 /// Copies all data sources to the OpenCL device using the specified command queue.
 void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
 {
-    for(vector<COILibData*>::iterator it = mList.begin(); it != mList.end(); ++it)
+    for(vector<COILibDataPtr>::iterator it = mList.begin(); it != mList.end(); ++it)
     {
     	(*it)->CopyToOpenCLDevice(context, queue);
     }
@@ -58,7 +58,7 @@ void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue que
 int COILibDataList::GetNData()
 {
 	int tmp = 0;
-    for(vector<COILibData*>::iterator it = mList.begin(); it != mList.end(); ++it)
+    for(vector<COILibDataPtr>::iterator it = mList.begin(); it != mList.end(); ++it)
     {
     	tmp += (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
     }
@@ -91,7 +91,7 @@ int COILibDataList::MaxNumData()
 {
 	int tmp;
 	int max = 0;
-    for(vector<COILibData*>::iterator it = mList.begin(); it != mList.end(); ++it)
+    for(vector<COILibDataPtr>::iterator it = mList.begin(); it != mList.end(); ++it)
     {
     	tmp = (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
     	if(tmp > max)
@@ -106,7 +106,7 @@ int COILibDataList::MaxUVPoints()
 {
 	int tmp;
 	int max = 0;
-    for(vector<COILibData*>::iterator it = mList.begin(); it != mList.end(); ++it)
+    for(vector<COILibDataPtr>::iterator it = mList.begin(); it != mList.end(); ++it)
     {
     	tmp = (*it)->GetNumUV();
     	if(tmp > max)
@@ -127,21 +127,22 @@ void COILibDataList::ReadFile(string filename)
 
 	// From GPAIR, Allocate storage for OIFITS data
 	oi_usersel usersel;
-	oi_data * tmp = new oi_data();
-	int status = 0;
+	oi_data * oifits = new oi_data();
+	int status;
 
 	// From GPAIR, read_oifits
 	strcpy(usersel.file, filename.c_str());
 	get_oi_fits_selection(&usersel, &status);
-	get_oi_fits_data(&usersel, tmp, &status);
+	get_oi_fits_data(&usersel, oifits, &status);
 	printf("OIFITS File read\n");
 
-	Append(new COILibData(tmp, filename));
+	COILibDataPtr tmp(new COILibData(oifits, filename));
+	mList.push_back(tmp);
 }
 
 /// Removes the specified data file from device and host memory
 void COILibDataList::RemoveData(unsigned int data_num)
 {
-
-	Remove(data_num);
+	if(data_num < mList.size())
+		mList.erase(mList.begin() + data_num);
 }

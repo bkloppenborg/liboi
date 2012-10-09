@@ -210,7 +210,7 @@ int get_oi_fits_data(oi_usersel* usersel, oi_data* data, int* status)
 						     &&(!(t3.record[i].flag[k])))
 							{
 								/* Trick to use closure data without available bis amplitudes */
-								if(isnan(t3.record[i].t3amp[k]))
+								if(std::isnan(t3.record[i].t3amp[k]))
 								{
 									data->bisamp[data->nbis] = 1.0;
 									data->bisamperr[data->nbis] = infinity ;

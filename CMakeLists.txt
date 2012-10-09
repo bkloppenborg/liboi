@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8) 
 project(liboi)
 
+# Compile with C++11 support.  Disable __STRICT_ANSI__ to support 
+# some nice OpenCL shortcuts (i.e. cl_float2's .s0, .s1 syntax).
+ADD_DEFINITIONS("-std=c++0x -pthread -U__STRICT_ANSI__")
+
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_BUILD_TYPE DEBUG)
 # Default debug level (mostly status messages, some copy-back numbers):

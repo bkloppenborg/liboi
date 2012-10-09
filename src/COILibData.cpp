@@ -245,14 +245,13 @@ void COILibData::InitData(bool do_extrapolation)
 }
 
 /// Exports the T3 data as a vector of CT3Data.
-void COILibData::GetT3(CVectorList<CT3Data*> & t3)
+void COILibData::GetT3(vector<CT3DataPtr> & t3)
 {
-	t3.Clear();
-	CT3Data * tmp;
+	t3.clear();
 
 	for(int i = 0; i < mNT3; i++)
 	{
-		tmp = new CT3Data();
+		CT3DataPtr tmp(new CT3Data());
 		tmp->u1 = mOIData->uv[ mOIData->bsref[i].ab.uvpnt ].u;
 		tmp->v1 = mOIData->uv[ mOIData->bsref[i].ab.uvpnt ].v;;
 		tmp->u2 = mOIData->uv[ mOIData->bsref[i].bc.uvpnt ].u;
@@ -264,25 +263,24 @@ void COILibData::GetT3(CVectorList<CT3Data*> & t3)
 		tmp->t3_phi = mOIData->bisphs[i];
 		tmp->t3_phi_err = mOIData->bisphserr[i];
 
-		t3.Append(tmp);
+		t3.push_back(tmp);
 	}
 }
 
 /// Exports the V2 data as a vector of CV2Data
-void COILibData::GetV2(CVectorList<CV2Data*> & v2)
+void COILibData::GetV2(vector<CV2DataPtr> & v2)
 {
-	v2.Clear();
-	CV2Data * tmp;
+	v2.clear();
 
 	for(int i = 0; i < mNVis2; i++)
 	{
-		tmp = new CV2Data();
+		CV2DataPtr tmp(new CV2Data());
 		tmp->u = mOIData->uv[i].u;
 		tmp->v = mOIData->uv[i].v;
 		tmp->v2 = mData[i];
 		tmp->v2_err = mData_err[i];
 
-		v2.Append(tmp);
+		v2.push_back(tmp);
 	}
 }
 

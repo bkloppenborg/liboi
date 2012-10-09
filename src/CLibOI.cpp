@@ -136,12 +136,12 @@ void CLibOI::CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int
 }
 
 /// Computes the chi2 between the current simulated data, and the observed data set specified in data
-float CLibOI::DataToChi2(COILibData * data)
+float CLibOI::DataToChi2(COILibDataPtr data)
 {
 	return mrChi->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true, true);
 }
 
-float CLibOI::DataToLogLike(COILibData * data)
+float CLibOI::DataToLogLike(COILibDataPtr data)
 {
 	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true, true);
 }
@@ -166,7 +166,7 @@ void CLibOI::ExportImage(float * image, unsigned int width, unsigned int height,
 
 /// Computes the Fourier transform of the image, then generates Vis2 and T3's.
 /// This routine assumes the image has been normalized using Normalize() (and that the total flux is stored in mFluxBuffer)
-void CLibOI::FTToData(COILibData * data)
+void CLibOI::FTToData(COILibDataPtr data)
 {
 	// First compute the Fourier transform
 	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mCLImage, mImageWidth, mImageHeight, mFluxBuffer, mFTBuffer);
@@ -230,14 +230,14 @@ void CLibOI::GetSimulatedData(unsigned int data_set, float * output_buffer, unsi
 }
 
 /// Returns the T3 data in a structured vector, does nothing if data_set is out of range.
-void CLibOI::GetT3(unsigned int data_set, CVectorList<CT3Data*> & t3)
+void CLibOI::GetT3(unsigned int data_set, vector<CT3DataPtr> & t3)
 {
 	if(data_set < mDataList.size())
 		mDataList[data_set]->GetT3(t3);
 }
 
 /// Returns the V2 data in a structured vector, does nothing if data_set is out of range.
-void CLibOI::GetV2(unsigned int data_set, CVectorList<CV2Data*> & v2)
+void CLibOI::GetV2(unsigned int data_set, vector<CV2DataPtr> & v2)
 {
 	if(data_set < mDataList.size())
 		mDataList[data_set]->GetV2(v2);
@@ -246,7 +246,7 @@ void CLibOI::GetV2(unsigned int data_set, CVectorList<CV2Data*> & v2)
 /// Uses the current active image to compute the chi (i.e. non-squared version) with respect to the
 /// specified data and returns the chi elements in the floating point array, output.
 /// This is a convenience function that calls FTToData, DataToChi
-void CLibOI::ImageToChi(COILibData * data, float * output, int & n)
+void CLibOI::ImageToChi(COILibDataPtr data, float * output, int & n)
 {
 	// Simple, call the other functions
 	Normalize();
@@ -263,14 +263,14 @@ bool CLibOI::ImageToChi(int data_num, float * output, int & n)
 	if(data_num > mDataList.size() - 1)
 		return false;
 
-	COILibData * data = mDataList[data_num];
+	COILibDataPtr data = mDataList[data_num];
 	ImageToChi(data, output, n);
 	return true;
 }
 
 /// Uses the current active image to compute the chi2 with respect to the specified data.
 /// This is a convenience function that calls FTToData and DataToChi2.
-float CLibOI::ImageToChi2(COILibData * data)
+float CLibOI::ImageToChi2(COILibDataPtr data)
 {
 	// Simple, call the other functions
 	Normalize();
@@ -285,14 +285,14 @@ float CLibOI::ImageToChi2(int data_num)
 	if(data_num > mDataList.size() - 1)
 		return -1;
 
-	COILibData * data = mDataList[data_num];
+	COILibDataPtr data = mDataList[data_num];
 	return ImageToChi2(data);
 }
 
 /// Uses the current active image to compute the chi2 with respect to the
 /// specified data and returns the chi elements in the floating point array, output.
 /// This is a convenience function that calls FTToData, DataToChi
-void CLibOI::ImageToChi2(COILibData * data, float * output, int & n)
+void CLibOI::ImageToChi2(COILibDataPtr data, float * output, int & n)
 {
 	// Simple, call the other functions
 	Normalize();
@@ -309,7 +309,7 @@ bool CLibOI::ImageToChi2(int data_num, float * output, int & n)
 	if(data_num > mDataList.size() - 1)
 		return false;
 
-	COILibData * data = mDataList[data_num];
+	COILibDataPtr data = mDataList[data_num];
 	ImageToChi2(data, output, n);
 	return true;
 }
@@ -321,19 +321,19 @@ void CLibOI::ImageToData(int data_num)
 	if(data_num > mDataList.size() - 1)
 		return;
 
-	COILibData * data = mDataList[data_num];
+	COILibDataPtr data = mDataList[data_num];
 	ImageToData(data);
 }
 
 /// Uses the currently loaded image and specified data set to
 /// compute simulated data.
-void CLibOI::ImageToData(COILibData * data)
+void CLibOI::ImageToData(COILibDataPtr data)
 {
 	Normalize();
 	FTToData(data);
 }
 
-float CLibOI::ImageToLogLike(COILibData * data)
+float CLibOI::ImageToLogLike(COILibDataPtr data)
 {
 	// Simple, call the other functions
 	Normalize();
@@ -346,7 +346,7 @@ float CLibOI::ImageToLogLike(int data_num)
 	if(data_num > mDataList.size() - 1)
 		return -1;
 
-	COILibData * data = mDataList[data_num];
+	COILibDataPtr data = mDataList[data_num];
 	return ImageToLogLike(data);
 }
 
@@ -525,7 +525,7 @@ void CLibOI::RunVerification(int data_num)
 	if(data_num > mDataList.size() - 1)
 		return;
 
-	COILibData * data = mDataList[data_num];
+	COILibDataPtr data = mDataList[data_num];
 	printf("Checking summed flux values:\n");
 	mrTotalFlux->ComputeSum_Test(mCLImage, mFluxBuffer);
 	mrNormalize->Normalize_Test(mCLImage, mImageWidth, mImageHeight, mFluxBuffer);

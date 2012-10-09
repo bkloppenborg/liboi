@@ -109,13 +109,13 @@ public:
 
 	void CopyImageToBuffer(int layer);
 	void CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int layer);
-	float DataToChi2(COILibData * data);
-	float DataToLogLike(COILibData * data);
+	float DataToChi2(COILibDataPtr data);
+	float DataToLogLike(COILibDataPtr data);
 
 public:
 	void ExportImage(float * image, unsigned int width, unsigned int height, unsigned int depth);
 	void FreeOpenCLMem();
-	void FTToData(COILibData * data);
+	void FTToData(COILibDataPtr data);
 
 	double GetDataAveJD(int data_num) { return mDataList[data_num]->GetAveJD(); };
 	int GetNData() { return mDataList.GetNData(); };
@@ -127,15 +127,15 @@ public:
 	void GetT3(unsigned int data_set, CVectorList<CT3Data*> & t3);
 	void GetV2(unsigned int data_set, CVectorList<CV2Data*> & v2);
 
-	void ImageToChi(COILibData * data, float * output, int & n);
+	void ImageToChi(COILibDataPtr data, float * output, int & n);
 	bool ImageToChi(int data_num, float * output, int & n);
-	float ImageToChi2(COILibData * data);
+	float ImageToChi2(COILibDataPtr data);
 	float ImageToChi2(int data_num);
-	void ImageToChi2(COILibData * data, float * output, int & n);
+	void ImageToChi2(COILibDataPtr data, float * output, int & n);
 	bool ImageToChi2(int data_num, float * output, int & n);
 	void ImageToData(int data_num);
-	void ImageToData(COILibData * data);
-	float ImageToLogLike(COILibData * data);
+	void ImageToData(COILibDataPtr data);
+	float ImageToLogLike(COILibDataPtr data);
 	float ImageToLogLike(int data_num);
 	void Init();
 	void InitMemory();
