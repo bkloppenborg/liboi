@@ -124,8 +124,8 @@ public:
 	int GetNDataSets() { return mDataList.size(); };
 	int GetMaxDataSize() { return mMaxData; };
 	void GetSimulatedData(unsigned int data_set, float * output_buffer, unsigned int buffer_size);
-	void GetT3(unsigned int data_set, CVectorList<CT3Data*> & t3);
-	void GetV2(unsigned int data_set, CVectorList<CV2Data*> & v2);
+	void GetT3(unsigned int data_set, vector<CT3DataPtr> & t3);
+	void GetV2(unsigned int data_set, vector<CV2DataPtr> & v2);
 
 	void ImageToChi(COILibDataPtr data, float * output, int & n);
 	bool ImageToChi(int data_num, float * output, int & n);
