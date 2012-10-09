@@ -68,8 +68,8 @@ extern "C" {
 #include "getoifits.h"
 #include <string>
 #include <complex>
-#include "COpenCL.h"
 #include "CVectorList.h"
+#include "COpenCL.h"
 
 using namespace std;
 
