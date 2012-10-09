@@ -190,7 +190,7 @@ void CLibOI::GetSimulatedData(unsigned int data_set, float * output_buffer, unsi
 	unsigned int num_t3 = mDataList[data_set]->GetNumT3();
 
 	// Pull over the T3 data
-	CVectorList<CT3Data*> t3_data;
+	vector<CT3DataPtr> t3_data;
 	mDataList[data_set]->GetT3(t3_data);
 
 	// Pull the data down from the OpenCL device in it's native format, convert to float afterward
