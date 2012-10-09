@@ -128,7 +128,7 @@ void COILibDataList::ReadFile(string filename)
 	// From GPAIR, Allocate storage for OIFITS data
 	oi_usersel usersel;
 	oi_data * oifits = new oi_data();
-	int status;
+	int status = 0;
 
 	// From GPAIR, read_oifits
 	strcpy(usersel.file, filename.c_str());
