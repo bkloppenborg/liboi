@@ -139,7 +139,7 @@ public:
 	// Inline the get location functions
 	double GetAveJD(void) { return mAveJD; };
 	string GetFilename(void) { return mFileName; };
-	cl_mem GetLoc_Data() {return mData_cl; };
+	cl_mem GetLoc_Data() { return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };
 	cl_mem GetLoc_DataBSRef() { return mData_bsref_cl; };
 	cl_mem GetLoc_DataT3Phi() { return mData_phasor_cl; };

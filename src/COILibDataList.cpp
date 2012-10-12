@@ -48,7 +48,7 @@ COILibDataList::~COILibDataList()
 /// Copies all data sources to the OpenCL device using the specified command queue.
 void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
 {
-    for(vector<COILibDataPtr>::iterator it = mList.begin(); it != mList.end(); ++it)
+    for(vector<COILibDataPtr>::iterator it = this->begin(); it != this->end(); ++it)
     {
     	(*it)->CopyToOpenCLDevice(context, queue);
     }
@@ -58,7 +58,7 @@ void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue que
 int COILibDataList::GetNData()
 {
 	int tmp = 0;
-    for(vector<COILibDataPtr>::iterator it = mList.begin(); it != mList.end(); ++it)
+    for(vector<COILibDataPtr>::iterator it = this->begin(); it != this->end(); ++it)
     {
     	tmp += (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
     }
@@ -71,7 +71,7 @@ int COILibDataList::GetNData()
 int COILibDataList::GetNDataAllocated()
 {
 	int tmp = 0;
-	for(unsigned int i = 0; i < mList.size(); i++)
+	for(unsigned int i = 0; i < this->size(); i++)
 		tmp += GetNDataAllocated(i);
 
     return tmp;
@@ -80,8 +80,8 @@ int COILibDataList::GetNDataAllocated()
 /// Returns the size of the data_num's allocated data block.
 int COILibDataList::GetNDataAllocated(unsigned int data_num)
 {
-	if(data_num < mList.size())
-		return mList[data_num]->GetNumV2() + 2 * mList[data_num]->GetNumT3();
+	if(data_num < this->size())
+		return this->at(data_num)->GetNumV2() + 2 * this->at(data_num)->GetNumT3();
 
 	return 0;
 }
@@ -91,7 +91,7 @@ int COILibDataList::MaxNumData()
 {
 	int tmp;
 	int max = 0;
-    for(vector<COILibDataPtr>::iterator it = mList.begin(); it != mList.end(); ++it)
+    for(vector<COILibDataPtr>::iterator it = this->begin(); it != this->end(); ++it)
     {
     	tmp = (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
     	if(tmp > max)
@@ -106,7 +106,7 @@ int COILibDataList::MaxUVPoints()
 {
 	int tmp;
 	int max = 0;
-    for(vector<COILibDataPtr>::iterator it = mList.begin(); it != mList.end(); ++it)
+    for(vector<COILibDataPtr>::iterator it = this->begin(); it != this->end(); ++it)
     {
     	tmp = (*it)->GetNumUV();
     	if(tmp > max)
@@ -137,12 +137,12 @@ void COILibDataList::ReadFile(string filename)
 	printf("OIFITS File read\n");
 
 	COILibDataPtr tmp(new COILibData(oifits, filename));
-	mList.push_back(tmp);
+	this->push_back(tmp);
 }
 
 /// Removes the specified data file from device and host memory
 void COILibDataList::RemoveData(unsigned int data_num)
 {
-	if(data_num < mList.size())
-		mList.erase(mList.begin() + data_num);
+	if(data_num < this->size())
+		this->erase(this->begin() + data_num);
 }

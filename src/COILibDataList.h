@@ -41,11 +41,8 @@ using namespace std;
 
 typedef shared_ptr<COILibData> COILibDataPtr;
 
-class COILibDataList
+class COILibDataList: public vector<COILibDataPtr>
 {
-
-public:
-	vector<COILibDataPtr> mList;
 
 public:
 	COILibDataList();
@@ -62,9 +59,6 @@ public:
 
 	void ReadFile(string filename);
 	void RemoveData(unsigned int data_num);
-
-	COILibDataPtr operator[](int i) { return mList[i]; }
-	unsigned int size() { return mList.size(); }
 };
 
 #endif /* COILIBDATALIST_H_ */
