@@ -122,6 +122,8 @@ public:
 	int GetNDataAllocated() { return mDataList.GetNDataAllocated(); };
 	int GetNDataAllocated(int data_num) { return mDataList.GetNDataAllocated(data_num); };
 	int GetNDataSets() { return mDataList.size(); };
+	int GetNT3(int data_num);
+	int GetNV2(int data_num);
 	int GetMaxDataSize() { return mMaxData; };
 	void GetSimulatedData(unsigned int data_set, float * output_buffer, unsigned int buffer_size);
 	void GetT3(unsigned int data_set, vector<CT3DataPtr> & t3);

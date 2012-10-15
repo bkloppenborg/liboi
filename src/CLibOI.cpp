@@ -177,6 +177,24 @@ void CLibOI::FTToData(COILibDataPtr data)
 			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
 }
 
+/// Returns the number of T3 data points in the specified data set.  If the data set does not exist, returns 0.
+int CLibOI::GetNT3(int data_num)
+{
+	if(data_num < mDataList.size())
+		return mDataList[data_num]->GetNumT3();
+
+	return 0;
+}
+
+/// Returns the number of V2 data points in the specified data set.  If the data set does not exist, returns 0.
+int CLibOI::GetNV2(int data_num)
+{
+	if(data_num < mDataList.size())
+		return mDataList[data_num]->GetNumV2();
+
+	return 0;
+}
+
 /// Copies up to buffer_size elements from mSimDataBuffer to output_buffer
 /// Note, the data is exported as a floating point array with the first
 /// N(V2) elements being visibilities and 2*N(T3) elements being T3's
