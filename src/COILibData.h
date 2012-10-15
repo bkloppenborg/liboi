@@ -131,7 +131,7 @@ protected:
 	string mFileName;
 
 public:
-	COILibData(oi_data * data, string filename);
+	COILibData(string filename);
 	~COILibData();
 
 	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
@@ -154,7 +154,9 @@ public:
 
 	void InitData(bool do_extrapolation);
 
-	static float square(float number) {return number*number; };
+	void ReadFile(string filename);
+
+	static float square(float number) { return number*number; };
 };
 
 #endif /* COILIBDATA_H_ */

@@ -39,9 +39,11 @@
 
 using namespace std;
 
-COILibData::COILibData(oi_data * data, string filename)
+COILibData::COILibData(string filename)
 {
-	mOIData = data;
+	mOIData = NULL;
+	mFileName = filename;
+	ReadFile(mFileName);
 
 	// TODO: Temporary for getoifits routines, allocate room:
 	mNVis2 = mOIData->npow;
@@ -59,8 +61,6 @@ COILibData::COILibData(oi_data * data, string filename)
 	mData_uvpnt_cl = NULL;
 	mData_bsref_cl = NULL;
 	mData_sign_cl = NULL;
-
-	mFileName = filename;
 
 	// Now compute the average time for the data set.  We accumulate the times
 	// in a long double to minimize a loss of precision.
@@ -282,6 +282,28 @@ void COILibData::GetV2(vector<CV2DataPtr> & v2)
 
 		v2.push_back(tmp);
 	}
+}
+
+/// Reads in the specified data file.
+void COILibData::ReadFile(string filename)
+{
+	// TODO: Right now this routine uses getoifits (Fabien Baron) and oifitslib (John Young) to read in the data
+	// we can probably get a performance increase on the GPU by sorting the data intelligently on load.
+	// We'll need to implement a new reading function to do this.
+	// Note: If we reorder the data, we'll need to make sure the V2 and T3 kernels still understand where their data is at.
+
+
+	// From GPAIR, Allocate storage for OIFITS data
+	oi_usersel usersel;
+	mOIData = new oi_data();
+	int status = 0;
+
+	// From GPAIR, read_oifits.  Notice we unwrap the shared_ptr<oi_data> object
+	// to interface with getoifits.
+	strcpy(usersel.file, filename.c_str());
+	get_oi_fits_selection(&usersel, &status);
+	get_oi_fits_data(&usersel, mOIData, &status);
+	printf("OIFITS File read\n");
 }
 
 

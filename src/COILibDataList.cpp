@@ -120,23 +120,7 @@ int COILibDataList::MaxUVPoints()
 /// Reads in an OIFITS file, returns a COILibData object.
 void COILibDataList::ReadFile(string filename)
 {
-	// TODO: Right now this routine uses getoifits (Fabien Baron) and oifitslib (John Young) to read in the data
-	// we can probably get a performance increase on the GPU by sorting the data intelligently on load.
-	// We'll need to implement a new reading function to do this.
-	// Note: If we reorder the data, we'll need to make sure the V2 and T3 kernels still understand where their data is at.
-
-	// From GPAIR, Allocate storage for OIFITS data
-	oi_usersel usersel;
-	oi_data * oifits = new oi_data();
-	int status = 0;
-
-	// From GPAIR, read_oifits
-	strcpy(usersel.file, filename.c_str());
-	get_oi_fits_selection(&usersel, &status);
-	get_oi_fits_data(&usersel, oifits, &status);
-	printf("OIFITS File read\n");
-
-	COILibDataPtr tmp(new COILibData(oifits, filename));
+	COILibDataPtr tmp(new COILibData(filename));
 	this->push_back(tmp);
 }
 
