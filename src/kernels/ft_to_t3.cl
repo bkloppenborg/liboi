@@ -35,32 +35,7 @@
  
 // Function prototypes:
 float2 MultComplex2(float2 A, float2 B);
-float2 MultComplex4(float2 A, float2 B, float2 C, float2 D);
-
-// Multiply four complex numbers.
-float2 MultComplex4(float2 A, float2 B, float2 C, float2 D)
-{
-    float2 temp;
-    float a = A.s1 * B.s1;
-    float b = C.s1 * D.s1;
-    float c = A.s0 * B.s0;
-    float d = A.s0 * B.s1;
-    float e = C.s0 * D.s1;
-    float f = A.s1 * B.s0;
-    float g = C.s1 * D.s0;
-    float h = C.s0 * D.s0;
-  
-    temp.s0 = a*b - c*b - d*e - f*e - d*g - f*g - a*h + c*h;
-    temp.s1 = f*h + d*h + c*g - a*g + c*e - a*e - f*b - d*b;
-
-    return temp;
-    
-/*    float2 temp;*/
-/*    temp = MultComplex2(A, B);*/
-/*    temp = MultComplex2(temp, C);*/
-/*    temp = MultComplex2(temp, D);*/
-/*    return temp;*/
-}
+float2 MultComplex3(float2 A, float2 B);
 
 // Multiply two complex numbers
 float2 MultComplex2(float2 A, float2 B)
@@ -83,13 +58,19 @@ float2 MultComplex2(float2 A, float2 B)
     return temp;
 }
 
+float2 MultComplex3(float2 A, float2 B, float2 C)
+{
+    A = MultComplex2(A, B);
+    return MultComplex2(A, C);
+}
+
 // The actual kernel function.
 __kernel void ft_to_t3(
     __global float2 * FT_output,
-    __global float2 * data_phasor,
     __global long4 * data_bsref,
     __global short4 * data_sign,
-    __private int num_v2,
+    __private int n_v2,
+    __private int n_t3,
     __global float * T3_output)
 {   
     int i = get_global_id(0);
@@ -105,9 +86,11 @@ __kernel void ft_to_t3(
     vbc.s1 *= sign.s1;
     vca.s1 *= sign.s2;
     
-    // Note, we can't convert this over to a float2 as addressing
-    // for float2 is not 2x float
-    float2 temp = MultComplex4(vab, vbc, vca, data_phasor[i]);
-    T3_output[num_v2 + 2*i] = temp.s0;
-    T3_output[num_v2 + 2*i + 1] = temp.s1;
+    float2 temp = MultComplex3(vab, vbc, vca);
+    
+    if(i < n_t3)
+    {
+        output[n_v2 + i] = temp.s0;
+        output[n_v2 + n_t3 + i = temp.s1;
+    }
 }

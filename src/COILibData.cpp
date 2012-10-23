@@ -52,12 +52,10 @@ COILibData::COILibData(string filename)
 	mNData = mNVis2 + 2*mNT3;
 	mData = new float[mNData];
 	mData_err = new float[mNData];
-	mData_phasor = new complex<float>[mNT3];
 
 	// Init all of the OpenCL memory locations to NULL
 	mData_cl = NULL;
 	mData_err_cl = NULL;
-	mData_phasor_cl = NULL;
 	mData_uvpnt_cl = NULL;
 	mData_bsref_cl = NULL;
 	mData_sign_cl = NULL;
@@ -83,7 +81,6 @@ COILibData::~COILibData()
 	// Release memory on the GPU.
 	if(mData_cl) clReleaseMemObject(mData_cl);
 	if(mData_err_cl) clReleaseMemObject(mData_err_cl);
-	if(mData_phasor_cl) clReleaseMemObject(mData_phasor_cl);
 	if(mData_uvpnt_cl) clReleaseMemObject(mData_uvpnt_cl);
 	if(mData_sign_cl) clReleaseMemObject(mData_sign_cl);
 	if(mData_bsref_cl) clReleaseMemObject(mData_bsref_cl);
@@ -93,7 +90,6 @@ COILibData::~COILibData()
 
 	delete[] mData;
 	delete[] mData_err;
-	delete[] mData_phasor;
 }
 
 /// Copies the data from CPU memory over to the OpenCL device memory, creating memory objects when necessary.
@@ -102,14 +98,6 @@ void COILibData::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
 	// TODO: If we change away from getoifits and oifitslib we'll need to rewrite this function entirely.
 	int i = 0;
 	int err = CL_SUCCESS;
-
-	// Convert the biphasor over to a cl_float2 in format <real, imaginary>
-	cl_float2 * phasor = new cl_float2[mNT3];
-	for(i = 0; i < mNT3; i++)
-	{
-		phasor[i].s0 = mData_phasor[i].real();
-		phasor[i].s1 = mData_phasor[i].imag();
-	}
 
 	// We will also need the uvpnt and sign information for bispectrum computations.
 	// Although we waste a little space, we use cl_long4 and cl_float4 so that we may have
@@ -142,7 +130,6 @@ void COILibData::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
     mData_uvpnt_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
     if(mNT3 > 0)
     {
-		mData_phasor_cl = clCreateBuffer(context, CL_MEM_READ_ONLY,  sizeof(cl_float2) * mNT3, NULL, NULL);
 		mData_bsref_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_long4) * mNT3, NULL, NULL);
 		mData_sign_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_short4) * mNT3, NULL, NULL);
     }
@@ -153,7 +140,6 @@ void COILibData::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
     err |= clEnqueueWriteBuffer(queue, mData_uvpnt_cl, CL_FALSE, 0, sizeof(cl_float2) * mNUV, uv_info, 0, NULL, NULL);
     if(mNT3 > 0)
     {
-		err |= clEnqueueWriteBuffer(queue, mData_phasor_cl, CL_FALSE, 0, sizeof(cl_float2) * mNT3, mData_phasor, 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue, mData_bsref_cl, CL_FALSE, 0, sizeof(cl_long4) * mNT3, bsref_uvpnt, 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue, mData_sign_cl, CL_FALSE, 0, sizeof(cl_short4) * mNT3, bsref_sign, 0, NULL, NULL);
     }
@@ -163,7 +149,6 @@ void COILibData::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
 	clFinish(queue);
 
 	// Free memory
-	delete[] phasor;
 	delete[] bsref_uvpnt;
 	delete[] bsref_sign;
 }
@@ -178,7 +163,7 @@ void COILibData::InitData(bool do_extrapolation)
 	int warning_extrapolation = 0;
 	float pow1, powerr1, pow2, powerr2, pow3, powerr3, sqamp1, sqamp2, sqamp3, sqamperr1, sqamperr2, sqamperr3;
 
-	// Set elements [0, npow - 1] equal to the powerspectra
+	// Save data.  Remember ordering is [v2, t3_amp, t3_phi] in this array.
 	for (ii = 0; ii < mNVis2; ii++)
 	{
 		mData[ii] = mOIData->pow[ii];
@@ -229,17 +214,11 @@ void COILibData::InitData(bool do_extrapolation)
 			}
 		}
 
-		// A weird workaround here between Fabien's original code and the C++ conversion.
-		// Evidently we can't do exp(-1 * I * mOIData->bisphs[ii] * PI / 180) so instead we do this:
-		float angle = mOIData->bisphs[ii] * PI / 180;
-		mData_phasor[ii] = complex<float> (cos(angle), -sin(angle));
-
-		mData[mNVis2 + 2 * ii] = fabs(mOIData->bisamp[ii]);
-		mData[mNVis2 + 2 * ii + 1] = 0.;
-		mData_err[mNVis2 + 2 * ii] = fabs(mOIData->bisamperr[ii]);
-		mData_err[mNVis2 + 2 * ii + 1] = fabs(mOIData->bisamp[ii] * mOIData->bisphserr[ii] * PI / 180. );
-
-		//printf("ii %d err1 %f err2 %f \n ", ii, data_err[npow + 2 * ii], data_err[npow + 2 * ii + 1]);
+		// Save data.  Remember ordering is [v2, t3_amp, t3_phi] in this array.
+		mData[mNVis2 + ii] = fabs(mOIData->bisamp[ii]);
+		mData_err[mNVis2 + ii] = mOIData->bisamperr[ii] * PI / 180.0;
+		mData[mNVis2 + mNT3 + ii] = mOIData->bisphs[ii];
+		mData_err[mNVis2 + mNT3 + ii] = mOIData->bisphserr[ii] * PI / 180.0;
 	}
 
 }

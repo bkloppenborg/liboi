@@ -103,14 +103,13 @@ typedef shared_ptr<CT3Data> CT3DataPtr;
 
 class COILibData
 {
-	// NOTE: This class currently uses liboifits and getoifits and is compliant with those libraries
+	// NOTE: This class currently uses liboifits and getoifits and is complaint with those libraries
 	// but it is our intention to change this.  I wouldn't suggest inheriting from this object as
 	// datamembers and some functions are likely to change.
 protected:
 	// Location and size of data loaded into OpenCL memory objects.
-	cl_mem mData_cl; // Vis2 + T3, concatinated as cl_float2's.
-	cl_mem mData_err_cl;
-	cl_mem mData_phasor_cl;	// Quantity required to rotate the T3 phase to Y=0
+	cl_mem mData_cl; 		// Arranged as [v2, t3_amp, t3_phi]
+	cl_mem mData_err_cl;	// Arranged as [v2, t3_amp, t3_phi]
 	cl_mem mData_uvpnt_cl;
 	cl_mem mData_bsref_cl;
 	cl_mem mData_sign_cl;
@@ -118,7 +117,6 @@ protected:
 	// TODO: Temporary datamembers for use with getoifits and oifitslib.
 	float * mData;
 	float * mData_err;
-	complex<float> * mData_phasor;
 	unsigned int mNVis2;
 	unsigned int mNT3;
 	unsigned int mNUV;
@@ -142,7 +140,6 @@ public:
 	cl_mem GetLoc_Data() { return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };
 	cl_mem GetLoc_DataBSRef() { return mData_bsref_cl; };
-	cl_mem GetLoc_DataT3Phi() { return mData_phasor_cl; };
 	cl_mem GetLoc_DataT3Sign() { return mData_sign_cl; };
 	cl_mem GetLoc_DataUVPoints() { return mData_uvpnt_cl; };
 	unsigned int GetNumData() { return mNData; };
