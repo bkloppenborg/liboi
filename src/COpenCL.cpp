@@ -234,16 +234,15 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 #else	// Linux
 
 	GLXContext context = glXGetCurrentContext();
-	Display * display = glXGetCurrentDisplay();
 
-	if(context != NULL && display != NULL)
+	if(context != NULL && glXGetCurrentDisplay() != NULL)
 	{
 		// Enable an OpenCL - OpenGL interop session.
 		// This works for an X11 OpenGL session on Linux.
 		properties[0] = CL_GL_CONTEXT_KHR;
 		properties[1] = (cl_context_properties) context;
 		properties[2] = CL_GLX_DISPLAY_KHR;
-		properties[3] = (cl_context_properties) display;
+		properties[3] = (cl_context_properties) glXGetCurrentDisplay();
 		properties[4] = CL_CONTEXT_PLATFORM;
 		properties[5] = (cl_context_properties) platform;
 		properties[6] = 0;
