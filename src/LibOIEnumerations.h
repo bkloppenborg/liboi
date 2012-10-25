@@ -42,8 +42,10 @@ namespace LibOIEnums
 
 	enum ImageTypes
 	{
-		OpenCLBuffer = 0,
-		OpenGLBuffer = 1
+		OPENCL_BUFFER,
+		OPENGL_FRAMEBUFFER,
+		OPENGL_TEXTUREBUFFER,
+		HOST_MEMORY
 	};
 
 	enum OpMode

@@ -34,18 +34,22 @@
 
 #include "main.h"
 #include "CLibOI.h"
+#include "PathFinding.h"
 
-#include <string>
-
+#include <iostream>
+#include <algorithm>
 using namespace std;
 
 // The main routine.
 int main(int argc, char *argv[])
 {
-    // Create an OpenCL object from a GPU.  Initialize it.
-    string kernel_source_dir = "./kernels/";
-    CLibOI oCL(CL_DEVICE_TYPE_GPU);
-    //oCL.SetImage_CLMEM(cl_image);
+	// Find the path to the current executable
+	string exe = FindExecutable();
+	// Find the directory (the name of this program is "tests", so just strip off five characters)
+	string path = exe.substr(0, exe.size()-5);
+	cout << path << endl;
+
+	RunTests(path);
 
     return 0;
 }
@@ -55,6 +59,46 @@ void PrintHelp()
 {
 	printf("This verification program has no options.  Simply run the executable.");
 	exit(0);
+}
+
+void RunTests(string path)
+{
+    // Create an OpenCL object from a GPU.  Initialize it.
+    string kernel_source_dir = path + "kernels";
+
+    // Create a point-source image, copy it to the GPU:
+    unsigned int width = 128;
+    unsigned int height = 128;
+    unsigned int depth = 1;
+    unsigned int size = width * height * depth;
+    float scale = 0.01;
+
+    // Initialize the image.  Put a single flux element in the center.
+    float * image = new float[size];
+    for(int i = 0; i < size; i++)
+    	image[i] = 0.0;
+
+    image[size/2] = 2.0;
+
+    // Init LibOI
+    CLibOI LibOI(CL_DEVICE_TYPE_GPU);
+    LibOI.SetKernelSourcePath(kernel_source_dir);
+    LibOI.SetImageInfo(width, height, depth, scale);
+    LibOI.SetImageSource(image);
+
+    // Load sample data:
+    LibOI.LoadData(path + "../samples/test_ldd2_alpha05.oifits");
+
+    // Init memory and routines.
+    LibOI.Init();
+
+    // Load the image
+    LibOI.CopyImageToBuffer(0);
+
+    // Now run tests.
+    LibOI.RunVerification(0);
+
+    delete[] image;
 }
 
 #endif /* MAIN_CPP_ */

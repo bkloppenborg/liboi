@@ -32,7 +32,13 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
+#include <string>
+using namespace std;
+
+string do_readlink(std::string const& path);
+
 int main(int argc, char** argv);
 void PrintHelp();
+void RunTests(string exe_path);
 
 #endif /* MAIN_H_ */
