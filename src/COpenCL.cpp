@@ -44,6 +44,8 @@ COpenCL::COpenCL(cl_device_type type)
 	mContext = 0;
 	mQueue = 0;
 
+	mCLGLInteropEnabled = false;
+
 	Init(type);
 }
 
@@ -189,18 +191,80 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 	this->PrintDeviceInfo(mDevice);
 #endif //DEBUG
 
-	// Set the context properties.  This works for an X11 OpenGL session on Linux.
-	// TODO: Add initialization code for other operating systems.
-	// see https://github.com/enjalot/adventures_in_opencl/blob/master/part2/cll.cpp for examples
-    cl_context_properties properties[] =
-    {
-    		CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
-			CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
-			CL_CONTEXT_PLATFORM, (cl_context_properties) platform,
-			0
-    };
+	// Each operating system has a different routine for OpenCL-OpenGL interoperability
+	// initialization.  Here we try to catch all of them.  Each OS-specific block below
+	// shall define the properties required of the context for
+	// (a) OpenCL + OpenGL and (b) OpenCL only.
+	// This does lead to some code duplication, but makes each instance more clear.
 
-	// Creates a context with OpenGL OpenCL interop turned on.
+	// Allocate enough space for defining the parameters below:
+	cl_context_properties properties[7];
+
+#if defined (__APPLE__) || defined(MACOSX)	// Apple / OSX
+
+    CGLContextObj context = CGLGetCurrentContext();
+    CGLShareGroupObj share_group = CGLGetShareGroup(kCGLContext);
+
+    if(context != NULL && share_group != NULL)
+    {
+		properties[0] = CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE;
+		properties[1] = (cl_context_properties)(share_group);
+		properties[2] = (cl_context_properties) (platform)();
+		properties[3] = 0;
+		mCLGLInteropEnabled = true;
+    }
+
+#elif defined WIN32 // Windows
+
+    HGLRC WINAPI context = wglGetCurrentContext();
+    HDC WINAPI dc = wglGetCurrentDC();
+
+	if(context != NULL && dc != NULL)
+	{
+		properties[0] = CL_GL_CONTEXT_KHR;
+		properties[1] = (cl_context_properties) context;
+		properties[2] = CL_WGL_HDC_KHR;
+		properties[3] = (cl_context_properties) dc;
+		properties[4] = CL_CONTEXT_PLATFORM;
+		properties[5] = (cl_context_properties) platform;
+		properties[6] = 0;
+		mCLGLInteropEnabled = true;
+	}
+
+#else	// Linux
+
+	GLXContext context = glXGetCurrentContext();
+	Display * display = glXGetCurrentDisplay();
+
+	if(context != NULL && display != NULL)
+	{
+		// Enable an OpenCL - OpenGL interop session.
+		// This works for an X11 OpenGL session on Linux.
+		properties[0] = CL_GL_CONTEXT_KHR;
+		properties[1] = (cl_context_properties) context;
+		properties[2] = CL_GLX_DISPLAY_KHR;
+		properties[3] = (cl_context_properties) display;
+		properties[4] = CL_CONTEXT_PLATFORM;
+		properties[5] = (cl_context_properties) platform;
+		properties[6] = 0;
+		mCLGLInteropEnabled = true;
+	}
+
+#endif
+
+	// If OpenCL - OpenGL interop was not detected, enable a plain OpenCL-only context:
+	if(!mCLGLInteropEnabled)
+	{
+		printf("OpenCL-OpenGL interoperability NOT detected and NOT ENABLED.");
+		// enable a plain OpenCL-only context.
+		properties[0] = CL_CONTEXT_PLATFORM;
+		properties[1] = (cl_context_properties) platform;
+		properties[2] = 0;
+	}
+	else
+		printf("OpenCL-OpenGL interoperability DETECTED and ENABLED.");
+
+	// Creates a context with the above properties.
     this->mContext = clCreateContextFromType(properties, type, NULL, NULL, &err);
     CheckOCLError("Unable to create context.", err);
 
