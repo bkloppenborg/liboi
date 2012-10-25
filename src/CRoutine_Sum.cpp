@@ -279,6 +279,7 @@ bool CRoutine_Sum::ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer)
 	float cl_sum = ComputeSum(input_buffer, final_buffer, true);
 
 	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
+	printf("Checking summed flux values:\n");
 	printf("  CPU Value:  %0.4f\n", cpu_sum);
 	printf("  CL  Value:  %0.4f\n", cl_sum);
 	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);

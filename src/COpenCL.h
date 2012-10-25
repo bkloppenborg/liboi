@@ -77,6 +77,8 @@ protected:
 	cl_context mContext;
 	cl_command_queue mQueue;
 
+	bool mCLGLInteropEnabled;
+
 
 public:
 	COpenCL(cl_device_type type);

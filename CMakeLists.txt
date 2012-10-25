@@ -42,3 +42,7 @@ add_subdirectory(src)
 
 # Export the inclusion directories.
 set(OI_INCLUDE_DIRS ${OIFITS_INCLUDE_DIRS} ${OPENCL_INCLUDE_DIRS} CACHE INTERNAL "")
+
+# Copy over kernel and shader sources:
+file(GLOB KERNELS ${CMAKE_SOURCE_DIR}/src/kernels/*.cl)
+file(COPY ${KERNELS} DESTINATION ${EXECUTABLE_OUTPUT_PATH}/kernels/)

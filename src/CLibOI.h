@@ -41,6 +41,7 @@
 //#include "COILibData.h"
 
 #include <string>
+#include <memory>
 
 #include "COpenCL.h"
 #include "LibOIEnumerations.h"
@@ -63,9 +64,6 @@ protected:
 	// Datamembers:
 	COILibDataList mDataList;
 
-//	eFTMethods mFTMethod;
-	//cl_device_type mDeviceType;
-
 	// OpenCL Context, manager, etc.
 	COpenCL * mOCL;
 
@@ -85,8 +83,11 @@ protected:
 
 	// Memory objects (OpenCL or otherwise)
 	LibOIEnums::ImageTypes mImageType;
-	cl_mem mCLImage;
-	cl_mem mGLImage;
+	// Memory locations.
+	cl_mem mImage_cl;
+	cl_mem mImage_gl;	// OpenCL - OpenGL interop buffer.
+	float * mImage_host;	// Allocated externally. DO NOT FREE
+	// Image properties
 	unsigned int mImageWidth;
 	unsigned int mImageHeight;
 	unsigned int mImageDepth;
@@ -109,6 +110,8 @@ public:
 
 	void CopyImageToBuffer(int layer);
 	void CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int layer);
+	void CopyImageToBuffer(float * host_mem, cl_mem cl_buffer, int width, int height, int layer);
+
 	float DataToChi2(COILibDataPtr data);
 	float DataToLogLike(COILibDataPtr data);
 
@@ -153,10 +156,10 @@ public:
 	void RunVerification(int data_num);
 
 	void SaveImage(string filename);
-	void SetImageInfo(int width, int height, int depth, float scale);
-	void SetImage_CLMEM(cl_mem image);
-	void SetImage_GLFB(GLuint framebuffer);
-	void SetImage_GLTB(GLuint texturebuffer);
+	void SetImageInfo(unsigned int width, unsigned int height, unsigned int depth, float scale);
+	void SetImageSource(float * host_memory);
+	void SetImageSource(cl_mem cl_device_memory);
+	void SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type);
 	void SetKernelSourcePath(string path_to_kernels);
 
 
