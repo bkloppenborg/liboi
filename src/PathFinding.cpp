@@ -1,0 +1,96 @@
+/*
+ * PathFinding.cpp
+ *
+ *  Created on: Oct. 25, 2011
+ *      Author: bkloppenborg
+ */
+
+/*
+ * Copyright (c) 2012 Brian Kloppenborg
+ *
+ * If you use this software as part of a scientific publication, please cite as:
+ *
+ * Kloppenborg, B.; Baron, F. (2012), "LibOI: The OpenCL Interferometry Library"
+ * (Version X). Available from  <https://github.com/bkloppenborg/liboi>.
+ *
+ * This file is part of the OpenCL Interferometry Library (LIBOI).
+ *
+ * LIBOI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * LIBOI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "PathFinding.h"
+
+/// Find the path of the current executable using GetModuleFileNameW (Windows)
+string do_GetModuleFileNameW()
+{
+#if defined (WIN32) // Windows
+	HMODULE hModule = GetModuleHandleW(NULL);
+	WCHAR path[MAX_PATH];
+	GetModuleFileNameW(hModule, path, MAX_PATH);
+#else
+	string path = "";
+#endif
+
+	return string(path);
+}
+
+/// Find the path of the current executable using _NSGetExecutablePath (Apple/Mac)
+string do_NSGetExecutablePath()
+{
+#if defined (__APPLE__) || defined(MACOSX)	// Apple / OSX
+	char path[1024];
+	uint32_t size = sizeof(path);
+	if (_NSGetExecutablePath(path, &size) == 0)
+	    printf("executable path is %s\n", path);
+	else
+	    printf("buffer too small; need size %u\n", size);
+#else
+	string path = "";
+#endif
+
+
+	return string(path);
+}
+
+/// Find the path of the current executable using do_readlink (BSD, Solaris, Linux)
+string do_readlink(std::string const& path)
+{
+    char buff[1024];
+    ssize_t len = ::readlink(path.c_str(), buff, sizeof(buff)-1);
+    if (len != -1) {
+      buff[len] = '\0';
+      return std::string(buff);
+    } else {
+     /* handle error condition */
+    }
+}
+
+string FindExecutable()
+{
+	string path;
+
+#if defined (__APPLE__) || defined(MACOSX)	// Apple / OSX
+	path = do_NSGetExecutablePath();
+#elif defined (WIN32) // Windows
+	path = do_GetModuleFileNameW();
+#elif defined (BSD) // BSD variants
+	path = do_readlink("/proc/curproc/file");
+#elif defined (sun) || defined(__sun) // Solaris
+	path = do_readlink("/proc/self/path/a.out");
+#elif defined (__gnu_linux__)	// Linux
+	path = do_readlink("/proc/self/exe");
+#endif
+
+	return path;
+}
