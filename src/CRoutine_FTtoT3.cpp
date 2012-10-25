@@ -117,8 +117,6 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, int n_uv, cl_mem data_phasor, cl
 	cl_short4 sign;
 	for(int i = 0; i < n_t3; i++)
 	{
-		if(i == 479)
-			printf("test");
 		uvpoint = cpu_bsref[i];
 	    sign = cpu_sign[i];
 		// Look up the visibility values, conjugating as necessary:
