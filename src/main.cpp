@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
 	string exe = FindExecutable();
 	// Find the directory (the name of this program is "tests", so just strip off five characters)
 	string path = exe.substr(0, exe.size()-5);
-	cout << path << endl;
 
 	RunTests(path);
 
