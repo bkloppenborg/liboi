@@ -66,14 +66,14 @@ string do_NSGetExecutablePath()
 /// Find the path of the current executable using do_readlink (BSD, Solaris, Linux)
 string do_readlink(std::string const& path)
 {
-    char path[1024];
+    char buff[1024];
 #if defined (BSD) || defined(__gnu_linux__) || defined(sun) || defined(__sun)	 // BSD, Linux, Solaris
     ssize_t len = ::readlink(path.c_str(), buff, sizeof(buff)-1);
 #else
 	string path = "";
 #endif
 
-    return string(path);
+    return string(buff);
 }
 
 string FindExecutable()
