@@ -35,6 +35,7 @@
 #include "COILibData.h"
 #include <cassert>
 #include "OITools.h"
+#include "OIExport.h"
 
 #define MJD 2400000.5
 
@@ -86,16 +87,16 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 	vector<pair<double,double> > uv_points;
 	valarray<complex<double>> vis;
 	valarray<complex<double>> vis_err;
-	valarray<unsigned int> vis_uv_ref;
+	vector<unsigned int> vis_uv_ref;
 	valarray<double> vis2;
 	valarray<double> vis2_err;
-	valarray<unsigned int> vis2_uv_ref;
+	vector<unsigned int> vis2_uv_ref;
 	valarray<complex<double>> t3;
 	valarray<complex<double>> t3_err;
-	valarray<vector<unsigned int>> t3_uv_ref;
-	valarray<vector<int>> t3_sign;
+	vector<tuple<unsigned int, unsigned int, unsigned int>> t3_uv_ref;
+	vector<tuple<short, short, short>> t3_uv_sign;
 
-	Export_MinUV(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_sign);
+	ccoifits::Export_MinUV(mData, uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
 
 	// Generate some statistics on the data set:
 	mNVis = vis.size();
@@ -205,15 +206,15 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 		t_t3_err[mNT3 + i] = imag(t3_err[i]);
 
 		// UV references
-		t_t3_uvref[i].s0 = t3_uv_ref[i][0];
-		t_t3_uvref[i].s1 = t3_uv_ref[i][1];
-		t_t3_uvref[i].s2 = t3_uv_ref[i][2];
+		t_t3_uvref[i].s0 = get<0>(t3_uv_ref[i]);
+		t_t3_uvref[i].s1 = get<1>(t3_uv_ref[i]);
+		t_t3_uvref[i].s2 = get<2>(t3_uv_ref[i]);
 		t_t3_uvref[i].s3 = 0;
 
 		// T3 uv signs:
-		t_t3_sign[i].s0 = t3_sign[i][0];
-		t_t3_sign[i].s1 = t3_sign[i][1];
-		t_t3_sign[i].s2 = t3_sign[i][2];
+		t_t3_sign[i].s0 = get<0>(t3_uv_sign[i]);
+		t_t3_sign[i].s1 = get<1>(t3_uv_sign[i]);
+		t_t3_sign[i].s2 = get<2>(t3_uv_sign[i]);
 		t_t3_sign[i].s3 = 0;
 	}
 
