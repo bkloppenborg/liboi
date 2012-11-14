@@ -45,15 +45,6 @@ COILibDataList::~COILibDataList()
 
 }
 
-/// Copies all data sources to the OpenCL device using the specified command queue.
-void COILibDataList::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
-{
-    for(vector<COILibDataPtr>::iterator it = this->begin(); it != this->end(); ++it)
-    {
-    	(*it)->CopyToOpenCLDevice(context, queue);
-    }
-}
-
 /// Returns the total number of data points (UV + T3) in all data sets
 int COILibDataList::GetNData()
 {
@@ -118,9 +109,9 @@ int COILibDataList::MaxUVPoints()
 
 
 /// Reads in an OIFITS file, returns a COILibData object.
-void COILibDataList::ReadFile(string filename)
+void COILibDataList::ReadFile(string filename, cl_context context, cl_command_queue queue)
 {
-	COILibDataPtr tmp(new COILibData(filename));
+	COILibDataPtr tmp(new COILibData(filename, context, queue));
 	this->push_back(tmp);
 }
 

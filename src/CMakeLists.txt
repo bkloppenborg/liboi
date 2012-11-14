@@ -33,7 +33,7 @@ file(GLOB SOURCE *.cpp)
 list(REMOVE_ITEM SOURCE main.cpp)
 
 add_library(oi SHARED ${SOURCE})
-target_link_libraries(oi textio oifits getoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES} ${CFITSIO_LIBRARIES} ${GTK2_LIBRARIES})
+target_link_libraries(oi textio ccoifits_shared ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
 
 add_executable(tests main.cpp)
 target_link_libraries(tests oi)

@@ -33,256 +33,207 @@
  */
 
 #include "COILibData.h"
-#include <cstdio>
+#include <cassert>
+#include "OITools.h"
 
 #define MJD 2400000.5
 
 using namespace std;
 
-COILibData::COILibData(string filename)
+COILibData::COILibData(string filename, cl_context context, cl_command_queue queue)
 {
-	mOIData = NULL;
-	mFileName = filename;
-	ReadFile(mFileName);
+	// Read in the data.
+	COIFile tmp;
+	try
+	{
+		tmp.open(filename);
+		mData = tmp.read();
+	}
+	catch(CCfits::FITS::CantOpen)
+	{
 
-	// TODO: Temporary for getoifits routines, allocate room:
-	mNVis2 = mOIData->npow;
-	mNT3 = mOIData->nbis;
-	mNUV = mOIData->nuv;
-	mNData = mNVis2 + 2*mNT3;
-	mData = new float[mNData];
-	mData_err = new float[mNData];
+	}
 
-	// Init all of the OpenCL memory locations to NULL
-	mData_cl = NULL;
-	mData_err_cl = NULL;
-	mData_uvpnt_cl = NULL;
-	mData_bsref_cl = NULL;
-	mData_sign_cl = NULL;
+	InitData(context, queue);
+}
 
-	// Now compute the average time for the data set.  We accumulate the times
-	// in a long double to minimize a loss of precision.
-	long double time = 0;
-	for(unsigned int i = 0; i < mNVis2; i++)
-		time += mOIData->powmjd[i];
-
-	for(unsigned int i = 0; i < mNT3; i++)
-		time += mOIData->bismjd[i];
-
-	// Convert the average time to a JD, casting back to a double in the process.
-	mAveJD = double(time / (mNVis2 + mNT3) + MJD);
-	printf("Data Average Time: %f\n", mAveJD);
-
-	InitData(true);
+COILibData::COILibData(OIDataList & data, cl_context context, cl_command_queue queue)
+{
+	mData = data;
+	InitData(context, queue);
 }
 
 COILibData::~COILibData()
 {
-	// Release memory on the GPU.
+	// Free OpenCL memory
 	if(mData_cl) clReleaseMemObject(mData_cl);
 	if(mData_err_cl) clReleaseMemObject(mData_err_cl);
-	if(mData_uvpnt_cl) clReleaseMemObject(mData_uvpnt_cl);
-	if(mData_sign_cl) clReleaseMemObject(mData_sign_cl);
-	if(mData_bsref_cl) clReleaseMemObject(mData_bsref_cl);
 
-	// Free local memory:
-	free_oi_data(mOIData);
+	if(mData_uv_cl) clReleaseMemObject(mData_uv_cl);
+	if(mData_Vis_uv_ref) clReleaseMemObject(mData_Vis_uv_ref);
+	if(mData_V2_uv_ref) clReleaseMemObject(mData_V2_uv_ref);
+	if(mData_T3_uv_ref) clReleaseMemObject(mData_T3_uv_ref);
 
-	delete[] mData;
-	delete[] mData_err;
+	if(mData_T3_sign) clReleaseMemObject(mData_T3_sign);
 }
 
-/// Copies the data from CPU memory over to the OpenCL device memory, creating memory objects when necessary.
-void COILibData::CopyToOpenCLDevice(cl_context context, cl_command_queue queue)
+/// Initializes statistics on the data set and uploads the data to the OpenCL device.
+void COILibData::InitData(cl_context context, cl_command_queue queue)
 {
-	// TODO: If we change away from getoifits and oifitslib we'll need to rewrite this function entirely.
-	int i = 0;
 	int err = CL_SUCCESS;
 
-	// We will also need the uvpnt and sign information for bispectrum computations.
-	// Although we waste a little space, we use cl_long4 and cl_float4 so that we may have
-	// coalesced loads on the GPU.
-	cl_long4 * bsref_uvpnt = new cl_long4[mNT3];
-	cl_short4 * bsref_sign = new cl_short4[mNT3];
-	for(i = 0; i < mNT3; i++)
-	{
-		bsref_uvpnt[i].s0 = mOIData->bsref[i].ab.uvpnt;
-		bsref_uvpnt[i].s1 = mOIData->bsref[i].bc.uvpnt;
-		bsref_uvpnt[i].s2 = mOIData->bsref[i].ca.uvpnt;
-		bsref_uvpnt[i].s3 = 0;
+	// Export the data from OIDataList to something we can use here.
+	vector<pair<double,double> > uv_points;
+	valarray<complex<double>> vis;
+	valarray<complex<double>> vis_err;
+	valarray<unsigned int> vis_uv_ref;
+	valarray<double> vis2;
+	valarray<double> vis2_err;
+	valarray<unsigned int> vis2_uv_ref;
+	valarray<complex<double>> t3;
+	valarray<complex<double>> t3_err;
+	valarray<vector<unsigned int>> t3_uv_ref;
+	valarray<vector<int>> t3_sign;
 
-		bsref_sign[i].s0 = mOIData->bsref[i].ab.sign;
-		bsref_sign[i].s1 = mOIData->bsref[i].bc.sign;
-		bsref_sign[i].s2 = mOIData->bsref[i].ca.sign;
-		bsref_sign[i].s3 = 0;
+	Export_MinUV(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_sign);
+
+	// Generate some statistics on the data set:
+	mNVis = vis.size();
+	mNV2 = vis2.size();
+	mNT3 = t3.size();
+	mNUV = uv_points.size();
+	// Average JD (notice we need to add in MJD)
+	mAveJD = AverageMJD(mData) + MJD;
+	// Total number of double/floats allocated for storage on the OpenCL context:
+	mNData = 2*mNVis + mNV2 + 2*mNT3;
+
+	//
+	// Now start uploading data to the OpenCL device. We need to copy the above data into
+	// OpenCL data types to ensure things are moved correctly.
+	//
+
+	// Main data buffer
+	// An array of cl_floats arranged as follows: [vis_real, vis_imag, v2, t3_amp, t3_phi]
+	// The number of data must always be greater than zero.
+	assert(mNData > 0);
+	mData_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float) * mNData, NULL, NULL);
+	mData_err_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float) * mNData, NULL, NULL);
+
+	// #####
+	// UV points:
+	// Stored as pair of floats: [(u,v)_0, ..., (u,v)_N]
+	valarray<cl_float2> t_uv_points(mNUV);
+	for(int i = 0; i < mNUV; i++)
+	{
+		t_uv_points[i].s0 = uv_points[i].first;
+		t_uv_points[i].s1 = uv_points[i].second;
 	}
 
-	cl_float2 * uv_info = new cl_float2[mNUV];
-	for(i = 0; i < mNUV; i++)
+	// Copy over the UV points.  We MUST always have at least one (otherwise the data would be nonsense).
+	assert(mNUV > 0);
+	mData_uv_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
+	err  = clEnqueueWriteBuffer(queue, mData_uv_cl, CL_FALSE, 0, sizeof(cl_float2) * mNUV, &t_uv_points[0], 0, NULL, NULL);
+	COpenCL::CheckOCLError("Could not copy OI UV points to OpenCL device. COILibData::InitData.", err);
+
+	// #####
+	// Vis.
+	// Stored as [real(vis1), ..., real(visN), imag(vis1), ..., imag(visN)] within the mData_cl buffer
+	// This choice encourages sequential memory access patterns in OpenCL
+	valarray<cl_float> t_vis(2*mNVis);
+	valarray<cl_float> t_vis_err(2*mNVis);
+	valarray<cl_uint> t_vis_uvref(mNVis);
+	for(int i = 0; i < mNVis; i++)
 	{
-		uv_info[i].s0 = mOIData->uv[i].u;
-		uv_info[i].s1 = mOIData->uv[i].v;
+		t_vis[i] = real(vis[i]);
+		t_vis[mNVis + i] = imag(vis[i]);
+		t_vis_err[i] = real(vis_err[i]);
+		t_vis_err[mNVis + i] = imag(vis_err[i]);
+		t_vis_uvref[i] = vis_uv_ref[i];
 	}
 
-	// Now create buffers on the OpenCL device
-    mData_cl = clCreateBuffer(context, CL_MEM_READ_ONLY,  sizeof(float) * mNData, NULL, NULL);
-    mData_err_cl = clCreateBuffer(context, CL_MEM_READ_ONLY,  sizeof(float) * mNData, NULL, NULL);
-    mData_uvpnt_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
-    if(mNT3 > 0)
-    {
-		mData_bsref_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_long4) * mNT3, NULL, NULL);
-		mData_sign_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_short4) * mNT3, NULL, NULL);
-    }
+	mData_Vis_uv_ref = 0;
+	if(mNVis > 0)
+	{
+		mData_Vis_uv_ref = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_uint) * mNVis, NULL, NULL);
 
-    // Now move the data over:
-    err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, 0, sizeof(float) * mNData, mData, 0, NULL, NULL);
-    err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, 0, sizeof(float) * mNData, mData_err, 0, NULL, NULL);
-    err |= clEnqueueWriteBuffer(queue, mData_uvpnt_cl, CL_FALSE, 0, sizeof(cl_float2) * mNUV, uv_info, 0, NULL, NULL);
-    if(mNT3 > 0)
-    {
-		err |= clEnqueueWriteBuffer(queue, mData_bsref_cl, CL_FALSE, 0, sizeof(cl_long4) * mNT3, bsref_uvpnt, 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_sign_cl, CL_FALSE, 0, sizeof(cl_short4) * mNT3, bsref_sign, 0, NULL, NULL);
-    }
-	COpenCL::CheckOCLError("Failed to copy OIFITS data over to the OpenCL Device.", err);
+		// Copy the data.  No offset, this is always at the start of the buffer.
+		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis_err[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue, mData_Vis_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNVis, &t_vis_uvref[0], 0, NULL, NULL);
+		COpenCL::CheckOCLError("Could not copy OI_VIS data to OpenCL device. COILibData::InitData", err);
+	}
+
+	// #####
+	// V2:
+	// Stored in linear order: [Vis2_1, ..., Vis2_N)] within the mData_cl buffer
+	valarray<cl_float> t_vis2(mNV2);
+	valarray<cl_float> t_vis2_err(mNV2);
+	valarray<cl_uint> t_vis2_uvref(mNV2);
+	for(int i = 0; i < mNV2; i++)
+	{
+		t_vis2[i] = vis2[i];
+		t_vis2_err[i] = vis2_err[i];
+		t_vis2_uvref[i] = vis2_uv_ref[i];
+	}
+
+	mData_V2_uv_ref = 0;
+	if(mNV2 > 0)
+	{
+		mData_V2_uv_ref = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_uint) * mNV2, NULL, NULL);
+
+		int offset = 2 * mNVis;
+		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2_err[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue, mData_V2_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNV2, &t_vis2_uvref[0], 0, NULL, NULL);
+		COpenCL::CheckOCLError("Could not copy OI_VIS2 data to OpenCL device. COILibData::InitData", err);
+	}
+
+
+	// #####
+	// T3:
+	// Stored as [real(T3_1), ..., real(T3_N), imag(T3_1), ..., imag(T3_N)] within the mData_cl buffer
+	// This choice encourages sequential memory access patterns in OpenCL
+	valarray<cl_float> t_t3(2*mNT3);
+	valarray<cl_float> t_t3_err(2*mNT3);
+	valarray<cl_uint4> t_t3_uvref(mNT3);
+	valarray<cl_short4> t_t3_sign(mNT3);
+	for(int i = 0; i < mNT3; i++)
+	{
+		t_t3[i] = real(t3[i]);
+		t_t3[mNT3 + i] = imag(t3[i]);
+		t_t3_err[i] = real(t3_err[i]);
+		t_t3_err[mNT3 + i] = imag(t3_err[i]);
+
+		// UV references
+		t_t3_uvref[i].s0 = t3_uv_ref[i][0];
+		t_t3_uvref[i].s1 = t3_uv_ref[i][1];
+		t_t3_uvref[i].s2 = t3_uv_ref[i][2];
+		t_t3_uvref[i].s3 = 0;
+
+		// T3 uv signs:
+		t_t3_sign[i].s0 = t3_sign[i][0];
+		t_t3_sign[i].s1 = t3_sign[i][1];
+		t_t3_sign[i].s2 = t3_sign[i][2];
+		t_t3_sign[i].s3 = 0;
+	}
+
+	mData_T3_uv_ref = 0;
+	mData_T3_sign = 0;
+	if(mNT3 > 0)
+	{
+		mData_T3_uv_ref = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_uint4) * mNT3, NULL, NULL);
+		mData_T3_sign = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_short4) * mNT3, NULL, NULL);
+
+		int offset = 2 * mNVis + mNV2;
+		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3_err[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue, mData_T3_uv_ref, CL_FALSE, 0, sizeof(cl_uint4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue, mData_T3_sign, CL_FALSE, 0, sizeof(cl_short4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
+		COpenCL::CheckOCLError("Could not copy OI_T3 data to OpenCL device. COILibData::InitData", err);
+	}
 
 	// Wait for the queue to process
 	clFinish(queue);
-
-	// Free memory
-	delete[] bsref_uvpnt;
-	delete[] bsref_sign;
-}
-
-/// Initalize the OIFITS data, copying over to standard float memory objects
-/// TODO: This is a routine pulled directly from GPAIR, if we replace getoifits and liboifits we should
-/// also strike this routine.
-void COILibData::InitData(bool do_extrapolation)
-{
-	register int ii;
-	int ndof = mNData;
-	int warning_extrapolation = 0;
-	float pow1, powerr1, pow2, powerr2, pow3, powerr3, sqamp1, sqamp2, sqamp3, sqamperr1, sqamperr2, sqamperr3;
-
-	// Save data.  Remember ordering is [v2, t3_amp, t3_phi] in this array.
-	for (ii = 0; ii < mNVis2; ii++)
-	{
-		mData[ii] = mOIData->pow[ii];
-		mData_err[ii] = fabs(mOIData->powerr[ii]);
-	}
-
-	// Let j = npow, set elements [j, j + nbis - 1] to the bispectra data.
-	for (ii = 0; ii < mNT3; ii++)
-	{
-		if ((do_extrapolation) && ((mOIData->bisamperr[ii] <= 0.) || (mOIData->bisamperr[ii] > 1e3))) // Missing triple amplitudes
-		{
-			if ((mOIData->bsref[ii].ab.uvpnt < mNVis2) && (mOIData->bsref[ii].bc.uvpnt < mNVis2) && (mOIData->bsref[ii].ca.uvpnt < mNVis2))
-			{
-				// if corresponding powerspectrum points are available
-				// Derive pseudo-triple amplitudes from powerspectrum data
-				// First select the relevant powerspectra
-				pow1 = mOIData->pow[mOIData->bsref[ii].ab.uvpnt];
-				powerr1 = mOIData->powerr[mOIData->bsref[ii].ab.uvpnt];
-				pow2 = mOIData->pow[mOIData->bsref[ii].bc.uvpnt];
-				powerr2 = mOIData->powerr[mOIData->bsref[ii].bc.uvpnt];
-				pow3 = mOIData->pow[mOIData->bsref[ii].ca.uvpnt];
-				powerr3 = mOIData->powerr[mOIData->bsref[ii].ca.uvpnt];
-
-				// Derive optimal visibility amplitudes + noise variance
-				sqamp1 = (pow1 + sqrt(square(pow1) + 2.0 * square(powerr1))) / 2.;
-				sqamperr1 = 1. / (1. / sqamp1 + 2. * (3. * sqamp1 - pow1) / square(powerr1));
-				sqamp2 = (pow2 + sqrt(square(pow2) + 2.0 * square(powerr2))) / 2.;
-				sqamperr2 = 1. / (1. / sqamp2 + 2. * (3. * sqamp2 - pow2) / square(powerr2));
-				sqamp3 = (pow3 + sqrt(square(pow3) + 2.0 * square(powerr3))) / 2.;
-				sqamperr3 = 1. / (1. / sqamp3 + 2. * (3. * sqamp3 - pow3) / square(powerr3));
-
-				// And form the triple amplitude statistics
-				mOIData->bisamp[ii] = sqrt(sqamp1 * sqamp2 * sqamp3);
-				mOIData->bisamperr[ii] = fabs(mOIData->bisamp[ii] * sqrt(sqamperr1 / sqamp1 + sqamperr2 / sqamp2 + sqamperr3 / sqamp3));
-
-				if(!warning_extrapolation)
-				{
-					printf("*************************  Warning - Recalculating T3amp from Powerspectra - Check this is wanted ********************\n");
-					warning_extrapolation = true;
-				}
-			}
-			else // missing powerspectrum points -> cannot extrapolate bispectrum
-			{
-				printf("WARNING: triple amplitude extrapolation from powerspectrum failed because of missing powerspectrum\n");
-				mOIData->bisamp[ii] = 1.0;
-				mOIData->bisamperr[ii] = 1e38; // close to max value for a float
-				ndof--;
-			}
-		}
-
-		// Save data.  Remember ordering is [v2, t3_amp, t3_phi] in this array.
-		mData[mNVis2 + ii] = fabs(mOIData->bisamp[ii]);
-		mData_err[mNVis2 + ii] = mOIData->bisamperr[ii] * PI / 180.0;
-		mData[mNVis2 + mNT3 + ii] = mOIData->bisphs[ii];
-		mData_err[mNVis2 + mNT3 + ii] = mOIData->bisphserr[ii] * PI / 180.0;
-	}
-
-}
-
-/// Exports the T3 data as a vector of CT3Data.
-void COILibData::GetT3(vector<CT3DataPtr> & t3)
-{
-	t3.clear();
-
-	for(int i = 0; i < mNT3; i++)
-	{
-		CT3DataPtr tmp(new CT3Data());
-		tmp->u1 = mOIData->uv[ mOIData->bsref[i].ab.uvpnt ].u;
-		tmp->v1 = mOIData->uv[ mOIData->bsref[i].ab.uvpnt ].v;;
-		tmp->u2 = mOIData->uv[ mOIData->bsref[i].bc.uvpnt ].u;
-		tmp->v2 = mOIData->uv[ mOIData->bsref[i].bc.uvpnt ].v;;
-		tmp->u3 = mOIData->uv[ mOIData->bsref[i].ca.uvpnt ].u;
-		tmp->v3 = mOIData->uv[ mOIData->bsref[i].ca.uvpnt ].v;;
-		tmp->t3_amp = mData[mNVis2 + 2*i];
-		tmp->t3_amp_err = mData_err[mNVis2 + 2*i];
-		tmp->t3_phi = mOIData->bisphs[i];
-		tmp->t3_phi_err = mOIData->bisphserr[i];
-
-		t3.push_back(tmp);
-	}
-}
-
-/// Exports the V2 data as a vector of CV2Data
-void COILibData::GetV2(vector<CV2DataPtr> & v2)
-{
-	v2.clear();
-
-	for(int i = 0; i < mNVis2; i++)
-	{
-		CV2DataPtr tmp(new CV2Data());
-		tmp->u = mOIData->uv[i].u;
-		tmp->v = mOIData->uv[i].v;
-		tmp->v2 = mData[i];
-		tmp->v2_err = mData_err[i];
-
-		v2.push_back(tmp);
-	}
-}
-
-/// Reads in the specified data file.
-void COILibData::ReadFile(string filename)
-{
-	// TODO: Right now this routine uses getoifits (Fabien Baron) and oifitslib (John Young) to read in the data
-	// we can probably get a performance increase on the GPU by sorting the data intelligently on load.
-	// We'll need to implement a new reading function to do this.
-	// Note: If we reorder the data, we'll need to make sure the V2 and T3 kernels still understand where their data is at.
-
-
-	// From GPAIR, Allocate storage for OIFITS data
-	oi_usersel usersel;
-	mOIData = new oi_data();
-	int status = 0;
-
-	// From GPAIR, read_oifits.  Notice we unwrap the shared_ptr<oi_data> object
-	// to interface with getoifits.
-	strcpy(usersel.file, filename.c_str());
-	get_oi_fits_selection(&usersel, &status);
-	get_oi_fits_data(&usersel, mOIData, &status);
-	printf("OIFITS File read\n");
 }
 
 

@@ -48,8 +48,6 @@ public:
 	COILibDataList();
 	~COILibDataList();
 
-	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
-
 	int GetNData();
 	int GetNDataAllocated();
 	int GetNDataAllocated(unsigned int data_num);
@@ -57,7 +55,7 @@ public:
 	int MaxNumData();
 	int MaxUVPoints();
 
-	void ReadFile(string filename);
+	void ReadFile(string filename, cl_context context, cl_command_queue queue);
 	void RemoveData(unsigned int data_num);
 };
 

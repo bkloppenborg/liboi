@@ -26,22 +26,13 @@ if(NOT TARGET textio)
 endif(NOT TARGET textio)
 
 # Call CMake on the subdirectories
-if(NOT TARGET oifits)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/oifitslib)
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/oifitslib)
-	include_directories(${OIFITS_INCLUDE_DIRS})
-endif(NOT TARGET oifits)
-
-# Call CMake on the subdirectories
-if(NOT TARGET getoifits)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/getoifits)
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/getoifits)
-endif(NOT TARGET getoifits)
+if(NOT TARGET ccoifits)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/ccoifits)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/ccoifits/src)
+	include_directories(${CCOIFITS_INCLUDE_DIRS})
+endif(NOT TARGET ccoifits)
 
 add_subdirectory(src)
-
-# Export the inclusion directories.
-set(OI_INCLUDE_DIRS ${OIFITS_INCLUDE_DIRS} ${OPENCL_INCLUDE_DIRS} CACHE INTERNAL "")
 
 # Copy over kernel and shader sources:
 file(GLOB KERNELS ${CMAKE_SOURCE_DIR}/src/kernels/*.cl)

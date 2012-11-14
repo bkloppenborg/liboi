@@ -33,13 +33,6 @@
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO: This class interfaces with getoifits (Fabien Baron) and oifitslib (John Young) which are
-// are both written in C.  This forces us to use <complex.h> rather than <complex>.  We'll probably
-// need to write a new OIFITS interface to alleviate this issue.
-
-// TODO: This class should be able to manipulate the order of the data BEFORE uploading
-// to the OpenCL device to promote coalesced memory loads.
-
 #ifndef COILIBDATA_H_
 #define COILIBDATA_H_
 
@@ -61,99 +54,70 @@
 // Restore the GCC warning state
 #pragma GCC diagnostic pop
 
-extern "C" {
-    #include "exchange.h"
-}
-
-#include "getoifits.h"
 #include <string>
 #include <complex>
 #include <memory>
 #include "COpenCL.h"
+#include "COIFile.h"
 
 using namespace std;
-
-// Define storage classes for exporting data (used only in GetV2, GetT3)
-class CV2Data
-{
-public:
-	float u;
-	float v;
-	float v2;
-	float v2_err;
-};
-
-class CT3Data
-{
-public:
-	float u1;
-	float u2;
-	float u3;
-	float v1;
-	float v2;
-	float v3;
-	float t3_amp;
-	float t3_amp_err;
-	float t3_phi;
-	float t3_phi_err;
-};
-
-typedef shared_ptr<CV2Data> CV2DataPtr;
-typedef shared_ptr<CT3Data> CT3DataPtr;
+using namespace ccoifits;
 
 class COILibData
 {
-	// NOTE: This class currently uses liboifits and getoifits and is complaint with those libraries
-	// but it is our intention to change this.  I wouldn't suggest inheriting from this object as
-	// datamembers and some functions are likely to change.
 protected:
-	// Location and size of data loaded into OpenCL memory objects.
-	cl_mem mData_cl; 		// Arranged as [v2, t3_amp, t3_phi]
-	cl_mem mData_err_cl;	// Arranged as [v2, t3_amp, t3_phi]
-	cl_mem mData_uvpnt_cl;
-	cl_mem mData_bsref_cl;
-	cl_mem mData_sign_cl;
+	// Data list
+	OIDataList mData;
 
-	// TODO: Temporary datamembers for use with getoifits and oifitslib.
-	float * mData;
-	float * mData_err;
-	unsigned int mNVis2;
+	// OpenCL memory objects for the data
+	cl_mem mData_cl; 			// All data, stored in cl_floats in [vis_real, vis_imag, v2, t3_amp, t3_phi] order
+	cl_mem mData_err_cl;
+
+	cl_mem mData_uv_cl;			// UV points.  Ideally arranged in an optimal ordering for the OpenCL device (GPU).
+	cl_mem mData_Vis_uv_ref;	// Contains the index of the UV point for creating the i-th Vis point
+	cl_mem mData_V2_uv_ref;		// Contains the index of the UV point for creating the i-th V2 point
+	cl_mem mData_T3_uv_ref;		// Contains the index of the UV point for creating the i-th T3 point.  A cl_uint4 in [uv_ab, uv_bc, uv_ca, empty]
+
+	cl_mem mData_T3_sign;		// Contains signs indicating conjugation of uv points. A cl_short4 in [uv_ab, uv_bc, uv_ca, 0] order
+
+	// A few things we will need to know about the data
+	unsigned int mNVis;
+	unsigned int mNV2;
 	unsigned int mNT3;
 	unsigned int mNUV;
 	unsigned int mNData;
 	double mAveJD;
 
-	// Storage containers for OIFITS data.
-	oi_data * mOIData;
-
 	string mFileName;
 
 public:
-	COILibData(string filename);
+	COILibData(string filename, cl_context context, cl_command_queue queue);
+	COILibData(OIDataList & data, cl_context context, cl_command_queue queue);
 	~COILibData();
 
-	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
+//	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
 
 	// Inline the get location functions
 	double GetAveJD(void) { return mAveJD; };
 	string GetFilename(void) { return mFileName; };
 	cl_mem GetLoc_Data() { return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };
-	cl_mem GetLoc_DataBSRef() { return mData_bsref_cl; };
-	cl_mem GetLoc_DataT3Sign() { return mData_sign_cl; };
-	cl_mem GetLoc_DataUVPoints() { return mData_uvpnt_cl; };
+	cl_mem GetLoc_DataBSRef() { return mData_T3_uv_ref; };
+	cl_mem GetLoc_DataT3Sign() { return mData_T3_sign; };
+	cl_mem GetLoc_DataUVPoints() { return mData_uv_cl; };
 	unsigned int GetNumData() { return mNData; };
 	unsigned int GetNumT3() { return mNT3; };
 	unsigned int GetNumUV() { return mNUV; };
-	unsigned int GetNumV2() { return mNVis2; };
-	void GetT3(vector<CT3DataPtr> & t3);
-	void GetV2(vector<CV2DataPtr> & v2);
+	unsigned int GetNumV2() { return mNV2; };
+//	void GetT3(vector<CT3DataPtr> & t3);
+//	void GetV2(vector<CV2DataPtr> & v2);
 
-	void InitData(bool do_extrapolation);
+//	void ReadFile(string filename);
 
-	void ReadFile(string filename);
+//	static float square(float number) { return number*number; };
 
-	static float square(float number) { return number*number; };
+protected:
+	void InitData(cl_context context, cl_command_queue queue);
 };
 
 #endif /* COILIBDATA_H_ */

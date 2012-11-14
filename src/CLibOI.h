@@ -128,9 +128,9 @@ public:
 	int GetNT3(int data_num);
 	int GetNV2(int data_num);
 	int GetMaxDataSize() { return mMaxData; };
-	void GetSimulatedData(unsigned int data_set, float * output_buffer, unsigned int buffer_size);
-	void GetT3(unsigned int data_set, vector<CT3DataPtr> & t3);
-	void GetV2(unsigned int data_set, vector<CV2DataPtr> & v2);
+//	void GetSimulatedData(unsigned int data_set, float * output_buffer, unsigned int buffer_size);
+//	void GetT3(unsigned int data_set, vector<CT3DataPtr> & t3);
+//	void GetV2(unsigned int data_set, vector<CV2DataPtr> & v2);
 
 	void ImageToChi(COILibDataPtr data, float * output, int & n);
 	bool ImageToChi(int data_num, float * output, int & n);
