@@ -33,14 +33,26 @@
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// Converts the fourier transform input (complex numbers) in ft_input into
+/// squared visibilities.
 __kernel void ft_to_vis2(
     __global float2 * ft_input,
-    __global float * vis2)
+    __global unsigned int * uv_ref,
+    __private unsigned int offset,
+    __private unsigned int n_v2,
+    __global float * output)
 {
     int i = get_global_id(0);
-    float2 temp = ft_input[i];
+    // Lookup the index of the UV point which corresponds to this data point.
+    unsigned int uv_index = uv_ref[i];
+    // Get the Complex values.
+    float2 temp = ft_input[uv_index];
     
+    // Square it
     temp.s0 = temp.s0 * temp.s0 + temp.s1 * temp.s1;
     temp.s1 = 0;
-    vis2[i] = temp.s0;
+    
+    // Write out data.
+    if(i < n_v2)
+        output[offset + i] = temp.s0;
 }

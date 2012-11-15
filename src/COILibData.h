@@ -102,13 +102,16 @@ public:
 	string GetFilename(void) { return mFileName; };
 	cl_mem GetLoc_Data() { return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };
-	cl_mem GetLoc_DataBSRef() { return mData_T3_uv_ref; };
-	cl_mem GetLoc_DataT3Sign() { return mData_T3_sign; };
+	cl_mem GetLoc_Vis_UVRef() { return mData_Vis_uv_ref; };
+	cl_mem GetLoc_V2_UVRef() { return mData_V2_uv_ref; };
+	cl_mem GetLoc_T3_UVRef() { return mData_T3_uv_ref; };
+	cl_mem GetLoc_T3_sign() { return mData_T3_sign; };
 	cl_mem GetLoc_DataUVPoints() { return mData_uv_cl; };
 	unsigned int GetNumData() { return mNData; };
 	unsigned int GetNumT3() { return mNT3; };
 	unsigned int GetNumUV() { return mNUV; };
 	unsigned int GetNumV2() { return mNV2; };
+	unsigned int GetNumVis() { return mNVis; };
 //	void GetT3(vector<CT3DataPtr> & t3);
 //	void GetV2(vector<CV2DataPtr> & v2);
 

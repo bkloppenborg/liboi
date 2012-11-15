@@ -209,9 +209,14 @@ void CLibOI::FTToData(COILibDataPtr data)
 	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mImage_cl, mImageWidth, mImageHeight, mFluxBuffer, mFTBuffer);
 
 	// Now create the V2 and T3's
-	mrV2->FTtoV2(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
-	mrT3->FTtoT3(mFTBuffer, data->GetLoc_DataBSRef(),
-			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
+	int n_vis = data->GetNumVis();
+	int n_v2 = data->GetNumV2();
+	int n_t3 = data->GetNumT3();
+
+	mrV2->FTtoV2(mFTBuffer, data->GetLoc_V2_UVRef(), mSimDataBuffer, n_vis, n_v2);
+
+	mrT3->FTtoT3(mFTBuffer, data->GetLoc_T3_UVRef(),
+			data->GetLoc_T3_sign(), n_t3, n_v2, mSimDataBuffer);
 }
 
 /// Returns the number of T3 data points in the specified data set.  If the data set does not exist, returns 0.
@@ -580,14 +585,22 @@ void CLibOI::RunVerification(int data_num)
 	if(data_num > mDataList.size() - 1)
 		return;
 
+	// Get the data and some information about the data.
 	COILibDataPtr data = mDataList[data_num];
+	int n_vis = data->GetNumVis();
+	int n_v2 = data->GetNumV2();
+	int n_t3 = data->GetNumT3();
+	int n_uv = data->GetNumUV();
+
 	mrTotalFlux->ComputeSum_Test(mImage_cl, mFluxBuffer);
 	mrNormalize->Normalize_Test(mImage_cl, mImageWidth, mImageHeight, mFluxBuffer);
-	mrFT->FT_Test(data->GetLoc_DataUVPoints(), data->GetNumUV(), mImage_cl, mImageWidth,
+	mrFT->FT_Test(data->GetLoc_DataUVPoints(), n_uv, mImage_cl, mImageWidth,
 			mImageHeight, mFluxBuffer, mFTBuffer);
-	mrV2->FTtoV2_Test(mFTBuffer, data->GetNumV2(), mSimDataBuffer);
-	mrT3->FTtoT3_Test(mFTBuffer, data->GetNumUV(), data->GetLoc_DataBSRef(),
-			data->GetLoc_DataT3Sign(), data->GetNumT3(), data->GetNumV2(), mSimDataBuffer);
+
+	mrV2->FTtoV2_Test(mFTBuffer, data->GetLoc_V2_UVRef(), mSimDataBuffer, n_vis, n_v2, n_uv);
+
+	mrT3->FTtoT3_Test(mFTBuffer, n_uv, data->GetLoc_T3_UVRef(),
+			data->GetLoc_T3_sign(), n_t3, n_v2, mSimDataBuffer);
 
 	// Now run the chi, chi2, and loglike kernels:
 	int n = data->GetNumData();

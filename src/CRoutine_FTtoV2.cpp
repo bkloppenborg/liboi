@@ -47,6 +47,12 @@ CRoutine_FTtoV2::~CRoutine_FTtoV2()
 	// TODO Auto-generated destructor stub
 }
 
+/// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
+unsigned int CRoutine_FTtoV2::CalculateOffset(unsigned int n_vis)
+{
+	return 2*n_vis;
+}
+
 void CRoutine_FTtoV2::Init()
 {
 	// Read the kernel, compile it
@@ -54,13 +60,17 @@ void CRoutine_FTtoV2::Init()
     BuildKernel(source, "ft_to_vis2", mSource[0]);
 }
 
-void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
+void CRoutine_FTtoV2::FTtoV2(cl_mem ft_input, cl_mem uv_ref, cl_mem output, int n_vis, int n_v2)
 {
-	if(n_v2_points == 0)
+	if(n_v2 == 0)
 		return;
 
+	// By the storage definition (see COILibData), there are 2*n_vis elements in the data buffer before the V2
+	// data starts.
+	int offset = CalculateOffset(n_vis);
+
     int err = 0;
-    size_t global = (size_t) n_v2_points;
+    size_t global = (size_t) n_v2;
     size_t local;
 
     // Get the maximum work-group size for executing the kernel on the device
@@ -68,8 +78,11 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
     COpenCL::CheckOCLError("Failed to determine maximum group size for ft_to_vis2 kernel.", err);
 
     // Set the kernel arguments
-    err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_loc);
-    err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &output);
+    err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);
+    err  = clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &uv_ref);
+    err  = clSetKernelArg(mKernels[0], 2, sizeof(unsigned int), &offset);
+    err  = clSetKernelArg(mKernels[0], 3, sizeof(unsigned int), &n_v2);
+    err |= clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), &output);
     COpenCL::CheckOCLError("Failed to set ft_to_vis2 kernel arguments.", err);
 
     // Execute the kernel over the entire range of the data set
@@ -82,28 +95,37 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output)
 }
 
 /// Computes the V2 using the input data on the CPU, compares the values and writes out to the console.
-void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_float * cpu_output)
+void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem uv_ref, cl_float * cpu_output, int n_vis, int n_v2, int n_uv)
 {
-	if(n_v2_points == 0)
+	if(n_v2 == 0)
 		return;
 
 	int err = CL_SUCCESS;
-	cl_float2 cpu_dft[n_v2_points];
-	err |= clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_v2_points * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
+	cl_float2 cpu_ft[n_uv];
+	cl_uint cpu_uv_ref[n_v2];
+
+	err  = clEnqueueReadBuffer(mQueue, ft_input, CL_TRUE, 0, n_uv * sizeof(cl_float2), cpu_ft, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, uv_ref, CL_TRUE, 0, sizeof(cl_uint) * n_v2, cpu_uv_ref, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to copy values back to the CPU, Routine_FTtoV2::FTtoV2_CPU().", err);
 
-	for(int i = 0; i < n_v2_points; i++)
-		cpu_output[i] = cpu_dft[i].s0 * cpu_dft[i].s0 + cpu_dft[i].s1 * cpu_dft[i].s1;
+    unsigned int uv_index = 0;
+	for(int i = 0; i < n_v2; i++)
+	{
+		uv_index = cpu_uv_ref[i];
+		cpu_output[i] = cpu_ft[uv_index].s0 * cpu_ft[uv_index].s0 + cpu_ft[uv_index].s1 * cpu_ft[uv_index].s1;
+	}
 }
 
-bool CRoutine_FTtoV2::FTtoV2_Test(cl_mem ft_loc, int n_v2_points, cl_mem output)
+bool CRoutine_FTtoV2::FTtoV2_Test(cl_mem ft_input, cl_mem uv_ref, cl_mem output, int n_vis, int n_v2, int n_uv)
 {
-	cl_float cpu_output[n_v2_points];
-	FTtoV2(ft_loc, n_v2_points, output);
-	FTtoV2_CPU(ft_loc, n_v2_points, cpu_output);
+	cl_float cpu_output[n_v2];
+	FTtoV2(ft_input, uv_ref, output, n_vis, n_v2);
+	FTtoV2_CPU(ft_input, uv_ref, cpu_output, n_vis, n_v2, n_uv);
+
+	int offset = CalculateOffset(n_vis);
 
 	printf("Checking FT -> V2 Routine:\n");
-	bool v2_pass = Verify(cpu_output, output, n_v2_points, 0);
+	bool v2_pass = Verify(cpu_output, output, n_v2, sizeof(cl_float) * offset);
 	PassFail(v2_pass);
 	return v2_pass;
 }

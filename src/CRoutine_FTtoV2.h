@@ -40,10 +40,12 @@ public:
 	CRoutine_FTtoV2(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_FTtoV2();
 
+	unsigned int CalculateOffset(unsigned int n_vis);
+
 	void Init();
-	void FTtoV2(cl_mem ft_loc, int n_v2_points, cl_mem output);
-	void FTtoV2_CPU(cl_mem ft_loc, int n_v2_points, cl_float * cpu_output);
-	bool FTtoV2_Test(cl_mem ft_loc, int n_v2_points, cl_mem output);
+	void FTtoV2(cl_mem ft_input, cl_mem uv_ref, cl_mem output, int n_vis, int n_v2);
+	void FTtoV2_CPU(cl_mem ft_input, cl_mem uv_ref, cl_float * cpu_output, int n_vis, int n_v2, int n_uv);
+	bool FTtoV2_Test(cl_mem ft_input, cl_mem uv_ref, cl_mem output, int n_vis, int n_v2, int n_uv);
 };
 
 #endif /* CROUTINE_FTTOV2_H_ */
