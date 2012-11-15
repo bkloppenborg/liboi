@@ -60,7 +60,7 @@ void CRoutine_FTtoV2::Init()
     BuildKernel(source, "ft_to_vis2", mSource[0]);
 }
 
-void CRoutine_FTtoV2::FTtoV2(cl_mem ft_input, cl_mem uv_ref, cl_mem output, int n_vis, int n_v2)
+void CRoutine_FTtoV2::FTtoV2(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, int n_vis, int n_v2)
 {
 	if(n_v2 == 0)
 		return;
@@ -79,7 +79,7 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_input, cl_mem uv_ref, cl_mem output, int 
 
     // Set the kernel arguments
     err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);
-    err  = clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &uv_ref);
+    err  = clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &v2_uv_ref);
     err  = clSetKernelArg(mKernels[0], 2, sizeof(unsigned int), &offset);
     err  = clSetKernelArg(mKernels[0], 3, sizeof(unsigned int), &n_v2);
     err |= clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), &output);
@@ -95,7 +95,7 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_input, cl_mem uv_ref, cl_mem output, int 
 }
 
 /// Computes the V2 using the input data on the CPU, compares the values and writes out to the console.
-void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem uv_ref, cl_float * cpu_output, int n_vis, int n_v2, int n_uv)
+void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem v2_uv_ref, cl_float * cpu_output, int n_vis, int n_v2, int n_uv)
 {
 	if(n_v2 == 0)
 		return;
@@ -105,7 +105,7 @@ void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem uv_ref, cl_float * cpu_
 	cl_uint cpu_uv_ref[n_v2];
 
 	err  = clEnqueueReadBuffer(mQueue, ft_input, CL_TRUE, 0, n_uv * sizeof(cl_float2), cpu_ft, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, uv_ref, CL_TRUE, 0, sizeof(cl_uint) * n_v2, cpu_uv_ref, 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, v2_uv_ref, CL_TRUE, 0, sizeof(cl_uint) * n_v2, cpu_uv_ref, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to copy values back to the CPU, Routine_FTtoV2::FTtoV2_CPU().", err);
 
     unsigned int uv_index = 0;
@@ -116,11 +116,11 @@ void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem uv_ref, cl_float * cpu_
 	}
 }
 
-bool CRoutine_FTtoV2::FTtoV2_Test(cl_mem ft_input, cl_mem uv_ref, cl_mem output, int n_vis, int n_v2, int n_uv)
+bool CRoutine_FTtoV2::FTtoV2_Test(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, int n_vis, int n_v2, int n_uv)
 {
 	cl_float cpu_output[n_v2];
-	FTtoV2(ft_input, uv_ref, output, n_vis, n_v2);
-	FTtoV2_CPU(ft_input, uv_ref, cpu_output, n_vis, n_v2, n_uv);
+	FTtoV2(ft_input, v2_uv_ref, output, n_vis, n_v2);
+	FTtoV2_CPU(ft_input, v2_uv_ref, cpu_output, n_vis, n_v2, n_uv);
 
 	int offset = CalculateOffset(n_vis);
 
