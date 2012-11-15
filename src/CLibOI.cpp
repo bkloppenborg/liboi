@@ -216,7 +216,7 @@ void CLibOI::FTToData(COILibDataPtr data)
 	mrV2->FTtoV2(mFTBuffer, data->GetLoc_V2_UVRef(), mSimDataBuffer, n_vis, n_v2);
 
 	mrT3->FTtoT3(mFTBuffer, data->GetLoc_T3_UVRef(),
-			data->GetLoc_T3_sign(), n_t3, n_v2, mSimDataBuffer);
+			data->GetLoc_T3_sign(), mSimDataBuffer, n_vis, n_v2, n_t3);
 }
 
 /// Returns the number of T3 data points in the specified data set.  If the data set does not exist, returns 0.
@@ -599,8 +599,8 @@ void CLibOI::RunVerification(int data_num)
 
 	mrV2->FTtoV2_Test(mFTBuffer, data->GetLoc_V2_UVRef(), mSimDataBuffer, n_vis, n_v2, n_uv);
 
-	mrT3->FTtoT3_Test(mFTBuffer, n_uv, data->GetLoc_T3_UVRef(),
-			data->GetLoc_T3_sign(), n_t3, n_v2, mSimDataBuffer);
+	mrT3->FTtoT3_Test(mFTBuffer, data->GetLoc_T3_UVRef(),
+			data->GetLoc_T3_sign(), mSimDataBuffer, n_vis, n_v2, n_t3, n_uv);
 
 	// Now run the chi, chi2, and loglike kernels:
 	int n = data->GetNumData();

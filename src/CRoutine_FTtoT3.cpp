@@ -48,6 +48,12 @@ CRoutine_FTtoT3::~CRoutine_FTtoT3()
 	// TODO Auto-generated destructor stub
 }
 
+/// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
+unsigned int CRoutine_FTtoT3::CalculateOffset(unsigned int n_vis, unsigned int n_v2)
+{
+	return 2*n_vis + n_v2;
+}
+
 void CRoutine_FTtoT3::Init(void)
 {
 	// Read the kernel, compile it
@@ -55,7 +61,7 @@ void CRoutine_FTtoT3::Init(void)
     BuildKernel(source, "ft_to_t3", mSource[0]);
 }
 
-void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output)
+void CRoutine_FTtoT3::FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3)
 {
 	if(n_t3 == 0)
 		return;
@@ -68,11 +74,13 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_bsref, cl_mem data_sign,
 	err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
 	COpenCL::CheckOCLError("Failed to determine local size for ft_to_t3 kernel.", err);
 
+	unsigned int offset = CalculateOffset(n_vis, n_v2);
+
 	// Set kernel arguments:
-	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_loc);
-	err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &data_bsref);
-	err |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &data_sign);
-	err |= clSetKernelArg(mKernels[0], 3, sizeof(int), &n_v2);
+	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);
+	err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &t3_uv_ref);
+	err |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &t3_uv_sign);
+	err |= clSetKernelArg(mKernels[0], 3, sizeof(unsigned int), &offset);
 	err |= clSetKernelArg(mKernels[0], 4, sizeof(int), &n_t3);
 	err |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);      // Output is stored on the GPU.
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
@@ -89,20 +97,20 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_loc, cl_mem data_bsref, cl_mem data_sign,
 
 }
 
-void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, int n_uv, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, complex<float> * cpu_output)
+void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, valarray<complex<float>> & cpu_output, int n_vis, int n_v2, int n_t3, int n_uv)
 {
 	if(n_t3 == 0)
 		return;
 
 	int err = CL_SUCCESS;
 	// Pull all of the data from the OpenCL device:
-	cl_float2 cpu_dft[n_uv];
-	cl_long4 cpu_bsref[n_t3];
-	cl_short4 cpu_sign[n_t3];
+	valarray<cl_float2> cpu_dft(n_uv);
+	valarray<cl_long4> cpu_uv_ref(n_t3);
+	valarray<cl_short4> cpu_uv_sign(n_t3);
 
-	err  = clEnqueueReadBuffer(mQueue, ft_loc, CL_TRUE, 0, n_uv * sizeof(cl_float2), cpu_dft, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, data_bsref, CL_TRUE, 0, n_t3 * sizeof(cl_long4), cpu_bsref, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, data_sign, CL_TRUE, 0, n_t3 * sizeof(cl_short4), cpu_sign, 0, NULL, NULL);
+	err  = clEnqueueReadBuffer(mQueue, ft_input, CL_TRUE, 0, n_uv * sizeof(cl_float2), &cpu_dft[0], 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, t3_uv_ref, CL_TRUE, 0, n_t3 * sizeof(cl_long4), &cpu_uv_ref[0], 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, t3_uv_sign, CL_TRUE, 0, n_t3 * sizeof(cl_short4), &cpu_uv_sign[0], 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy values back to CPU CRoutine_FTtoT3::FTtoT3_CPU().", err);
 
 
@@ -114,8 +122,8 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, int n_uv, cl_mem data_bsref, cl_
 	cl_short4 sign;
 	for(int i = 0; i < n_t3; i++)
 	{
-		uvpoint = cpu_bsref[i];
-	    sign = cpu_sign[i];
+		uvpoint = cpu_uv_ref[i];
+	    sign = cpu_uv_sign[i];
 		// Look up the visibility values, conjugating as necessary:
 		V_ab = complex<float>(cpu_dft[uvpoint.s0].s0, cpu_dft[uvpoint.s0].s1 * sign.s0);
 		V_bc = complex<float>(cpu_dft[uvpoint.s1].s0, cpu_dft[uvpoint.s1].s1 * sign.s1);
@@ -125,17 +133,17 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_loc, int n_uv, cl_mem data_bsref, cl_
 	}
 }
 
-bool CRoutine_FTtoT3::FTtoT3_Test(cl_mem ft_loc, int n_uv, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, cl_mem output)
+bool CRoutine_FTtoT3::FTtoT3_Test(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3, int n_uv)
 {
-	complex<float> * cpu_output = new complex<float>[n_t3];
-	FTtoT3(ft_loc, data_bsref, data_sign, n_t3, n_v2, output);
-	FTtoT3_CPU(ft_loc, n_uv, data_bsref, data_sign, n_t3, n_v2, cpu_output);
+	valarray<complex<float>> cpu_output(n_t3);
+	FTtoT3(ft_input, t3_uv_ref, t3_uv_sign, output, n_vis, n_v2, n_t3);
+	FTtoT3_CPU(ft_input, t3_uv_ref, t3_uv_sign, cpu_output, n_vis, n_v2, n_t3, n_uv);
+
+	unsigned int offset = CalculateOffset(n_vis, n_v2);
 
 	printf("Checking FT -> T3 Routine:\n");
-	bool t3_pass = Verify(cpu_output, output, n_t3, n_v2 * sizeof(cl_float));
+	bool t3_pass = Verify(cpu_output, output, n_t3, sizeof(cl_float) * offset);
 	PassFail(t3_pass);
-
-	delete[] cpu_output;
 
 	return t3_pass;
 }

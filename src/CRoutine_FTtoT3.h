@@ -34,16 +34,20 @@
 
 #include "CRoutine.h"
 
+using namespace std;
+
 class CRoutine_FTtoT3: public CRoutine
 {
 public:
 	CRoutine_FTtoT3(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_FTtoT3();
 
+	unsigned int CalculateOffset(unsigned int n_vis, unsigned int n_v2);
+
 	void Init(void);
-	void FTtoT3(cl_mem ft_loc, cl_mem uv_points, cl_mem data_sign, int n_t3, int n_v2, cl_mem output);
-	void FTtoT3_CPU(cl_mem ft_loc, int n_uv, cl_mem data_bsref, cl_mem data_sign, int n_t3, int n_v2, complex<float> * cpu_output);
-	bool FTtoT3_Test(cl_mem ft_loc, int n_uv, cl_mem uv_points, cl_mem data_sign, int n_t3, int n_v2, cl_mem output);
+	void FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3);
+	void FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, valarray<complex<float>> & cpu_output, int n_vis, int n_v2, int n_t3, int n_uv);
+	bool FTtoT3_Test(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3, int n_uv);
 };
 
 #endif /* CROUTINE_FTTOT3_H_ */

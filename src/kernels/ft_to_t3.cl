@@ -35,7 +35,7 @@
  
 // Function prototypes:
 float2 MultComplex2(float2 A, float2 B);
-float2 MultComplex3(float2 A, float2 B);
+float2 MultComplex3(float2 A, float2 B, float2 C);
 
 // Multiply two complex numbers
 float2 MultComplex2(float2 A, float2 B)
@@ -66,22 +66,22 @@ float2 MultComplex3(float2 A, float2 B, float2 C)
 
 // The actual kernel function.
 __kernel void ft_to_t3(
-    __global float2 * FT_output,
-    __global long4 * data_bsref,
-    __global short4 * data_sign,
-    __private int n_v2,
+    __global float2 * ft_input,
+    __global uint4 * uv_ref,
+    __global short4 * uv_sign,
+    __private int offset,
     __private int n_t3,
-    __global float * T3_output)
+    __global float * output)
 {   
     int i = get_global_id(0);
     
     // Pull some data from global memory:
-    long4 uvpnt = data_bsref[i];
-    float2 vab = FT_output[uvpnt.s0];
-    float2 vbc = FT_output[uvpnt.s1];
-    float2 vca = FT_output[uvpnt.s2];
+    uint4 uvpnt = uv_ref[i];
+    float2 vab = ft_input[uvpnt.s0];
+    float2 vbc = ft_input[uvpnt.s1];
+    float2 vca = ft_input[uvpnt.s2];
     
-    short4 sign = data_sign[i];
+    short4 sign = uv_sign[i];
     vab.s1 *= sign.s0;
     vbc.s1 *= sign.s1;
     vca.s1 *= sign.s2;
@@ -90,7 +90,7 @@ __kernel void ft_to_t3(
     
     if(i < n_t3)
     {
-        output[n_v2 + i] = temp.s0;
-        output[n_v2 + n_t3 + i = temp.s1;
+        output[offset + i] = temp.s0;
+        output[offset + n_t3 + i] = temp.s1;
     }
 }
