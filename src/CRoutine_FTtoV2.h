@@ -44,7 +44,7 @@ public:
 
 	void Init();
 	void FTtoV2(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, unsigned int n_vis, unsigned int n_v2);
-	void FTtoV2_CPU(cl_mem ft_input, cl_mem v2_uv_ref, cl_float * cpu_output, unsigned int n_vis, unsigned int n_v2, unsigned int n_uv);
+	void FTtoV2_CPU(cl_mem ft_input, cl_mem v2_uv_ref, valarray<cl_float> & cpu_output, unsigned int n_vis, unsigned int n_v2, unsigned int n_uv);
 	bool FTtoV2_Test(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, unsigned int n_vis, unsigned int n_v2, unsigned int n_uv);
 };
 

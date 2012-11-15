@@ -95,7 +95,7 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 
 /// Computes the DFT on the CPU, then compares CPU and OpenCL output.
 /// Note: This routine copies data back from the OpenCL device and should only be used for debugging purposes.
-void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, complex<float> * visi)
+void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, valarray<complex<float>> & cpu_output)
 {
     int err = 0;
 	double RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per milliarcsecond
@@ -134,12 +134,12 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 	// Now generate the FT values.
 	for(uu=0; uu < n_uv_points; uu++)
 	{
-		visi[uu] = complex<float>(0.0, 0.0);
+		cpu_output[uu] = complex<float>(0.0, 0.0);
 		for(ii=0; ii < image_width; ii++)
 		{
 			for(jj=0; jj < image_width; jj++)
 			{
-				visi[uu] += cpu_image[ ii + image_width * jj ] * DFT_tablex[ image_width * uu + ii]
+				cpu_output[uu] += cpu_image[ ii + image_width * jj ] * DFT_tablex[ image_width * uu + ii]
 															   * DFT_tabley[ image_width * uu + jj];
 			}
 		}
@@ -152,15 +152,13 @@ void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points, cl_mem image, int i
 bool CRoutine_DFT::FT_Test(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output)
 {
 	// Run the OpenCL DFT routine:
-	complex<float> * cpu_output = new complex<float>[n_uv_points];
+	valarray<complex<float>> cpu_output(n_uv_points);
 	FT(uv_points, n_uv_points, image, image_width, image_height, image_flux, output);
 	FT_CPU(uv_points, n_uv_points, image, image_width, image_height, image_flux, cpu_output);
 
 	printf("Checking FT (DFT) Routine:\n");
 	bool norm_pass = Verify(cpu_output, output, n_uv_points, 0);
 	PassFail(norm_pass);
-
-	delete[] cpu_output;
 
 	return norm_pass;
 }

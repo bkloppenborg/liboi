@@ -95,7 +95,7 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, u
 }
 
 /// Computes the V2 using the input data on the CPU, compares the values and writes out to the console.
-void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem v2_uv_ref, cl_float * cpu_output, unsigned int n_vis, unsigned int n_v2, unsigned int n_uv)
+void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem v2_uv_ref, valarray<cl_float> & cpu_output, unsigned int n_vis, unsigned int n_v2, unsigned int n_uv)
 {
 	if(n_v2 == 0)
 		return;
@@ -118,7 +118,7 @@ void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem v2_uv_ref, cl_float * c
 
 bool CRoutine_FTtoV2::FTtoV2_Test(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, unsigned int n_vis, unsigned int n_v2, unsigned int n_uv)
 {
-	cl_float cpu_output[n_v2];
+	valarray<cl_float> cpu_output(n_v2);
 	FTtoV2(ft_input, v2_uv_ref, output, n_vis, n_v2);
 	FTtoV2_CPU(ft_input, v2_uv_ref, cpu_output, n_vis, n_v2, n_uv);
 

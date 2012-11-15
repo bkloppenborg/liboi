@@ -95,7 +95,7 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	return -1*n * log(2 * PI) + sum;
 }
 
-float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output)
+float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, valarray<float> & output)
 {
 	int err = CL_SUCCESS;
 	cl_float cpu_data[n];
@@ -129,7 +129,7 @@ float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_d
 
 bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
 {
-	float cpu_output[n];
+	valarray<float> cpu_output(n);
 	LogLike(data, data_err, model_data, n, false, false);
 	float cpu_sum = LogLike_CPU(data, data_err, model_data, n, cpu_output);
 

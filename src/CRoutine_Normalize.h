@@ -43,7 +43,7 @@ public:
 	void Init();
 
 	void Normalize(cl_mem image, int image_width, int image_height, cl_mem divisor);
-	void Normalize_CPU(cl_mem image, int image_width, int image_height, cl_mem divisor, cl_float * output);
+	void Normalize_CPU(cl_mem image, int image_width, int image_height, cl_mem divisor, valarray<cl_float> & output);
 	bool Normalize_Test(cl_mem image, int image_width, int image_height, cl_mem divisor);
 };
 

@@ -170,7 +170,7 @@ void CRoutine::SetSourcePath(string path_to_kernels)
 }
 
 /// Data verification for OpenCL type cl_float
-bool CRoutine::Verify(cl_float * cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
+bool CRoutine::Verify(valarray<cl_float> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
 {
 	int err = CL_SUCCESS;
 	cl_float tmp[num_elements];
@@ -206,7 +206,7 @@ bool CRoutine::Verify(cl_float * cpu_buffer, cl_mem device_buffer, int num_eleme
 }
 
 /// Data verification for OpenCL type cl_float
-bool CRoutine::Verify(complex<float> * cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
+bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
 {
 	int err = CL_SUCCESS;
 	cl_float2 tmp[num_elements];

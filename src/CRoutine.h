@@ -71,6 +71,8 @@
 #include <sstream>
 #include <iomanip>
 #include <cstdio>
+#include <valarray>
+
 #include "ReadTextFile.h"
 #include "COpenCL.h"
 #include "LibOIEnumerations.h"
@@ -118,8 +120,8 @@ public:
 
 	void SetSourcePath(string path_to_kernels);
 
-	bool Verify(cl_float * cpu_buffer, cl_mem device_buffer, int n_elements, size_t offset);
-	bool Verify(complex<float> * cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset);
+	bool Verify(valarray<cl_float> & cpu_buffer, cl_mem device_buffer, int n_elements, size_t offset);
+	bool Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset);
 };
 
 #endif /* COPENCLROUTINE_H_ */

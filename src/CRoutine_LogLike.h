@@ -52,7 +52,7 @@ public:
 	virtual ~CRoutine_LogLike();
 
 	float LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value);
-	float LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
+	float LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, valarray<float> & output);
 	bool LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 
 	void Init(int num_elements);

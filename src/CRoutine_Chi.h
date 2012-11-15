@@ -45,7 +45,7 @@ class CRoutine_Chi: public CRoutine_Sum
 	cl_mem mChiTemp;
 	cl_mem mChiOutput;
 
-	cl_float * mCPUChiTemp;
+	valarray<cl_float> mCPUChiTemp;
 
 	// External routines, deleted elsewhere.
 	CRoutine_Square * mrSquare;

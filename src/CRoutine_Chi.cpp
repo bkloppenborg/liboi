@@ -51,7 +51,6 @@ CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_q
 	mChiTemp = NULL;
 	mChiOutput = NULL;
 	mChiKernelID = -1;
-	mCPUChiTemp = NULL;
 }
 
 CRoutine_Chi::~CRoutine_Chi()
@@ -60,8 +59,6 @@ CRoutine_Chi::~CRoutine_Chi()
 
 	if(mChiTemp) clReleaseMemObject(mChiTemp);
 	if(mChiOutput) clReleaseMemObject(mChiOutput);
-
-	delete[] mCPUChiTemp;
 }
 
 /// Computes chi = (data - model)/(data_err) and stores it in the internal mChiTemp buffer.
@@ -217,7 +214,7 @@ void CRoutine_Chi::GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n
 
 	// Copy data to the CPU.  Note, we use an intermediate array in case cl_float != float
 	int err = 0;
-	err = clEnqueueReadBuffer(mQueue, mChiTemp, CL_TRUE, 0, n * sizeof(cl_float), mCPUChiTemp, 0, NULL, NULL);
+	err = clEnqueueReadBuffer(mQueue, mChiTemp, CL_TRUE, 0, n * sizeof(cl_float), &mCPUChiTemp[0], 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy buffer back to CPU.  CRoutine_Chi::GetChi().", err);
 
 	for(int i = 0; i < n; i++)
@@ -234,7 +231,7 @@ void CRoutine_Chi::GetChi2(cl_mem data, cl_mem data_err, cl_mem model_data, int 
 
 	// Copy data to the CPU.  Note, we use an intermediate array in case cl_float != float
 	int err = 0;
-	err = clEnqueueReadBuffer(mQueue, mChiTemp, CL_TRUE, 0, n * sizeof(cl_float), mCPUChiTemp, 0, NULL, NULL);
+	err = clEnqueueReadBuffer(mQueue, mChiTemp, CL_TRUE, 0, n * sizeof(cl_float), &mCPUChiTemp[0], 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy buffer back to CPU.  CRoutine_Chi::GetChi().", err);
 
 	for(int i = 0; i < n; i++)
@@ -257,8 +254,7 @@ void CRoutine_Chi::Init(int n)
 	if(mChiOutput == NULL)
 		mChiOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
 
-	if(mCPUChiTemp == NULL)
-		mCPUChiTemp = new cl_float[n];
+	mCPUChiTemp.resize(n);
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[mChiSourceID]);
