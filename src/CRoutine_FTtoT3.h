@@ -46,7 +46,7 @@ public:
 
 	void Init(void);
 	void FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3);
-	void FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, valarray<complex<float>> & cpu_output, int n_vis, int n_v2, int n_t3, int n_uv);
+	void FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, valarray<cl_float> & cpu_output, int n_vis, int n_v2, int n_t3, int n_uv);
 	bool FTtoT3_Test(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3, int n_uv);
 };
 

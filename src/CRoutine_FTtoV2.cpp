@@ -104,7 +104,7 @@ void CRoutine_FTtoV2::FTtoV2_CPU(cl_mem ft_input, cl_mem v2_uv_ref, valarray<cl_
 	cl_float2 cpu_ft[n_uv];
 	cl_uint cpu_uv_ref[n_v2];
 
-	err  = clEnqueueReadBuffer(mQueue, ft_input, CL_TRUE, 0, n_uv * sizeof(cl_float2), cpu_ft, 0, NULL, NULL);
+	err  = clEnqueueReadBuffer(mQueue, ft_input, CL_TRUE, 0, sizeof(cl_float2) * n_uv, cpu_ft, 0, NULL, NULL);
 	err |= clEnqueueReadBuffer(mQueue, v2_uv_ref, CL_TRUE, 0, sizeof(cl_uint) * n_v2, cpu_uv_ref, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to copy values back to the CPU, Routine_FTtoV2::FTtoV2_CPU().", err);
 

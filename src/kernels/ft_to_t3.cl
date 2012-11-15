@@ -41,20 +41,10 @@ float2 MultComplex3(float2 A, float2 B, float2 C);
 float2 MultComplex2(float2 A, float2 B)
 {
     // There is the obvious way to do this:
-/*    float2 temp;*/
-/*    temp.s0 = A.s0*B.s0 - A.s1*B.s1;*/
-/*    temp.s1 = A.s0*B.s1 + A.s1*B.s0;  */
-/*    */
-/*    return temp;*/
-    
-    // We can trade off one multiplication for three additional additions
-    float k1 = A.s0 * B.s0;
-    float k2 = A.s1 * B.s1;
-    float k3 = (A.s0 + A.s1) * (B.s0 + B.s1);
-    
     float2 temp;
-    temp.s0 = k1 - k2;
-    temp.s1 = k3 - k1 - k2;
+    temp.s0 = A.s0*B.s0 - A.s1*B.s1;
+    temp.s1 = A.s0*B.s1 + A.s1*B.s0;
+
     return temp;
 }
 

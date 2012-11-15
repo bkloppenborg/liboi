@@ -88,16 +88,9 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sig
 	// Execute the kernel over the entire range of the data set
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
-
-//#ifdef DEBUG_VERBOSE
-//	clFinish(mQueue);
-//	FTtoT3_CPU(ft_loc, data_phasor, data_bsref, data_sign, n_t3, n_v2, output);
-//
-//#endif //DEBUG_VERBOSE
-
 }
 
-void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, valarray<complex<float>> & cpu_output, int n_vis, int n_v2, int n_t3, int n_uv)
+void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, valarray<cl_float> & cpu_output, int n_vis, int n_v2, int n_t3, int n_uv)
 {
 	if(n_t3 == 0)
 		return;
@@ -105,11 +98,11 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv
 	int err = CL_SUCCESS;
 	// Pull all of the data from the OpenCL device:
 	valarray<cl_float2> cpu_dft(n_uv);
-	valarray<cl_long4> cpu_uv_ref(n_t3);
+	valarray<cl_uint4> cpu_uv_ref(n_t3);
 	valarray<cl_short4> cpu_uv_sign(n_t3);
 
 	err  = clEnqueueReadBuffer(mQueue, ft_input, CL_TRUE, 0, n_uv * sizeof(cl_float2), &cpu_dft[0], 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, t3_uv_ref, CL_TRUE, 0, n_t3 * sizeof(cl_long4), &cpu_uv_ref[0], 0, NULL, NULL);
+	err |= clEnqueueReadBuffer(mQueue, t3_uv_ref, CL_TRUE, 0, n_t3 * sizeof(cl_uint4), &cpu_uv_ref[0], 0, NULL, NULL);
 	err |= clEnqueueReadBuffer(mQueue, t3_uv_sign, CL_TRUE, 0, n_t3 * sizeof(cl_short4), &cpu_uv_sign[0], 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to copy values back to CPU CRoutine_FTtoT3::FTtoT3_CPU().", err);
 
@@ -118,7 +111,8 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv
 	complex<float> V_ab;
 	complex<float> V_bc;
 	complex<float> V_ca;
-	cl_long4 uvpoint;
+	complex<float> T3;
+	cl_uint4 uvpoint;
 	cl_short4 sign;
 	for(int i = 0; i < n_t3; i++)
 	{
@@ -129,13 +123,15 @@ void CRoutine_FTtoT3::FTtoT3_CPU(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv
 		V_bc = complex<float>(cpu_dft[uvpoint.s1].s0, cpu_dft[uvpoint.s1].s1 * sign.s1);
 		V_ca = complex<float>(cpu_dft[uvpoint.s2].s0, cpu_dft[uvpoint.s2].s1 * sign.s2);
 
-		cpu_output[i] = V_ab * V_bc * V_ca;
+		T3 = V_ab * V_bc * V_ca;
+		cpu_output[i] = real(T3);
+		cpu_output[n_t3 + i] = imag(T3);
 	}
 }
 
 bool CRoutine_FTtoT3::FTtoT3_Test(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3, int n_uv)
 {
-	valarray<complex<float>> cpu_output(n_t3);
+	valarray<cl_float> cpu_output(2*n_t3);
 	FTtoT3(ft_input, t3_uv_ref, t3_uv_sign, output, n_vis, n_v2, n_t3);
 	FTtoT3_CPU(ft_input, t3_uv_ref, t3_uv_sign, cpu_output, n_vis, n_v2, n_t3, n_uv);
 

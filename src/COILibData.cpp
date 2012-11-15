@@ -229,7 +229,7 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3[0], 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3_err[0], 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue, mData_T3_uv_ref, CL_FALSE, 0, sizeof(cl_uint4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_T3_sign, CL_FALSE, 0, sizeof(cl_short4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue, mData_T3_sign, CL_FALSE, 0, sizeof(cl_short4) * mNT3, &t_t3_sign[0], 0, NULL, NULL);
 		COpenCL::CheckOCLError("Could not copy OI_T3 data to OpenCL device. COILibData::InitData", err);
 	}
 

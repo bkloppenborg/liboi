@@ -34,7 +34,10 @@
  */
 
 #include <cstdio>
+#include <iostream>
 #include "CRoutine.h"
+
+using namespace std;
 
 
 CRoutine::CRoutine(cl_device_id device, cl_context context, cl_command_queue queue)
@@ -173,9 +176,9 @@ void CRoutine::SetSourcePath(string path_to_kernels)
 bool CRoutine::Verify(valarray<cl_float> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
 {
 	int err = CL_SUCCESS;
-	cl_float tmp[num_elements];
+	valarray<cl_float> tmp(num_elements);
 
-	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, 0, num_elements * sizeof(cl_float), &tmp, offset, NULL, NULL);
+	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float), &tmp[0], 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy back cl_float values for verification!", err);
 
 	double error = 0;
@@ -195,7 +198,8 @@ bool CRoutine::Verify(valarray<cl_float> & cpu_buffer, cl_mem device_buffer, int
 
 	if(error != error || (error/cpu_sum > MAX_REL_ERROR))
 	{
-		printf("  Error too great/NAN, dumping buffers.\n");
+		cout << "  Error too great/NAN, dumping buffers." << endl;
+		cout << "  Format: cpu_buffer, cl_buffer, difference." << endl;
 		for(int i = 0; i < num_elements; i++)
 			printf("    %i %0.4f %0.4f %0.6f\n", i, cpu_buffer[i], tmp[i], cpu_buffer[i] - tmp[i]);
 
@@ -209,9 +213,9 @@ bool CRoutine::Verify(valarray<cl_float> & cpu_buffer, cl_mem device_buffer, int
 bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
 {
 	int err = CL_SUCCESS;
-	cl_float2 tmp[num_elements];
+	valarray<cl_float2> tmp(num_elements);
 
-	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float2), &tmp, 0, NULL, NULL);
+	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float2), &tmp[0], 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy back cl_float2 values for verification!", err);
 
 	double error = 0;
@@ -230,7 +234,8 @@ bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffe
 		complex<float> diff;
 		double tmp_real = 0;
 		double tmp_imag = 0;
-		printf("  Error too great/NAN, dumping buffers.\n");
+		cout << "  Error too great/NAN, dumping buffers." << endl;
+		cout << "  Format: cpu_buffer, cl_buffer, difference." << endl;
 		for(int i = 0; i < num_elements; i++)
 		{
 			tmp_real = cpu_buffer[i].real() - tmp[i].s0;

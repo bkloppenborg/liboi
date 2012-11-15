@@ -34,6 +34,7 @@
 
 #include <cstdio>
 #include <vector>
+#include <iostream>
 #include "COpenCL.h"
 
 using namespace std;
@@ -254,14 +255,14 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 	// If OpenCL - OpenGL interop was not detected, enable a plain OpenCL-only context:
 	if(!mCLGLInteropEnabled)
 	{
-		printf("OpenCL-OpenGL interoperability NOT detected and NOT ENABLED.");
+		cout << "OpenCL-OpenGL interoperability NOT detected and NOT ENABLED." << endl;
 		// enable a plain OpenCL-only context.
 		properties[0] = CL_CONTEXT_PLATFORM;
 		properties[1] = (cl_context_properties) platform;
 		properties[2] = 0;
 	}
 	else
-		printf("OpenCL-OpenGL interoperability DETECTED and ENABLED.");
+		cout << "OpenCL-OpenGL interoperability DETECTED and ENABLED." << endl;
 
 	// Creates a context with the above properties.
     this->mContext = clCreateContextFromType(properties, type, NULL, NULL, &err);
