@@ -1,6 +1,3 @@
-[submodule "textio"]
-	path = textio
-	url = git://github.com/bkloppenborg/textio.git
 [submodule "lib/textio"]
 	path = lib/textio
 	url = git://github.com/bkloppenborg/textio.git

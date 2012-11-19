@@ -73,7 +73,7 @@
 #include <cstdio>
 #include <valarray>
 
-#include "ReadTextFile.h"
+#include "textio.h"
 #include "COpenCL.h"
 #include "LibOIEnumerations.h"
 
