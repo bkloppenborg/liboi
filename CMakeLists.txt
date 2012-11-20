@@ -14,12 +14,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # We need to compile the following libraries
 if(NOT TARGET textio)
     add_subdirectory(${CMAKE_SOURCE_DIR}/lib/textio EXCLUDE_FROM_ALL)
-    include_directories({CMAKE_SOURCE_DIR}/lib/textio/src)
+    include_directories(${CMAKE_SOURCE_DIR}/lib/textio/src)
 endif(NOT TARGET textio)
 
 if(NOT TARGET ccoifits)
     add_subdirectory(${CMAKE_SOURCE_DIR}/lib/ccoifits EXCLUDE_FROM_ALL)
     include_directories(${CMAKE_SOURCE_DIR}/lib/ccoifits/src)
+    include_directories(${CCOIFITS_INCLUDE_DIRS})
 endif(NOT TARGET ccoifits)
 
 add_subdirectory(src)

@@ -34,15 +34,19 @@ set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTER
 file(GLOB SOURCE *.cpp)
 list(REMOVE_ITEM SOURCE main.cpp)
 
-add_library(oi SHARED ${SOURCE})
+add_library(oi SHARED EXCLUDE_FROM_ALL ${SOURCE})
 target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
 
 add_library(oi_static STATIC ${SOURCE})
 target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
 
 add_executable(liboi_tests main.cpp)
-target_link_libraries(liboi_tests oi)
+target_link_libraries(liboi_tests oi_static)
 
-install(TARGETS oi DESTINATION lib)
+# Installation specifics:
+#if(TARGET oi)
+#    install(TARGETS oi DESTINATION lib)
+#endif(TARGET oi)
+
 install(TARGETS oi_static DESTINATION lib)
 install(FILES liboi.hpp DESTINATION include)
