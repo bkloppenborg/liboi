@@ -29,6 +29,8 @@ find_package(OpenGL REQUIRED)
 find_package(OpenCL REQUIRED)
 include_directories(${OPENCL_INCLUDE_DIRS})
 
+set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTERNAL "")
+
 file(GLOB SOURCE *.cpp)
 list(REMOVE_ITEM SOURCE main.cpp)
 

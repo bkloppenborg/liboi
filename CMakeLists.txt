@@ -8,18 +8,22 @@ ADD_DEFINITIONS("-std=c++0x -pthread -U__STRICT_ANSI__")
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
-include_directories(${CMAKE_SOURCE_DIR}/include)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # We need to compile the following libraries
-add_subdirectory(${PROJECT_SOURCE_DIR}/lib/textio EXCLUDE_FROM_ALL)
-include_directories(${PROJECT_SOURCE_DIR}/lib/textio/src)
+if(NOT TARGET textio)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/lib/textio EXCLUDE_FROM_ALL)
+    include_directories({CMAKE_SOURCE_DIR}/lib/textio/src)
+endif(NOT TARGET textio)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/lib/ccoifits EXCLUDE_FROM_ALL)
-include_directories(${PROJECT_SOURCE_DIR}/lib/ccoifits/src)
-include_directories(${CCOIFITS_INCLUDE_DIRS})
+if(NOT TARGET ccoifits)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/lib/ccoifits EXCLUDE_FROM_ALL)
+    include_directories(${CMAKE_SOURCE_DIR}/lib/ccoifits/src)
+endif(NOT TARGET ccoifits)
 
 add_subdirectory(src)
 
 # Copy over kernel and shader sources:
-file(GLOB KERNELS ${CMAKE_SOURCE_DIR}/src/kernels/*.cl)
+file(GLOB KERNELS ${CMAKE_CURRENT_SOURCE_DIR}/src/kernels/*.cl)
 file(COPY ${KERNELS} DESTINATION ${EXECUTABLE_OUTPUT_PATH}/kernels/)
