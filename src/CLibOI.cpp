@@ -251,7 +251,7 @@ int CLibOI::GetNDataSets()
 int CLibOI::GetNT3(int data_num)
 {
 	if(data_num < mDataList->size())
-		return mDataList[data_num]->GetNumT3();
+		return mDataList->at(data_num)->GetNumT3();
 
 	return 0;
 }
@@ -260,7 +260,7 @@ int CLibOI::GetNT3(int data_num)
 int CLibOI::GetNV2(int data_num)
 {
 	if(data_num < mDataList->size())
-		return mDataList[data_num]->GetNumV2();
+		return mDataList->at(data_num)->GetNumV2();
 
 	return 0;
 }
@@ -348,10 +348,10 @@ void CLibOI::ImageToChi(COILibDataPtr data, float * output, int & n)
 /// Returns false if the data number does not exist, true otherwise.
 bool CLibOI::ImageToChi(int data_num, float * output, int & n)
 {
-	if(data_num > mDataList.size() - 1)
+	if(data_num > mDataList->size() - 1)
 		return false;
 
-	COILibDataPtr data = mDataList[data_num];
+	COILibDataPtr data = mDataList->at(data_num);
 	ImageToChi(data, output, n);
 	return true;
 }
@@ -370,10 +370,10 @@ float CLibOI::ImageToChi2(COILibDataPtr data)
 /// Same as ImageToChi2 above
 float CLibOI::ImageToChi2(int data_num)
 {
-	if(data_num > mDataList.size() - 1)
+	if(data_num > mDataList->size() - 1)
 		return -1;
 
-	COILibDataPtr data = mDataList[data_num];
+	COILibDataPtr data = mDataList->at(data_num);
 	return ImageToChi2(data);
 }
 
@@ -394,10 +394,10 @@ void CLibOI::ImageToChi2(COILibDataPtr data, float * output, int & n)
 /// Returns false if the data number does not exist, true otherwise.
 bool CLibOI::ImageToChi2(int data_num, float * output, int & n)
 {
-	if(data_num > mDataList.size() - 1)
+	if(data_num > mDataList->size() - 1)
 		return false;
 
-	COILibDataPtr data = mDataList[data_num];
+	COILibDataPtr data = mDataList->at(data_num);
 	ImageToChi2(data, output, n);
 	return true;
 }
@@ -406,10 +406,10 @@ bool CLibOI::ImageToChi2(int data_num, float * output, int & n)
 /// compute simulated data.
 void CLibOI::ImageToData(int data_num)
 {
-	if(data_num > mDataList.size() - 1)
+	if(data_num > mDataList->size() - 1)
 		return;
 
-	COILibDataPtr data = mDataList[data_num];
+	COILibDataPtr data = mDataList->at(data_num);
 	ImageToData(data);
 }
 
@@ -431,10 +431,10 @@ float CLibOI::ImageToLogLike(COILibDataPtr data)
 }
 float CLibOI::ImageToLogLike(int data_num)
 {
-	if(data_num > mDataList.size() - 1)
+	if(data_num > mDataList->size() - 1)
 		return -1;
 
-	COILibDataPtr data = mDataList[data_num];
+	COILibDataPtr data = mDataList->at(data_num);
 	return ImageToLogLike(data);
 }
 
@@ -457,8 +457,8 @@ void CLibOI::InitMemory()
 	}
 
 	// Determine the maximum data size, cache it locally.
-	mMaxData = mDataList.MaxNumData();
-	mMaxUV = mDataList.MaxUVPoints();
+	mMaxData = mDataList->MaxNumData();
+	mMaxUV = mDataList->MaxUVPoints();
 
 	// Allocate some memory on the OpenCL device
 	if(mFluxBuffer == NULL)
@@ -561,7 +561,7 @@ void CLibOI::LoadData(string filename)
 {
 	if(!mDataRoutinesInitialized)
 	{
-		mDataList.ReadFile(filename, mOCL->GetContext(), mOCL->GetQueue());
+		mDataList->ReadFile(filename, mOCL->GetContext(), mOCL->GetQueue());
 	}
 }
 
@@ -603,18 +603,18 @@ float CLibOI::TotalFlux(bool return_value)
 /// Removes the specified data set from memory.
 void CLibOI::RemoveData(int data_num)
 {
-	mDataList.RemoveData(data_num);
+	mDataList->RemoveData(data_num);
 }
 
 /// Runs the verification functions of each kernel.  Assumes all initialization has been complete
 /// and at least one data set has been loaded.
 void CLibOI::RunVerification(int data_num)
 {
-	if(data_num > mDataList.size() - 1)
+	if(data_num > mDataList->size() - 1)
 		return;
 
 	// Get the data and some information about the data.
-	COILibDataPtr data = mDataList[data_num];
+	COILibDataPtr data = mDataList->at(data_num);
 	int n_vis = data->GetNumVis();
 	int n_v2 = data->GetNumV2();
 	int n_t3 = data->GetNumT3();

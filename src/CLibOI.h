@@ -80,7 +80,6 @@ typedef shared_ptr<COILibData> COILibDataPtr;
 
 namespace LibOIEnums
 {
-
 	enum ImageTypes
 	{
 		OPENCL_BUFFER,

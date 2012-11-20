@@ -8,6 +8,7 @@ ADD_DEFINITIONS("-std=c++0x -pthread -U__STRICT_ANSI__")
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_subdirectory(src)
 
