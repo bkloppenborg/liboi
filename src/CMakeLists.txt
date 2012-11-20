@@ -30,12 +30,17 @@ find_package(OpenCL REQUIRED)
 include_directories(${OPENCL_INCLUDE_DIRS})
 find_package(TEXTIO REQUIRED)
 include_directories(${TEXTIO_INCLUDE_DIRS})
+find_package(CCOIFITS REQUIRED)
+include_directories(${CCOIFITS_INCLUDE_DIRS})
 
 file(GLOB SOURCE *.cpp)
 list(REMOVE_ITEM SOURCE main.cpp)
 
 add_library(oi SHARED ${SOURCE})
-target_link_libraries(oi ccoifits_shared ${TEXTIO_LIBRARIES} ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
+target_link_libraries(oi ${TEXTIO_LIBRARIES} ${CCOIFITS_LIBRARIES} ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
 
 add_executable(liboi_tests main.cpp)
 target_link_libraries(liboi_tests oi)
+
+install(TARGETS oi DESTINATION lib)
+install(FILES CLibOI.h DESTINATION include RENAME oi.hpp)

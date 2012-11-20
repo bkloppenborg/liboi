@@ -75,7 +75,7 @@
 
 #include "textio.h"
 #include "COpenCL.h"
-#include "LibOIEnumerations.h"
+#include "CLibOI.h"
 
 #define MAX_REL_ERROR 0.001	// Maximum of 0.1% relative error permitted
 

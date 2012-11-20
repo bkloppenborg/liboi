@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <cassert>
 
+#include "COILibDataList.h"
 #include "CRoutine_Sum.h"
 #include "CRoutine_Normalize.h"
 #include "CRoutine_ImageToBuffer.h"
@@ -53,6 +54,7 @@ CLibOI::CLibOI(cl_device_type type)
 {
 	// init datamembers
 	mOCL = new COpenCL(type);
+	mDataList = new COILibDataList();
 
 	mImage_cl = NULL;
 	mImage_cl = NULL;
@@ -88,6 +90,7 @@ CLibOI::CLibOI(cl_device_type type)
 CLibOI::~CLibOI()
 {
 	// First free datamembers:
+	delete mDataList;
 	delete mrTotalFlux;
 	delete mrCopyImage;
 	delete mrNormalize;
@@ -219,10 +222,35 @@ void CLibOI::FTToData(COILibDataPtr data)
 			data->GetLoc_T3_sign(), mSimDataBuffer, n_vis, n_v2, n_t3);
 }
 
+double CLibOI::GetDataAveJD(int data_num)
+{
+	return mDataList->at(data_num)->GetAveJD();
+}
+
+int CLibOI::GetNData()
+{
+	return mDataList->GetNData();
+}
+
+int CLibOI::GetNDataAllocated()
+{
+	return mDataList->GetNDataAllocated();
+}
+
+int CLibOI::GetNDataAllocated(int data_num)
+{
+	return mDataList->GetNDataAllocated(data_num);
+}
+
+int CLibOI::GetNDataSets()
+{
+	return mDataList->size();
+}
+
 /// Returns the number of T3 data points in the specified data set.  If the data set does not exist, returns 0.
 int CLibOI::GetNT3(int data_num)
 {
-	if(data_num < mDataList.size())
+	if(data_num < mDataList->size())
 		return mDataList[data_num]->GetNumT3();
 
 	return 0;
@@ -231,7 +259,7 @@ int CLibOI::GetNT3(int data_num)
 /// Returns the number of V2 data points in the specified data set.  If the data set does not exist, returns 0.
 int CLibOI::GetNV2(int data_num)
 {
-	if(data_num < mDataList.size())
+	if(data_num < mDataList->size())
 		return mDataList[data_num]->GetNumV2();
 
 	return 0;

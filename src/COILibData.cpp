@@ -34,8 +34,8 @@
 
 #include "COILibData.h"
 #include <cassert>
-#include "OITools.h"
-#include "OIExport.h"
+#include "oi_tools.hpp"
+#include "oi_export.hpp"
 
 #define MJD 2400000.5
 

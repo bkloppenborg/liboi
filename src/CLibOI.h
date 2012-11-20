@@ -38,15 +38,30 @@
 #ifndef CLIBOI_H_
 #define CLIBOI_H_
 
-//#include "COILibData.h"
+#pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
+#pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
+
+// cl.hpp throws lot of warnings, but we have no control over these.  Tell GCC to ignore them.
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wall"
+//#pragma GCC diagnostic ignored "-Wextra"
+//#pragma GCC diagnostic ignored "-Wshadow"
+
+// Enable OpenCL exceptions
+#define __CL_ENABLE_EXCEPTIONS
+
+#if defined(__APPLE__) || defined(__MACOSX)
+	#include <OpenCL/cl.hpp>
+#else
+	#include <CL/cl.hpp>
+#endif
 
 #include <string>
 #include <memory>
 
-#include "COpenCL.h"
-#include "LibOIEnumerations.h"
-#include "COILibDataList.h"
+using namespace std;
 
+class COpenCL;
 class CRoutine_Sum;
 class CRoutine_ImageToBuffer;
 class CRoutine_Normalize;
@@ -58,11 +73,28 @@ class CRoutine_LogLike;
 class CRoutine_Square;
 class CRoutine_Zero;
 
+class COILibDataList;
+
+class COILibData;
+typedef shared_ptr<COILibData> COILibDataPtr;
+
+namespace LibOIEnums
+{
+
+	enum ImageTypes
+	{
+		OPENCL_BUFFER,
+		OPENGL_FRAMEBUFFER,
+		OPENGL_TEXTUREBUFFER,
+		HOST_MEMORY
+	};
+}
+
 class CLibOI
 {
 protected:
 	// Datamembers:
-	COILibDataList mDataList;
+	COILibDataList * mDataList;
 
 	// OpenCL Context, manager, etc.
 	COpenCL * mOCL;
@@ -120,11 +152,11 @@ public:
 	void FreeOpenCLMem();
 	void FTToData(COILibDataPtr data);
 
-	double GetDataAveJD(int data_num) { return mDataList[data_num]->GetAveJD(); };
-	int GetNData() { return mDataList.GetNData(); };
-	int GetNDataAllocated() { return mDataList.GetNDataAllocated(); };
-	int GetNDataAllocated(int data_num) { return mDataList.GetNDataAllocated(data_num); };
-	int GetNDataSets() { return mDataList.size(); };
+	double GetDataAveJD(int data_num);
+	int GetNData();
+	int GetNDataAllocated();
+	int GetNDataAllocated(int data_num);
+	int GetNDataSets();
 	int GetNT3(int data_num);
 	int GetNV2(int data_num);
 	int GetMaxDataSize() { return mMaxData; };

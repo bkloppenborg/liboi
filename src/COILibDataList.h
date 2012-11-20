@@ -39,6 +39,7 @@
 
 using namespace std;
 
+class COILibData;
 typedef shared_ptr<COILibData> COILibDataPtr;
 
 class COILibDataList: public vector<COILibDataPtr>
