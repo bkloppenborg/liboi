@@ -1,0 +1,70 @@
+// Model save file from SIMTOI in JSON format.
+
+{
+	"model_0" : 
+	{
+		"base" : 
+		{
+			"Color" : [ 0.50, 0.0, 0.0, false ],
+			"Diameter" : [ 1.0, 0.10, 3.0, true ],
+			"Inclination" : [ 0.0, 0.0, 0.0, false ],
+			"Pos. Angle" : [ 0.0, 0.0, 0.0, false ],
+			"Rotation" : [ 0.0, 0.0, 0.0, false ],
+			"type" : 1
+		},
+		"position" : 
+		{
+			"E" : [ 1.0, 0.0, 0.0, false ],
+			"N" : [ 1.0, 0.0, 0.0, false ],
+			"type" : 1
+		},
+		"shader" : 
+		{
+			"type" : 0
+		}
+	},
+	"model_1" : 
+	{
+		"base" : 
+		{
+			"Color" : [ 1.0, 0.0, 0.0, false ],
+			"Diameter" : [ 1.0, 0.10, 3.0, true ],
+			"Inclination" : [ 0.0, 0.0, 0.0, false ],
+			"Pos. Angle" : [ 0.0, 0.0, 0.0, false ],
+			"Rotation" : [ 0.0, 0.0, 0.0, false ],
+			"type" : 1
+		},
+		"position" : 
+		{
+			"E" : [ 0.0, 0.0, 0.0, false ],
+			"N" : [ 0.0, 0.0, 0.0, false ],
+			"type" : 1
+		},
+		"shader" : 
+		{
+			"type" : 0
+		}
+	},
+	"model_2" : 
+	{
+		"base" : 
+		{
+			"Color" : [ 0.750, 0.0, 0.0, false ],
+			"Diameter" : [ 0.50, 0.10, 3.0, true ],
+			"Inclination" : [ 0.0, 0.0, 0.0, false ],
+			"Pos. Angle" : [ 0.0, 0.0, 0.0, false ],
+			"Rotation" : [ 0.0, 0.0, 0.0, false ],
+			"type" : 1
+		},
+		"position" : 
+		{
+			"E" : [ 0.0, 0.0, 0.0, false ],
+			"N" : [ -1.0, 0.0, 0.0, false ],
+			"type" : 1
+		},
+		"shader" : 
+		{
+			"type" : 0
+		}
+	}
+}
