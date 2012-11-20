@@ -35,8 +35,8 @@
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIBOI_H_
-#define CLIBOI_H_
+#ifndef LIBOI_H_
+#define LIBOI_H_
 
 #pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
 #pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
@@ -209,4 +209,4 @@ public:
 
 };
 
-#endif /* CLIBOI_H_ */
+#endif /* LIBOI_H_ */

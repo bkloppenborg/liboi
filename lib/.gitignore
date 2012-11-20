@@ -1,6 +1,8 @@
 # Ignore everything
 *
 
-# Except the .gitignore
+# Except the .gitignore and (submodule) libraries
 !.gitignore
+!textio
+!ccoifits
 

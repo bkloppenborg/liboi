@@ -32,7 +32,7 @@
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "CLibOI.h"
+#include "liboi.hpp"
 #include <cstdio>
 #include <algorithm>
 #include <cassert>

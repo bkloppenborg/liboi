@@ -73,9 +73,10 @@
 #include <cstdio>
 #include <valarray>
 
-#include "textio.h"
+#include "textio.hpp"
+#include "liboi.hpp"
+
 #include "COpenCL.h"
-#include "CLibOI.h"
 
 #define MAX_REL_ERROR 0.001	// Maximum of 0.1% relative error permitted
 

@@ -58,7 +58,7 @@
 #include <complex>
 #include <memory>
 #include "COpenCL.h"
-#include "ccoifits.hpp"
+#include "oi_file.hpp"
 
 using namespace std;
 using namespace ccoifits;

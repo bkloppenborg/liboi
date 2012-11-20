@@ -33,7 +33,7 @@
 #define MAIN_CPP_
 
 #include "main.h"
-#include "CLibOI.h"
+#include "liboi.hpp"
 #include "PathFinding.h"
 
 #include <iostream>
