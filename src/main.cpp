@@ -89,7 +89,7 @@ void RunTests(string path)
     LibOI.SetImageSource(image);
 
     // Load sample data:
-    LibOI.LoadData(path + "../samples/UDD-2_5mas_nonoise.oifits");
+    LibOI.LoadData(path + "../samples/PointSource_nonoise.oifits");
 
     // Init memory and routines.
     LibOI.Init();
