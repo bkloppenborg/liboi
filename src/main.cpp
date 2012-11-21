@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
 {
 	// Find the path to the current executable
 	string exe = FindExecutable();
-	// Find the directory (the name of this program is "tests", so just strip off five characters)
-	string path = exe.substr(0, exe.size()-5);
+	// Find the directory (the name of this program is "liboi_tests", so just strip off 11 characters)
+	string path = exe.substr(0, exe.size()-11);
 
 	RunTests(path);
 
@@ -62,7 +62,7 @@ void PrintHelp()
 
 void RunTests(string path)
 {
-    // Create an OpenCL object from a GPU.  Initialize it.
+
     string kernel_source_dir = path + "kernels";
 
     // Create a point-source image, copy it to the GPU:
@@ -72,21 +72,24 @@ void RunTests(string path)
     unsigned int size = width * height * depth;
     float scale = 0.01;
 
-    // Initialize the image.  Put a single flux element in the center.
+    // Initialize the image.
     float * image = new float[size];
+    int pixel = 0;
+    double radius = 2; // mas
     for(int i = 0; i < size; i++)
-    	image[i] = 0.0;
+    	image[i] = 0;
 
-    image[size/2] = 2.0;
+    // Put a single flux element in the center, use a brightness of two.
+    image[4096] = 2;
 
-    // Init LibOI
+    // Create an OpenCL object from a GPU.  Initialize it.
     CLibOI LibOI(CL_DEVICE_TYPE_GPU);
     LibOI.SetKernelSourcePath(kernel_source_dir);
     LibOI.SetImageInfo(width, height, depth, scale);
     LibOI.SetImageSource(image);
 
     // Load sample data:
-    LibOI.LoadData(path + "../samples/test_ldd2_alpha05.oifits");
+    LibOI.LoadData(path + "../samples/UDD-2_5mas_nonoise.oifits");
 
     // Init memory and routines.
     LibOI.Init();

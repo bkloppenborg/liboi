@@ -130,7 +130,7 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 		t_uv_points[i].s1 = uv_points[i].second;
 	}
 
-	// Copy over the UV points.  We MUST always have at least one (otherwise the data would be nonsense).
+	// Copy over the UV points.  We MUST always have at least one UV point (otherwise the data would be nonsense).
 	assert(mNUV > 0);
 	mData_uv_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
 	err  = clEnqueueWriteBuffer(queue, mData_uv_cl, CL_FALSE, 0, sizeof(cl_float2) * mNUV, &t_uv_points[0], 0, NULL, NULL);
