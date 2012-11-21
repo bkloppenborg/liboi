@@ -86,13 +86,13 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 	// Export the data from OIDataList to something we can use here.
 	vector<pair<double,double> > uv_points;
 	valarray<complex<double>> vis;
-	valarray<complex<double>> vis_err;
+	valarray<pair<double,double>> vis_err;
 	vector<unsigned int> vis_uv_ref;
 	valarray<double> vis2;
 	valarray<double> vis2_err;
 	vector<unsigned int> vis2_uv_ref;
 	valarray<complex<double>> t3;
-	valarray<complex<double>> t3_err;
+	valarray<pair<double,double> > t3_err;
 	vector<tuple<unsigned int, unsigned int, unsigned int>> t3_uv_ref;
 	vector<tuple<short, short, short>> t3_uv_sign;
 
@@ -147,8 +147,8 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 	{
 		t_vis[i] = real(vis[i]);
 		t_vis[mNVis + i] = imag(vis[i]);
-		t_vis_err[i] = real(vis_err[i]);
-		t_vis_err[mNVis + i] = imag(vis_err[i]);
+		t_vis_err[i] = vis_err[i].first;
+		t_vis_err[mNVis + i] = vis_err[i].second;
 		t_vis_uvref[i] = vis_uv_ref[i];
 	}
 
@@ -202,8 +202,8 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 	{
 		t_t3[i] = real(t3[i]);
 		t_t3[mNT3 + i] = imag(t3[i]);
-		t_t3_err[i] = real(t3_err[i]);
-		t_t3_err[mNT3 + i] = imag(t3_err[i]);
+		t_t3_err[i] = t3_err[i].first;
+		t_t3_err[mNT3 + i] = t3_err[i].second;
 
 		// UV references
 		t_t3_uvref[i].s0 = get<0>(t3_uv_ref[i]);
