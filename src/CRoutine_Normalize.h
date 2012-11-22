@@ -42,9 +42,8 @@ public:
 
 	void Init();
 
-	void Normalize(cl_mem image, int image_width, int image_height, cl_mem divisor);
-	void Normalize_CPU(cl_mem image, int image_width, int image_height, cl_mem divisor, valarray<cl_float> & output);
-	bool Normalize_Test(cl_mem image, int image_width, int image_height, cl_mem divisor);
+	void Normalize(cl_mem buffer, unsigned int buffer_size, cl_mem divisor);
+	void Normalize(cl_mem image, unsigned int image_width, unsigned int image_height, cl_mem divisor);
 };
 
 #endif /* CROUTINE_NORMALIZE_H_ */

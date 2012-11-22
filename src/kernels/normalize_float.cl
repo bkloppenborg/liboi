@@ -37,18 +37,19 @@
 __kernel void normalize_float(
     __global float * image,
     __global float * divisor,
-    __private int2 image_size)
+    __private unsigned int image_size)
 {
     int i = get_global_id(0);
-    int j = get_global_id(1);
-    int n = image_size.x * i + j;
     
     // TODO: We could possibly speed this up by having the first processor
     // compute 1/divisor and store that into local memory so we do a multiplication
     // instead of a division.
     
-    image[n] = image[n] / divisor[0];
+    if(i < image_size)
+    {
+        image[i] = image[i] / divisor[0];
     
-    if(image[n] < 0)
-    	image[n] = 0;
+        if(image[i] < 0)
+        	image[i] = 0;
+	}
 }
