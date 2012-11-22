@@ -59,8 +59,6 @@ public:
 	void BuildKernels();
 
 	float ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value);
-	float ComputeSum_CPU(cl_mem input_buffer);
-	bool  ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer);
 	void Init(int n);
 
 	template <typename T>

@@ -53,7 +53,6 @@ TEST(CRoutine_Sum, CL_CPU_Match)
 	cl_float cpu_sum = CRoutine_Sum::Sum(data);
 	float cl_sum = r_sum.ComputeSum(input_buffer, final_buffer, true);
 
-
 	// Free buffers
 	clReleaseMemObject(input_buffer);
 	clReleaseMemObject(final_buffer);

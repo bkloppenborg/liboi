@@ -610,31 +610,31 @@ void CLibOI::RemoveData(int data_num)
 /// and at least one data set has been loaded.
 void CLibOI::RunVerification(int data_num)
 {
-	if(data_num > mDataList->size() - 1)
-		return;
-
-	// Get the data and some information about the data.
-	COILibDataPtr data = mDataList->at(data_num);
-	int n_vis = data->GetNumVis();
-	int n_v2 = data->GetNumV2();
-	int n_t3 = data->GetNumT3();
-	int n_uv = data->GetNumUV();
-
-	mrTotalFlux->ComputeSum_Test(mImage_cl, mFluxBuffer);
-	mrNormalize->Normalize_Test(mImage_cl, mImageWidth, mImageHeight, mFluxBuffer);
-	mrFT->FT_Test(data->GetLoc_DataUVPoints(), n_uv, mImage_cl, mImageWidth,
-			mImageHeight, mFluxBuffer, mFTBuffer);
-
-	mrV2->FTtoV2_Test(mFTBuffer, data->GetLoc_V2_UVRef(), mSimDataBuffer, n_vis, n_v2, n_uv);
-
-	mrT3->FTtoT3_Test(mFTBuffer, data->GetLoc_T3_UVRef(),
-			data->GetLoc_T3_sign(), mSimDataBuffer, n_vis, n_v2, n_t3, n_uv);
-
-	// Now run the chi, chi2, and loglike kernels:
-	int n = data->GetNumData();
-	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
-	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, true);
-	mrLogLike->LogLike_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
+//	if(data_num > mDataList->size() - 1)
+//		return;
+//
+//	// Get the data and some information about the data.
+//	COILibDataPtr data = mDataList->at(data_num);
+//	int n_vis = data->GetNumVis();
+//	int n_v2 = data->GetNumV2();
+//	int n_t3 = data->GetNumT3();
+//	int n_uv = data->GetNumUV();
+//
+//	mrTotalFlux->ComputeSum_Test(mImage_cl, mFluxBuffer);
+//	mrNormalize->Normalize_Test(mImage_cl, mImageWidth, mImageHeight, mFluxBuffer);
+//	mrFT->FT_Test(data->GetLoc_DataUVPoints(), n_uv, mImage_cl, mImageWidth,
+//			mImageHeight, mFluxBuffer, mFTBuffer);
+//
+//	mrV2->FTtoV2_Test(mFTBuffer, data->GetLoc_V2_UVRef(), mSimDataBuffer, n_vis, n_v2, n_uv);
+//
+//	mrT3->FTtoT3_Test(mFTBuffer, data->GetLoc_T3_UVRef(),
+//			data->GetLoc_T3_sign(), mSimDataBuffer, n_vis, n_v2, n_t3, n_uv);
+//
+//	// Now run the chi, chi2, and loglike kernels:
+//	int n = data->GetNumData();
+//	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
+//	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, true);
+//	mrLogLike->LogLike_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
 }
 
 /// Saves the current image in the OpenCL memory buffer to the specified FITS file

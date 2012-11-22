@@ -233,33 +233,6 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 	return float(gpu_result);
 }
 
-/// Computes the sum of the OpenCL buffer, input_buffer, using Kahan summation to minimize precision losses.
-float CRoutine_Sum::ComputeSum_CPU(cl_mem input_buffer)
-{
-	int err = CL_SUCCESS;
-	cl_float tmp[mNElements];
-	err |= clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, mNElements * sizeof(cl_float), tmp, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CRoutine_Reduce_Sum::Compute_CPU() ", err);
-}
-
-/// Tests that the CPU and OpenCL versions of ComputeSum return the same value.
-bool CRoutine_Sum::ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer)
-{
-	// First run the CPU version as the CL version modifies the buffers.
-	float cpu_sum = ComputeSum_CPU(input_buffer);
-	float cl_sum = ComputeSum(input_buffer, final_buffer, true);
-
-	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
-	printf("Checking summed flux values:\n");
-	printf("  CPU Value:  %0.4f\n", cpu_sum);
-	printf("  CL  Value:  %0.4f\n", cl_sum);
-	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
-	printf("  Rel. Error: %0.4e\n", (cpu_sum - cl_sum) / cpu_sum);
-	PassFail(sum_pass);
-
-	return sum_pass;
-}
-
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
 /// allocate_temp_buffers: if true will automatically allocate/deallocate buffers. Otherwise you need to do this elsewhere
 void CRoutine_Sum::Init(int n)
