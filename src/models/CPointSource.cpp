@@ -24,7 +24,7 @@ CPointSource::~CPointSource()
 	// TODO Auto-generated destructor stub
 }
 
-virtual complex<double> CPointSource::GetVis(pair<double,double> uv)
+complex<double> CPointSource::CPointSource::GetVis(pair<double,double> uv)
 {
 	// Calculate the visibility and return
 	double arg = -2 * PI *(uv.first * mAlpha + uv.second * mDelta);

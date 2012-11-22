@@ -18,6 +18,7 @@ protected:
 
 public:
 	CPointSource();
+	CPointSource(double alpha, double delta);
 	virtual ~CPointSource();
 
 	virtual complex<double> GetVis(pair<double,double> uv);

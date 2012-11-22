@@ -13,6 +13,13 @@
 
 #include <complex>
 
+#ifndef PI
+#include <cmath>
+#define PI M_PI
+#endif
+
+using namespace std;
+
 class CModel
 {
 public:
