@@ -32,7 +32,8 @@ include_directories(${OPENCL_INCLUDE_DIRS})
 set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTERNAL "")
 
 file(GLOB SOURCE *.cpp models/*.cpp)
-list(REMOVE_ITEM SOURCE main.cpp)
+list(REMOVE_ITEM SOURCE main.cpp *_test.cpp)
+file(GLOB TESTS *_test.cpp)
 
 add_library(oi SHARED EXCLUDE_FROM_ALL ${SOURCE})
 target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
@@ -40,13 +41,10 @@ target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES}
 add_library(oi_static STATIC ${SOURCE})
 target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
 
-add_executable(liboi_tests main.cpp)
-target_link_libraries(liboi_tests oi_static)
-
-# Installation specifics:
-#if(TARGET oi)
-#    install(TARGETS oi DESTINATION lib)
-#endif(TARGET oi)
+# Build tests:
+add_executable(liboi_tests ${TESTS})
+target_link_libraries(liboi_tests gtest gtest_main oi_static)
+add_test(liboi_tests liboi_tests)
 
 install(TARGETS oi_static DESTINATION lib)
 install(FILES liboi.hpp DESTINATION include)
