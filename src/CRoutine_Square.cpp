@@ -54,7 +54,7 @@ void CRoutine_Square::Init()
     BuildKernel(source, "square", mSource[0]);
 }
 
-void CRoutine_Square::Square(cl_mem input, cl_mem output, int buffer_size, int data_size)
+void CRoutine_Square::Square(cl_mem input, cl_mem output, unsigned int buffer_size, unsigned int data_size)
 {
 	int err = 0;
 	size_t global = (size_t) buffer_size;

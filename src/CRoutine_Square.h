@@ -41,7 +41,14 @@ public:
 	virtual ~CRoutine_Square();
 
 	void Init();
-	void Square(cl_mem input, cl_mem output, int buffer_size, int data_size);
+	void Square(cl_mem input, cl_mem output, unsigned int buffer_size, unsigned int data_size);
+
+	template <typename T>
+	static void Square(valarray<T> & input_buffer, valarray<T> & output_buffer, unsigned int buffer_size, unsigned int data_size)
+	{
+		for(int i = 0; i < buffer_size && i < data_size; i++)
+			output_buffer[i] = input_buffer[i] * input_buffer[i];
+	}
 };
 
 #endif /* CROUTINE_SQUARE_H_ */
