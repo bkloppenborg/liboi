@@ -5,4 +5,4 @@
 !.gitignore
 !textio
 !ccoifits
-!gtest-1.6.0
+!gtest*
