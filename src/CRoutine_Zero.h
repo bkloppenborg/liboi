@@ -42,6 +42,13 @@ public:
 
 	void Init();
 	void Zero(cl_mem input, int buffer_size);
+
+	template <typename T>
+	void Zero(valarray<T> & buffer, unsigned int buffer_size)
+	{
+		for(int i = 0; i < buffer_size; i++)
+			buffer[i] = 0;
+	}
 };
 
 #endif /* CROUTINE_ZERO_H_ */

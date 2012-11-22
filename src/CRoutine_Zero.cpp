@@ -73,3 +73,4 @@ void CRoutine_Zero::Zero(cl_mem input, int buffer_size)
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue square kernel.", err);
 }
+

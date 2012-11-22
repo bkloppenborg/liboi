@@ -33,6 +33,7 @@
 #define CROUTINE_NORMALIZE_H_
 
 #include "CRoutine.h"
+#include "CRoutine_Sum.h"
 
 class CRoutine_Normalize: public CRoutine
 {
@@ -44,6 +45,14 @@ public:
 
 	void Normalize(cl_mem buffer, unsigned int buffer_size, cl_mem divisor);
 	void Normalize(cl_mem image, unsigned int image_width, unsigned int image_height, cl_mem divisor);
+
+	template <typename T>
+	static void Normalize(valarray<T> & buffer, unsigned int buffer_size)
+	{
+		T sum = CRoutine_Sum::Sum(buffer);
+		for(int i = 0; i < buffer_size; i++)
+			buffer[i] /= sum;
+	}
 };
 
 #endif /* CROUTINE_NORMALIZE_H_ */

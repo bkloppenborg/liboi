@@ -10,7 +10,6 @@
 #include "liboi_tests.h"
 #include "COpenCL.h"
 #include "CRoutine_Normalize.h"
-#include "CRoutine_Sum.h"
 
 extern string LIBOI_KERNEL_PATH;
 
@@ -43,8 +42,7 @@ TEST(CRoutine_Normalize, NormalizeBuffer)
 
     // Normalize on the OpenCL device, do the same on the CPU:
 	r_norm.Normalize(input_cl, test_size, divisor_cl);
-	for(int i = 0; i < cpu_val.size(); i++)
-		cpu_val[i] /= divisor;
+	CRoutine_Normalize::Normalize(cpu_val, cpu_val.size());
 
 	// Read back the results.
 	err = clEnqueueReadBuffer(cl.GetQueue(), input_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &cl_val[0], 0, NULL, NULL);
