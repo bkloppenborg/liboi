@@ -43,7 +43,7 @@ target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES
 
 # Build tests:
 add_executable(liboi_tests ${TESTS})
-target_link_libraries(liboi_tests gtest gtest_main oi_static)
+target_link_libraries(liboi_tests gtest oi_static)
 add_test(liboi_tests liboi_tests)
 
 install(TARGETS oi_static DESTINATION lib)
