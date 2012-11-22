@@ -32,8 +32,8 @@ include_directories(${OPENCL_INCLUDE_DIRS})
 set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTERNAL "")
 
 file(GLOB SOURCE *.cpp models/*.cpp)
-list(REMOVE_ITEM SOURCE main.cpp *_test.cpp)
 file(GLOB TESTS *_test.cpp)
+list(REMOVE_ITEM SOURCE main.cpp ${TESTS})
 
 add_library(oi SHARED EXCLUDE_FROM_ALL ${SOURCE})
 target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
