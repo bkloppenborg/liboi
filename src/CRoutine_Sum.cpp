@@ -186,25 +186,12 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 		localWorkSize[0] = threads;
 		cl_kernel reductionKernel = mKernels[kernel_id];
 
-//		printf("\n Kernel: %x Blocks: %i Threads %i \n", reductionKernel, blocks, threads);
-//		printf("\n Buff1:\n");
-//		DumpFloatBuffer(buff1, mNElements);
-
-#ifdef DEBUG_VERBOSE
-		printf("Global: %i Local: %i\n", globalWorkSize[0], localWorkSize[0]);
-#endif // DEBUG_VERBOSE
-
 		clSetKernelArg(reductionKernel, 0, sizeof(cl_mem), (void *) &buff1);
 		clSetKernelArg(reductionKernel, 1, sizeof(cl_mem), (void *) &buff2);
 		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &mNElements);
 		clSetKernelArg(reductionKernel, 3, sizeof(cl_float) * numThreads, NULL);
 		err = clEnqueueNDRangeKernel(mQueue,reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to enqueue final parallel reduction kernel.", err);
-
-//		printf("\n\n Buff2:\n\n");
-//		DumpFloatBuffer(buff2, mNElements);
-
-		//clFinish(mQueue);
 
 		buff1 = buff2;
 	}
@@ -243,9 +230,6 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 		clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 	}
 
-	// Now copy the data over to the final GPU location.
-	//clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
-
 	return float(gpu_result);
 }
 
@@ -256,19 +240,6 @@ float CRoutine_Sum::ComputeSum_CPU(cl_mem input_buffer)
 	cl_float tmp[mNElements];
 	err |= clEnqueueReadBuffer(mQueue, input_buffer, CL_TRUE, 0, mNElements * sizeof(cl_float), tmp, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CRoutine_Reduce_Sum::Compute_CPU() ", err);
-
-	// Use Kahan summation to minimize lost precision.
-	// http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-	float sum = tmp[0];
-	float c = float(0.0);
-	for (int i = 1; i < mNElements; i++)
-	{
-		float y = tmp[i] - c;
-		float t = sum + y;
-		c = (t - sum) - y;
-		sum = t;
-	}
-	return sum;
 }
 
 /// Tests that the CPU and OpenCL versions of ComputeSum return the same value.

@@ -62,6 +62,24 @@ public:
 	float ComputeSum_CPU(cl_mem input_buffer);
 	bool  ComputeSum_Test(cl_mem input_buffer, cl_mem final_buffer);
 	void Init(int n);
+
+	template <typename T>
+	static T Sum(valarray<T> & buffer)
+	{
+		// Use Kahan summation to minimize lost precision.
+		// http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+		T sum = buffer[0];
+		T c = T(0.0);
+		for (int i = 1; i < buffer.size(); i++)
+		{
+			T y = buffer[i] - c;
+			T t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		return sum;
+	}
 };
 
 #endif /* CROUTINE_REDUCE_SUM_H_ */

@@ -173,7 +173,7 @@ void COpenCL::Init(cl_device_type type)
 
 	FindDevice(platform, device, type);
 
-	PrintPlatformInfo(platform);
+//	PrintPlatformInfo(platform);
 
 	if(platform != 0 && device != 0)
 		this->Init(platform, device, type);
@@ -186,11 +186,6 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 {
 	int err = 0;
 	this->mDevice = device;
-
-#ifdef DEBUG
-	printf("Initializing using the following device:\n");
-	this->PrintDeviceInfo(mDevice);
-#endif //DEBUG
 
 	// Each operating system has a different routine for OpenCL-OpenGL interoperability
 	// initialization.  Here we try to catch all of them.  Each OS-specific block below
@@ -255,14 +250,16 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 	// If OpenCL - OpenGL interop was not detected, enable a plain OpenCL-only context:
 	if(!mCLGLInteropEnabled)
 	{
-		cout << "OpenCL-OpenGL interoperability NOT detected and NOT ENABLED." << endl;
+//		cout << "OpenCL-OpenGL interoperability NOT detected and NOT ENABLED." << endl;
 		// enable a plain OpenCL-only context.
 		properties[0] = CL_CONTEXT_PLATFORM;
 		properties[1] = (cl_context_properties) platform;
 		properties[2] = 0;
 	}
 	else
-		cout << "OpenCL-OpenGL interoperability DETECTED and ENABLED." << endl;
+	{
+//		cout << "OpenCL-OpenGL interoperability DETECTED and ENABLED." << endl;
+	}
 
 	// Creates a context with the above properties.
     this->mContext = clCreateContextFromType(properties, type, NULL, NULL, &err);
