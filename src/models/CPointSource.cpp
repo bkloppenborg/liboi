@@ -7,16 +7,16 @@
 
 #include "CPointSource.h"
 
-CPointSource::CPointSource()
+CPointSource::CPointSource(double image_scale)
+	: CModel(0, 0, image_scale)
 {
-	mAlpha = 0;
-	mDelta = 0;
+
 }
 
-CPointSource::CPointSource(double alpha, double delta)
+CPointSource::CPointSource(double alpha, double delta, double image_scale)
+	: CModel(alpha, delta, image_scale)
 {
-	mAlpha = alpha;
-	mDelta = delta;
+
 }
 
 CPointSource::~CPointSource()
@@ -24,9 +24,21 @@ CPointSource::~CPointSource()
 	// TODO Auto-generated destructor stub
 }
 
-complex<double> CPointSource::CPointSource::GetVis(pair<double,double> uv)
+complex<double> CPointSource::CPointSource::GetVis(pair<double,double> & uv)
 {
 	// Calculate the visibility and return
-	double arg = -2 * PI *(uv.first * mAlpha + uv.second * mDelta);
-	return complex<double>(cos(arg), sin(arg));
+	double phi = -2 * PI * (mAlpha * uv.first + mDelta * uv.second);
+	return complex<double>(cos(phi), sin(phi));
+}
+
+valarray<double> CPointSource::GetImage(unsigned int image_width, unsigned int image_height, float image_scale)
+{
+	// Create a blank image:
+	unsigned int image_size = image_width * image_height;
+	valarray<double> output(image_size);
+
+	// Now activate the center most pixel:
+	output[image_width * image_height/2 + image_width/2] = 1;
+
+	return output;
 }

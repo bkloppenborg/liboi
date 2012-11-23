@@ -12,16 +12,14 @@
 
 class CPointSource: public CModel
 {
-protected:
-	double mAlpha;
-	double mDelta;
 
 public:
-	CPointSource();
-	CPointSource(double alpha, double delta);
+	CPointSource(double image_scale);
+	CPointSource(double alpha, double delta, double image_scale);
 	virtual ~CPointSource();
 
-	virtual complex<double> GetVis(pair<double,double> uv);
+	complex<double> GetVis(pair<double,double> & uv);
+	valarray<double> GetImage(unsigned int image_width, unsigned int image_height, float image_scale);
 };
 
 #endif /* CPOINTSOURCE_H_ */
