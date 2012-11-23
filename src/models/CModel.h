@@ -31,12 +31,21 @@ class CModel
 {
 protected:
 	static double RPMAS;
-	double mAlpha;
-	double mDelta;
-	double mScale;
+
+	// Image information:
+	unsigned int mImageWidth;
+	unsigned int mImageHeight;
+	double mImageScale;
+	unsigned int mImageCenterX;
+	unsigned int mImageCenterY;
+	unsigned int mImageCenterID;
+
+	// Object center location, relative to the center of the image.
+	int mShiftX;
+	int mShiftY;
 
 public:
-	CModel(double alpha, double delta, double image_scale);
+	CModel(unsigned int image_width, unsigned int image_height, double image_scale);
 	virtual ~CModel();
 
 	virtual complex<double> GetVis(pair<double,double> & uv) = 0;

@@ -14,8 +14,7 @@ class CPointSource: public CModel
 {
 
 public:
-	CPointSource(double image_scale);
-	CPointSource(double alpha, double delta, double image_scale);
+	CPointSource(unsigned int image_width, unsigned int image_height, double image_scale);
 	virtual ~CPointSource();
 
 	complex<double> GetVis(pair<double,double> & uv);

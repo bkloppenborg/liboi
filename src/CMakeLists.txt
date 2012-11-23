@@ -31,6 +31,7 @@ include_directories(${OPENCL_INCLUDE_DIRS})
 
 set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTERNAL "")
 
+include_directories(. models/)
 file(GLOB SOURCE *.cpp models/*.cpp)
 file(GLOB TESTS *_test.cpp)
 list(REMOVE_ITEM SOURCE main.cpp ${TESTS})

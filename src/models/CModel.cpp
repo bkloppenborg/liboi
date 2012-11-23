@@ -12,13 +12,22 @@ using namespace std;
 
 double CModel::RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per milliarcsecond
 
-CModel::CModel(double alpha, double delta, double image_scale)
+CModel::CModel(unsigned int image_width, unsigned int image_height, double image_scale)
 {
 	assert(image_scale > 0);
+	assert(image_width > 0);
+	assert(image_height > 0);
 
-	mAlpha = alpha;
-	mDelta = delta;
-	mScale = image_scale;
+	mImageWidth = image_width;
+	mImageHeight = image_height;
+	mImageScale = image_scale;
+
+	mImageCenterX = mImageWidth / 2;
+	mImageCenterY = mImageHeight / 2;
+	mImageCenterID = mImageWidth * mImageHeight/2 + mImageWidth/2;
+
+	mShiftX = 0;
+	mShiftY = 0;
 }
 
 CModel::~CModel()
@@ -121,7 +130,7 @@ valarray<cl_float> CModel::GetImage_CL(unsigned int image_width, unsigned int im
 
 unsigned int CModel::MasToPixel(double value)
 {
-	return floor(value / mScale);
+	return floor(value / mImageScale);
 }
 
 double CModel::MasToRad(double value)
