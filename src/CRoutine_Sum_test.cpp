@@ -13,20 +13,31 @@
 
 extern string LIBOI_KERNEL_PATH;
 
-/// Checks the Kahan summation
-TEST(CRoutine_Sum, Sum_Kahan)
+/// Checks that the summation algorithm is working on the CPU side
+TEST(CRoutine_Sum, Sum_CPU)
 {
-	valarray<double> d(100);
-	for(int i = 0; i < d.size(); i++)
-		d[i] = i+1;
+	// Check a few sums:
 
-	double sum = CRoutine_Sum::Sum(d);
+	// Here we test it simply using \sum_{i=1}{100}i = \frac{n(n+1)}{2}
+	double sum;
 
+	// 100 elements sums to 5050
+	valarray<double> a(100);
+	for(int i = 0; i < a.size(); i++)
+		a[i] = i+1;
+	sum = CRoutine_Sum::Sum(a);
     EXPECT_EQ(5050, sum);
+
+    // 10000 elements sums to 50005000
+	valarray<double> b(10000);
+	for(int i = 0; i < b.size(); i++)
+		b[i] = i+1;
+	sum = CRoutine_Sum::Sum(b);
+    EXPECT_EQ(50005000, sum);
 }
 
 /// Checks that the sum on the OpenCL device and CPU match
-TEST(CRoutine_Sum, CL_CPU_Match)
+TEST(CRoutine_Sum, Match_CL_CPU)
 {
 	unsigned int test_size = 10000;
 
