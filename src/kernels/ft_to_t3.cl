@@ -41,9 +41,12 @@ float2 MultComplex3(float2 A, float2 B, float2 C);
 float2 MultComplex2(float2 A, float2 B)
 {
     // There is the obvious way to do this:
+    // (a + bi) * (c + di) = (ac - bd) + (bc + ad)i
     float2 temp;
+    // ac - bd
     temp.s0 = A.s0*B.s0 - A.s1*B.s1;
-    temp.s1 = A.s0*B.s1 + A.s1*B.s0;
+    // bc + ad
+    temp.s1 = A.s1*B.s0 + A.s0*B.s1;
 
     return temp;
 }
@@ -59,8 +62,8 @@ __kernel void ft_to_t3(
     __global float2 * ft_input,
     __global uint4 * uv_ref,
     __global short4 * uv_sign,
-    __private int offset,
-    __private int n_t3,
+    __private unsigned int offset,
+    __private unsigned int n_t3,
     __global float * output)
 {   
     int i = get_global_id(0);

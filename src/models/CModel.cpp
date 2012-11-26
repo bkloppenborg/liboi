@@ -35,7 +35,7 @@ CModel::~CModel()
 	// TODO Auto-generated destructor stub
 }
 
-// Returns the visibility of the model at the UV point uv converted into a cl_float2
+/// Returns the visibility of the model at the UV point uv converted into a cl_float2
 cl_float2 CModel::GetVis_CL(cl_float2 & uv)
 {
 	pair<double,double> t_uv(uv.s0, uv.s1);
@@ -48,6 +48,7 @@ cl_float2 CModel::GetVis_CL(cl_float2 & uv)
 	return output;
 }
 
+/// Computes the visibility returning OpenCL data types.
 valarray<cl_float2> CModel::GetVis_CL(valarray<cl_float2> & uv_list)
 {
 	unsigned int n_uv = uv_list.size();
@@ -60,11 +61,13 @@ valarray<cl_float2> CModel::GetVis_CL(valarray<cl_float2> & uv_list)
 	return output;
 }
 
+/// Computes the V2
 double CModel::GetV2(pair<double,double> & uv)
 {
 	return norm(GetVis(uv));
 }
 
+/// Computes the V2, returns OpenCL data types
 cl_float CModel::GetV2_CL(cl_float2 & uv)
 {
 	pair<double,double> t_uv(uv.s0, uv.s1);
@@ -72,6 +75,7 @@ cl_float CModel::GetV2_CL(cl_float2 & uv)
 	return cl_float(GetV2(t_uv));
 }
 
+/// Computes the V2 from a list of UV points.
 valarray<cl_float> CModel::GetV2_CL(valarray<cl_float2> & uv_list)
 {
 	int n_uv = uv_list.size();
@@ -85,11 +89,13 @@ valarray<cl_float> CModel::GetV2_CL(valarray<cl_float2> & uv_list)
 	return output;
 }
 
+/// Computes the T3
 complex<double> CModel::GetT3(pair<double,double> & uv_ab, pair<double,double> & uv_bc, pair<double,double> & uv_ca)
 {
 	return GetVis(uv_ab) * GetVis(uv_bc) * GetVis(uv_ca);
 }
 
+/// Computes T3 from OpenCL values
 cl_float2 CModel::GetT3_CL(cl_float2 & uv_ab, cl_float2 & uv_bc, cl_float2 & uv_ca)
 {
 	pair<double,double> t_uv_ab(uv_ab.s0, uv_ab.s1);
@@ -101,6 +107,25 @@ cl_float2 CModel::GetT3_CL(cl_float2 & uv_ab, cl_float2 & uv_bc, cl_float2 & uv_
 	cl_float2 output;
 	output.s0 = real(t_val);
 	output.s1 = imag(t_val);
+
+	return output;
+}
+
+/// Computes T3 from OpenCL values
+valarray<cl_float2> CModel::GetT3_CL(valarray<cl_float2> & uv_points, valarray<cl_uint4> & uv_ref)
+{
+	int n_t3 = uv_ref.size();
+
+	valarray<cl_float2> output(n_t3);
+
+	for(int i = 0; i < n_t3; i++)
+	{
+		cl_float2 uv_ab = uv_points[uv_ref[i].s0];
+		cl_float2 uv_bc = uv_points[uv_ref[i].s1];
+		cl_float2 uv_ca = uv_points[uv_ref[i].s2];
+
+		output[i] = GetT3_CL(uv_ab, uv_bc, uv_ca);
+	}
 
 	return output;
 }
