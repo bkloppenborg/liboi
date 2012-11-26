@@ -50,9 +50,11 @@ public:
 
 	virtual complex<double> GetVis(pair<double,double> & uv) = 0;
 	cl_float2 GetVis_CL(cl_float2 & uv);
+	valarray<cl_float2> GetVis_CL(valarray<cl_float2> & uv_list);
 
-	float GetV2(pair<double,double> & uv);
+	double GetV2(pair<double,double> & uv);
 	cl_float GetV2_CL(cl_float2 & uv);
+	valarray<cl_float> GetV2_CL(valarray<cl_float2> & uv_list);
 
 	complex<double> GetT3(pair<double,double> & uv_ab, pair<double,double> & uv_bc, pair<double,double> & uv_ca);
 	cl_float2 GetT3_CL(cl_float2 & uv_ab, cl_float2 & uv_bc, cl_float2 & uv_ca);

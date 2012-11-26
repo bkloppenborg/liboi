@@ -35,6 +35,7 @@ CModel::~CModel()
 	// TODO Auto-generated destructor stub
 }
 
+// Returns the visibility of the model at the UV point uv converted into a cl_float2
 cl_float2 CModel::GetVis_CL(cl_float2 & uv)
 {
 	pair<double,double> t_uv(uv.s0, uv.s1);
@@ -47,7 +48,19 @@ cl_float2 CModel::GetVis_CL(cl_float2 & uv)
 	return output;
 }
 
-float CModel::GetV2(pair<double,double> & uv)
+valarray<cl_float2> CModel::GetVis_CL(valarray<cl_float2> & uv_list)
+{
+	unsigned int n_uv = uv_list.size();
+	valarray<cl_float2> output(n_uv);
+	for(int i = 0; i < n_uv; i++)
+	{
+		output[i] = GetVis_CL(uv_list[i]);
+	}
+
+	return output;
+}
+
+double CModel::GetV2(pair<double,double> & uv)
 {
 	return norm(GetVis(uv));
 }
@@ -57,6 +70,19 @@ cl_float CModel::GetV2_CL(cl_float2 & uv)
 	pair<double,double> t_uv(uv.s0, uv.s1);
 
 	return cl_float(GetV2(t_uv));
+}
+
+valarray<cl_float> CModel::GetV2_CL(valarray<cl_float2> & uv_list)
+{
+	int n_uv = uv_list.size();
+	valarray<cl_float> output(n_uv);
+	for(int i = 0; i < n_uv; i++)
+	{
+		cl_float2 uv = uv_list[i];
+		output[i] = GetV2_CL(uv);
+	}
+
+	return output;
 }
 
 complex<double> CModel::GetT3(pair<double,double> & uv_ab, pair<double,double> & uv_bc, pair<double,double> & uv_ca)

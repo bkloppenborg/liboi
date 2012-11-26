@@ -12,154 +12,51 @@
 #include "liboi_tests.h"
 #include "COpenCL.h"
 #include "CRoutine_FTtoV2.h"
-#include "CModel.h"
+#include "CPointSource.h"
 
 using namespace std;
 
 extern string LIBOI_KERNEL_PATH;
 
 /// Checks that the CPU routine functions correctly.
-TEST(CRoutine_FTtoV2, CPU_Linear_UVRef)
+TEST(CRoutine_FTtoV2, CPU_PointSource)
 {
 	unsigned int test_size = 10000;
 
-	// Allocate storage and generate synthetic complex data.
-	valarray<complex<float>> ft_input_complex(test_size);
-	valarray<cl_float2> ft_input_cl = CModel::GenerateUVSpiral_CL(test_size);
+	// Generate a point source model, get input data from it.
+	CPointSource pnt(128, 128, 0.025);
+	valarray<cl_float2> uv_points = pnt.GenerateUVSpiral_CL(test_size);
+	valarray<cl_float2> ft_input = pnt.GetVis_CL(uv_points);
+
+	// Create linear indexing
 	valarray<cl_uint> uv_ref(test_size);
-	valarray<cl_float> cpu_output(test_size);
-
-	// Copy these numbers int to the complex array
-	for(int i = 0; i < test_size; i++)
-	{
-		// Assign the UV references linearly.
-		uv_ref[i] = i;
-		// Copy the pseudo FT values.
-		ft_input_complex[i] = complex<float>(ft_input_cl[i].s0, ft_input_cl[i].s1);
-	}
-
-	// Run the routine
-	CRoutine_FTtoV2::FTtoV2(ft_input_cl, uv_ref, cpu_output, test_size);
-
-	// Check the results:
-	for(int i = 0; i < test_size; i++)
-	{
-		float complex_norm = norm(ft_input_complex[i]);
-		EXPECT_NEAR(complex_norm, float(cpu_output[i]), MAX_REL_ERROR * complex_norm);
-	}
-}
-
-/// Checks that the CPU routine functions correctly.
-TEST(CRoutine_FTtoV2, CPU_Reordered_UVRef)
-{
-	unsigned int test_size = 10000;
-
-	// Allocate storage and generate synthetic complex data.
-	valarray<complex<float>> ft_input_complex(test_size);
-	valarray<cl_float2> ft_input_cl = CModel::GenerateUVSpiral_CL(test_size);
-	valarray<cl_uint> uv_ref(test_size);
-	valarray<cl_float> cpu_output(test_size);
-
-	// Copy these numbers int to the complex array
-	for(unsigned int i = 0; i < test_size; i++)
-	{
-		// Assign the UV references linearly, but with every 10th element changed
-		if(i % 10 == 0)
-		{
-			uv_ref[i] = min(i+3, test_size);
-		}
-		else
-			uv_ref[i] = i;
-
-		// Copy the pseudo FT values.
-		ft_input_complex[i] = complex<float>(ft_input_cl[i].s0, ft_input_cl[i].s1);
-	}
-
-	// Run the routine
-	CRoutine_FTtoV2::FTtoV2(ft_input_cl, uv_ref, cpu_output, test_size);
-
-	// Check the results:
-	for(int i = 0; i < test_size; i++)
-	{
-		unsigned int id = uv_ref[i];
-		float complex_norm = norm(ft_input_complex[id]);
-		EXPECT_NEAR(complex_norm, float(cpu_output[i]), MAX_REL_ERROR * complex_norm);
-	}
-}
-
-/// Verifies the CPU and OpenCL routines produce the same result
-/// for linear UV references.
-TEST(CRoutine_FTtoV2, OpenCL_Linear_UVRef)
-{
-	unsigned int test_size = 10000;
-
-	// Allocate storage and generate synthetic complex data.
-	valarray<cl_float2> ft_input = CModel::GenerateUVSpiral_CL(test_size);
-	valarray<cl_uint> uv_ref(test_size);
-	valarray<cl_float> cpu_output(test_size);
-	valarray<cl_float> cl_output(test_size);
-
-	// Assign the UV references linearly:
 	for(int i = 0; i < test_size; i++)
 		uv_ref[i] = i;
 
-	// Init the OpenCL device and necessary routines:
-	COpenCL cl(CL_DEVICE_TYPE_GPU);
-	CRoutine_FTtoV2 r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
-	r.SetSourcePath(LIBOI_KERNEL_PATH);
-	r.Init();
+	// Allocate place to store the output
+	valarray<cl_float> output(test_size);
 
-	// Creat buffers on the OpenCL device, copy data over.
-	int err = CL_SUCCESS;
-	cl_mem ft_input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * test_size, NULL, NULL);
-	cl_mem uv_ref_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * test_size, NULL, NULL);
-	cl_mem tmp_output = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+	// Run the CPU routine, get results from the model.
+	CRoutine_FTtoV2::FTtoV2(ft_input, uv_ref, output, test_size);
+	valarray<cl_float> model_out = pnt.GetV2_CL(uv_points);
 
-    err = clEnqueueWriteBuffer(cl.GetQueue(), ft_input_cl, CL_TRUE, 0, sizeof(cl_float2) * test_size, &ft_input[0], 0, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &uv_ref[0], 0, NULL, NULL);
-
-	// Run the routines
-	CRoutine_FTtoV2::FTtoV2(ft_input, uv_ref, cpu_output, test_size);
-	r.FTtoV2(ft_input_cl, uv_ref_cl, tmp_output, 0, test_size);
-
-	// Copy back the results from the OpenCL device
-	err = clEnqueueReadBuffer(cl.GetQueue(), tmp_output, CL_TRUE, 0, sizeof(cl_float) * test_size, &cl_output[0], 0, NULL, NULL);
-
-	// Free OpenCL memory:
-	clReleaseMemObject(ft_input_cl);
-	clReleaseMemObject(uv_ref_cl);
-	clReleaseMemObject(tmp_output);
-
-	// Compare the results:
-	for(int i = 0; i < test_size; i++)
+	// Now check the results:
+	for(unsigned int i = 0; i < test_size; i++)
 	{
-		EXPECT_NEAR(cl_output[i], cpu_output[i], MAX_REL_ERROR * cpu_output[i]);
+		EXPECT_NEAR(output[i], model_out[i], MAX_REL_ERROR * model_out[i]);
 	}
 }
 
-/// Verifies the CPU and OpenCL routines produce the same result
-/// for slightly reordered UV references.
-TEST(CRoutine_FTtoV2, OpenCL_Reordered_UVRef)
+/// Checks that the OpenCL routine functions correctly.
+TEST(CRoutine_FTtoV2, OpenCL_PointSource)
 {
 	unsigned int test_size = 10000;
 
-	// Allocate storage and generate synthetic complex data.
-	valarray<cl_float2> ft_input = CModel::GenerateUVSpiral_CL(test_size);
-	valarray<cl_uint> uv_ref(test_size);
-	valarray<cl_float> cpu_output(test_size);
-	valarray<cl_float> cl_output(test_size);
-
-	// Assign the UV references linearly:
-	for(unsigned int i = 0; i < test_size; i++)
-	{
-		// Assign the UV references linearly, but with every 10th element changed
-		if(i % 10 == 0)
-		{
-			uv_ref[i] = min(i+3, test_size);
-		}
-		else
-			uv_ref[i] = i;
-	}
+	// Generate a point source model, get input data from it.
+	CPointSource pnt(128, 128, 0.025);
+	valarray<cl_float2> uv_points = pnt.GenerateUVSpiral_CL(test_size);
+	valarray<cl_float2> ft_input = pnt.GetVis_CL(uv_points);
+	valarray<cl_float> model_out = pnt.GetV2_CL(uv_points);
 
 	// Init the OpenCL device and necessary routines:
 	COpenCL cl(CL_DEVICE_TYPE_GPU);
@@ -167,94 +64,37 @@ TEST(CRoutine_FTtoV2, OpenCL_Reordered_UVRef)
 	r.SetSourcePath(LIBOI_KERNEL_PATH);
 	r.Init();
 
-	// Creat buffers on the OpenCL device, copy data over.
-	int err = CL_SUCCESS;
-	cl_mem ft_input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * test_size, NULL, NULL);
-	cl_mem uv_ref_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * test_size, NULL, NULL);
-	cl_mem tmp_output = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
-
-    err = clEnqueueWriteBuffer(cl.GetQueue(), ft_input_cl, CL_TRUE, 0, sizeof(cl_float2) * test_size, &ft_input[0], 0, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &uv_ref[0], 0, NULL, NULL);
-
-	// Run the routines
-	CRoutine_FTtoV2::FTtoV2(ft_input, uv_ref, cpu_output, test_size);
-	r.FTtoV2(ft_input_cl, uv_ref_cl, tmp_output, 0, test_size);
-
-	// Copy back the results from the OpenCL device
-	err = clEnqueueReadBuffer(cl.GetQueue(), tmp_output, CL_TRUE, 0, sizeof(cl_float) * test_size, &cl_output[0], 0, NULL, NULL);
-
-	// Free OpenCL memory:
-	clReleaseMemObject(ft_input_cl);
-	clReleaseMemObject(uv_ref_cl);
-	clReleaseMemObject(tmp_output);
-
-	// Compare the results:
+	// Create linear indexing
+	valarray<cl_uint> uv_ref(test_size);
 	for(int i = 0; i < test_size; i++)
-	{
-		EXPECT_NEAR(cl_output[i], cpu_output[i], MAX_REL_ERROR * cpu_output[i]);
-	}
-}
+		uv_ref[i] = i;
 
-/// Verifies the CPU and OpenCL routines produce the same result
-/// when the OpenCL memory zero point is slightly offset
-TEST(CRoutine_FTtoV2, OpenCL_OffsetMemory)
-{
-	unsigned int test_size = 10000;
-	unsigned int n_vis = test_size/6;
-	unsigned int offset = CRoutine_FTtoV2::CalculateOffset(n_vis);
-
-	// Allocate storage and generate synthetic complex data.
-	valarray<cl_float2> ft_input = CModel::GenerateUVSpiral_CL(test_size);
-	valarray<cl_uint> uv_ref(test_size);
-	valarray<cl_float> cpu_output(test_size);
-	valarray<cl_float> cl_output(test_size);
-
-	// Assign the UV references linearly:
-	for(unsigned int i = 0; i < test_size; i++)
-	{
-		// Assign the UV references linearly, but with every 10th element changed
-		if(i % 10 == 0)
-		{
-			uv_ref[i] = min(i+3, test_size);
-		}
-		else
-			uv_ref[i] = i;
-	}
-
-	// Init the OpenCL device and necessary routines:
-	COpenCL cl(CL_DEVICE_TYPE_GPU);
-	CRoutine_FTtoV2 r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
-	r.SetSourcePath(LIBOI_KERNEL_PATH);
-	r.Init();
-
-	// Creat buffers on the OpenCL device
-	// The output from the kernel will start at index "offset", so the output buffer needs to be large
-	// enough to account for this shift.
+	// Allocate memory on the OpenCL device and copy things over.
 	int err = CL_SUCCESS;
+	// FT input
 	cl_mem ft_input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * test_size, NULL, NULL);
-	cl_mem uv_ref_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * test_size, NULL, NULL);
-	cl_mem tmp_output = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * (test_size + offset), NULL, NULL);
-
-	// Copy the ft input values to the OpenCL device, remember to offset them.
     err = clEnqueueWriteBuffer(cl.GetQueue(), ft_input_cl, CL_TRUE, 0, sizeof(cl_float2) * test_size, &ft_input[0], 0, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &uv_ref[0], 0, NULL, NULL);
+	// UV references
+	cl_mem uv_ref_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_uint) * test_size, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_TRUE, 0, sizeof(cl_uint) * test_size, &uv_ref[0], 0, NULL, NULL);
+    // Output bufer
+	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
 
-	// Run the routines
-	CRoutine_FTtoV2::FTtoV2(ft_input, uv_ref, cpu_output, test_size);
-	r.FTtoV2(ft_input_cl, uv_ref_cl, tmp_output, n_vis, test_size);
+	// Run the OpenCL routine
+	r.FTtoV2(ft_input_cl, uv_ref_cl, output_cl, 0, test_size);
 
-	// Copy back the results from the OpenCL device.  Notice we start copying at "offset" so the
-	// indicies of the CPU and OpenCL computations are the same in the comparision function below.
-	err = clEnqueueReadBuffer(cl.GetQueue(), tmp_output, CL_TRUE, sizeof(cl_float) * offset, sizeof(cl_float) * test_size, &cl_output[0], 0, NULL, NULL);
+	// Copy back the buffer
+	valarray<cl_float> output(test_size);
+	err = clEnqueueReadBuffer(cl.GetQueue(), output_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &output[0], 0, NULL, NULL);
 
 	// Free OpenCL memory
 	clReleaseMemObject(ft_input_cl);
 	clReleaseMemObject(uv_ref_cl);
-	clReleaseMemObject(tmp_output);
+	clReleaseMemObject(output_cl);
 
-	// Compare the results:
-	for(int i = 0; i < test_size; i++)
+	// Now check the results:
+	for(unsigned int i = 0; i < test_size; i++)
 	{
-		EXPECT_NEAR(cl_output[i], cpu_output[i], MAX_REL_ERROR * cpu_output[i]);
+		EXPECT_NEAR(output[i], model_out[i], MAX_REL_ERROR * model_out[i]);
 	}
 }
