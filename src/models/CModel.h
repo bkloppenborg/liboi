@@ -57,8 +57,8 @@ public:
 	complex<double> GetT3(pair<double,double> & uv_ab, pair<double,double> & uv_bc, pair<double,double> & uv_ca);
 	cl_float2 GetT3_CL(cl_float2 & uv_ab, cl_float2 & uv_bc, cl_float2 & uv_ca);
 
-	valarray<pair<double,double>> GenerateUVSpiral(unsigned int n_uv);
-	valarray<cl_float2> GenerateUVSpiral_CL(unsigned int n_uv);
+	static valarray<pair<double,double>> GenerateUVSpiral(unsigned int n_uv);
+	static valarray<cl_float2> GenerateUVSpiral_CL(unsigned int n_uv);
 
 	virtual valarray<double> GetImage(unsigned int image_width, unsigned int image_height, float image_scale) = 0;
 	virtual valarray<cl_float> GetImage_CL(unsigned int image_width, unsigned int image_height, float image_scale);

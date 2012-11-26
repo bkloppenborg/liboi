@@ -72,6 +72,7 @@
 #include <iomanip>
 #include <cstdio>
 #include <valarray>
+#include <cassert>
 
 #include "textio.hpp"
 #include "liboi.hpp"

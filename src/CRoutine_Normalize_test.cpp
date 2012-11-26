@@ -13,6 +13,22 @@
 
 extern string LIBOI_KERNEL_PATH;
 
+/// Checks that the CPU normalization routine is working correctly.
+TEST(CRoutine_Normalize, CPUNormalize)
+{
+	unsigned int test_size = 10000;
+
+	valarray<float> cpu_val(test_size);
+	for(int i = 0; i < cpu_val.size(); i++)
+		cpu_val[i] = i;
+
+	CRoutine_Normalize::Normalize(cpu_val, cpu_val.size());
+	float post_norm_sum = CRoutine_Sum::Sum(cpu_val);
+
+	EXPECT_NEAR(post_norm_sum, 1.0, MAX_REL_ERROR);
+}
+
+/// Verifies that the CPU and OpenCL normalization routines are working similarly.
 TEST(CRoutine_Normalize, NormalizeBuffer)
 {
 	unsigned int test_size = 10000;
