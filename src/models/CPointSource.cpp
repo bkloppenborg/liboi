@@ -18,7 +18,7 @@ CPointSource::~CPointSource()
 	// TODO Auto-generated destructor stub
 }
 
-complex<double> CPointSource::CPointSource::GetVis(pair<double,double> & uv)
+complex<double> CPointSource::GetVis(pair<double,double> & uv)
 {
 	// Calculate the visibility and return
 	double dx = 0; //(mImageCenterX) * mImageScale * RPMAS;
