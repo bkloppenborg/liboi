@@ -119,6 +119,51 @@ TEST(CRoutine_Chi, CPU_Chi_convex_ZERO)
 }
 
 /// Tests the CPU implementation of the convex chi approximation
+TEST(CRoutine_Chi, CPU_Chi_convex_ONE)
+{
+	unsigned int test_size = 5;
+
+	unsigned int n = 2*test_size;
+	// Create buffers
+	valarray<cl_float> data(n);
+	valarray<cl_float> data_err(n);
+	valarray<cl_float> model(n);
+	valarray<cl_float> output(n);
+
+	valarray<cl_float2> t_data = CModel::GenerateUVSpiral_CL(test_size);
+
+	cl_float amp_err = 0.01;	// 1% error on amplitudes
+	cl_float phi_err = 0.1;		// 10% error on phases.
+	// Generate test data.
+	for(int i = 0; i < test_size; i++)
+	{
+		complex<float> c_data(t_data[i].s0, t_data[i].s1);
+
+		// Data are stored as amplitude and phase.
+		data[i] = abs(c_data);
+		data[test_size + i] = arg(c_data);
+
+		model[i] = abs(c_data) * (1 + amp_err);
+		model[test_size + i] = arg(c_data) * (1 + phi_err);
+
+		// Set the errors, avoid zero error
+		data_err[i] = max(fabs(amp_err * data[i]), amp_err);
+		data_err[test_size + i] = max(fabs(phi_err * data[test_size + i]), phi_err);
+	}
+
+	// Run the chi algorithm
+	CRoutine_Chi::Chi_complex_convex(data, data_err, model, 0, test_size, output);
+
+	// Compare results. Because data = model every chi element should be of unit magnitude
+	for(int i = 0; i < test_size; i++)
+	{
+		// Check the real and imaginary chi values
+		EXPECT_LT(fabs(output[i]), 1 + amp_err) << "Amp error exceeded.";
+		EXPECT_LT(fabs(output[test_size + i]), 1 + phi_err) << "Phase error exceeded.";
+	}
+}
+
+/// Tests the CPU implementation of the convex chi approximation
 TEST(CRoutine_Chi, CPU_Chi_nonconvex_ZERO)
 {
 	unsigned int test_size = 10000;

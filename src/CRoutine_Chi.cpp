@@ -183,7 +183,7 @@ void CRoutine_Chi::Chi_complex_convex(valarray<cl_float> & data, valarray<cl_flo
 		// Now compute the chi elements and store the result
 		output[i] =  (real(c_data) - real(c_model)) / real(c_error);
 		// Notice, the phase error is divided by the total "swing" of the phase error
-		output[n+i] =  (imag(c_data) - imag(c_model)) / (real(c_error) * imag(c_error));
+		output[n+i] =  (imag(c_data) - imag(c_model)) / (real(c_data) * imag(c_error));
 	}
 }
 
