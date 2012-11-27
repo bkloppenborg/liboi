@@ -173,7 +173,6 @@ void CRoutine_Chi::Chi_complex_convex(valarray<cl_float> & data, valarray<cl_flo
 		// Form the complex quantities:
 		complex<float> c_data(data[i], data[n+i]);
 		complex<float> c_model(model[i], model[n+i]);
-		complex<float> c_error(data_err[i], data_err[n+i]);
 		complex<float> c_phasor(cos(data[n+i]), -sin(data[n+i]));
 
 		// Rotate the model and the data to the +x axis by multiplying by the phasor
@@ -181,9 +180,9 @@ void CRoutine_Chi::Chi_complex_convex(valarray<cl_float> & data, valarray<cl_flo
 		c_model = c_model * c_phasor;
 
 		// Now compute the chi elements and store the result
-		output[i] =  (real(c_data) - real(c_model)) / real(c_error);
+		output[i] =  (abs(c_data) - abs(c_model)) / data_err[i];
 		// Notice, the phase error is divided by the total "swing" of the phase error
-		output[n+i] =  (imag(c_data) - imag(c_model)) / (real(c_data) * imag(c_error));
+		output[n+i] =  (arg(c_data) - arg(c_model)) / (abs(c_data) * data_err[n+i]);
 	}
 }
 

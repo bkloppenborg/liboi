@@ -121,7 +121,7 @@ TEST(CRoutine_Chi, CPU_Chi_convex_ZERO)
 /// Tests the CPU implementation of the convex chi approximation
 TEST(CRoutine_Chi, CPU_Chi_convex_ONE)
 {
-	unsigned int test_size = 5;
+	unsigned int test_size = 10000;
 
 	unsigned int n = 2*test_size;
 	// Create buffers
@@ -158,8 +158,8 @@ TEST(CRoutine_Chi, CPU_Chi_convex_ONE)
 	for(int i = 0; i < test_size; i++)
 	{
 		// Check the real and imaginary chi values
-		EXPECT_LT(fabs(output[i]), 1 + amp_err) << "Amp error exceeded.";
-		EXPECT_LT(fabs(output[test_size + i]), 1 + phi_err) << "Phase error exceeded.";
+		EXPECT_LT(fabs(output[i]), 1 + amp_err);
+		EXPECT_LT(fabs(output[test_size + i]), 1 + phi_err);
 	}
 }
 
