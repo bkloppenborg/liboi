@@ -237,4 +237,19 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 	clFinish(queue);
 }
 
+unsigned int COILibData::CalculateOffset_Vis(void)
+{
+	return 0;
+}
 
+// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
+unsigned int COILibData::CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2)
+{
+	return 2*n_vis + n_v2;
+}
+
+/// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
+unsigned int COILibData::CalculateOffset(unsigned int n_vis)
+{
+	return 2*n_vis;
+}

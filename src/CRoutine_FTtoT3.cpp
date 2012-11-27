@@ -48,12 +48,6 @@ CRoutine_FTtoT3::~CRoutine_FTtoT3()
 	// TODO Auto-generated destructor stub
 }
 
-/// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
-unsigned int CRoutine_FTtoT3::CalculateOffset(unsigned int n_vis, unsigned int n_v2)
-{
-	return 2*n_vis + n_v2;
-}
-
 void CRoutine_FTtoT3::Init(void)
 {
 	// Read the kernel, compile it
@@ -74,7 +68,7 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sig
 	err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
 	COpenCL::CheckOCLError("Failed to determine local size for ft_to_t3 kernel.", err);
 
-	unsigned int offset = CalculateOffset(n_vis, n_v2);
+	unsigned int offset = COILibData::CalculateOffset(n_vis, n_v2);
 
 	// Set kernel arguments:
 	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);

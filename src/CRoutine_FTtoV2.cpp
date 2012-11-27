@@ -47,12 +47,6 @@ CRoutine_FTtoV2::~CRoutine_FTtoV2()
 	// TODO Auto-generated destructor stub
 }
 
-/// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
-unsigned int CRoutine_FTtoV2::CalculateOffset(unsigned int n_vis)
-{
-	return 2*n_vis;
-}
-
 void CRoutine_FTtoV2::Init()
 {
 	// Read the kernel, compile it
@@ -67,7 +61,7 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, u
 
 	// By the storage definition (see COILibData), there are 2*n_vis elements in the data buffer before the V2
 	// data starts.
-	int offset = CalculateOffset(n_vis);
+	int offset = COILibData::CalculateOffset_V2(n_vis);
 
     int err = 0;
     size_t global = (size_t) n_v2;

@@ -41,6 +41,7 @@ float2 MultComplex3(float2 A, float2 B, float2 C);
 float2 MultComplex2(float2 A, float2 B)
 {
     // There is the obvious way to do this:
+    // This turns out to be faster than the "trade multiply for addition" method.
     // (a + bi) * (c + di) = (ac - bd) + (bc + ad)i
     float2 temp;
     // ac - bd

@@ -42,8 +42,6 @@ public:
 	CRoutine_FTtoT3(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_FTtoT3();
 
-	unsigned int CalculateOffset(unsigned int n_vis, unsigned int n_v2);
-
 	void Init(void);
 	void FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3);
 	static void FTtoT3(valarray<cl_float2> & ft_input, valarray<cl_uint4> & uv_ref, valarray<cl_short4> & signs, valarray<cl_float> & output);

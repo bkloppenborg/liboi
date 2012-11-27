@@ -112,6 +112,13 @@ public:
 	unsigned int GetNumUV() { return mNUV; };
 	unsigned int GetNumV2() { return mNV2; };
 	unsigned int GetNumVis() { return mNVis; };
+
+
+	static unsigned int CalculateOffset_Vis(void);
+	static unsigned int CalculateOffset_V2(unsigned int n_vis);
+	static unsigned int CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2);
+
+
 //	void GetT3(vector<CT3DataPtr> & t3);
 //	void GetV2(vector<CV2DataPtr> & v2);
 

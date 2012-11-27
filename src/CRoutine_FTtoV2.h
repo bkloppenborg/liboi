@@ -40,8 +40,6 @@ public:
 	CRoutine_FTtoV2(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_FTtoV2();
 
-	static unsigned int CalculateOffset(unsigned int n_vis);
-
 	void Init();
 	void FTtoV2(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, unsigned int n_vis, unsigned int n_v2);
 	static void FTtoV2(valarray<cl_float2> & ft_input, valarray<cl_uint> & uv_ref, valarray<cl_float> & cpu_output, unsigned int n_v2);
