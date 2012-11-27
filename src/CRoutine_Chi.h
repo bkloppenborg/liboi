@@ -33,6 +33,7 @@
 #define CROUTINE_CHI_H_
 
 #include "CRoutine_Sum.h"
+#include "liboi.hpp"
 
 class CRoutine_Square;
 class CRoutine_Zero;
@@ -45,8 +46,6 @@ class CRoutine_Chi: public CRoutine_Sum
 	cl_mem mChiTemp;
 	cl_mem mChiOutput;
 
-	valarray<cl_float> mCPUChiTemp;
-
 	// External routines, deleted elsewhere.
 	CRoutine_Square * mrSquare;
 
@@ -55,15 +54,24 @@ public:
 	~CRoutine_Chi();
 
 	void Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
-	void Chi_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
-	bool Chi_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
 
-	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value);
-	float Chi2_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum);
-	bool Chi2_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum);
+	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value);;
 
 	void GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
 	void GetChi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
+
+	static void Chi(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output,
+			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3,
+			LibOIEnums::Chi2Types chi_method);
+	static void Chi(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model,
+			unsigned int start_index, unsigned int n,
+			valarray<cl_float> & output);
+	static void Chi_complex_convex(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model,
+			unsigned int start_index, unsigned int n,
+			valarray<cl_float> & output);
+	static void Chi_complex_nonconvex(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model,
+			unsigned int start_index, unsigned int n,
+			valarray<cl_float> & output);
 
 	void Init(int num_elements);
 };

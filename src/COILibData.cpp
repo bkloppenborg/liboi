@@ -249,7 +249,7 @@ unsigned int COILibData::CalculateOffset_T3(unsigned int n_vis, unsigned int n_v
 }
 
 /// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
-unsigned int COILibData::CalculateOffset(unsigned int n_vis)
+unsigned int COILibData::CalculateOffset_V2(unsigned int n_vis)
 {
 	return 2*n_vis;
 }

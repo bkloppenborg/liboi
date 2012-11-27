@@ -41,21 +41,14 @@ float2 MultComplex2(cfloat A, cfloat B);
 // Multiply two complex numbers
 float2 MultComplex2(cfloat A, cfloat B)
 {
-    // There is the obvious way to do this:
-/*    float2 temp;*/
-/*    temp.s0 = A.s0*B.s0 - A.s1*B.s1;*/
-/*    temp.s1 = A.s0*B.s1 + A.s1*B.s0;  */
-/*    */
-/*    return temp;*/
-    
-    // We can trade off one multiplication for three additional additions
-    float k1 = A.s0 * B.s0;
-    float k2 = A.s1 * B.s1;
-    float k3 = (A.s0 + A.s1) * (B.s0 + B.s1);
-    
+    // There is the obvious way to do this (which turns out to be faster)
+    // (a + bi) * (c + di) = (ac - bd) + (bc + ad)i
     float2 temp;
-    temp.s0 = k1 - k2;
-    temp.s1 = k3 - k1 - k2;
+    // ac - bd
+    temp.s0 = A.s0*B.s0 - A.s1*B.s1;
+    // bc + ad
+    temp.s1 = A.s1*B.s0 + A.s0*B.s1;
+
     return temp;
 }
 

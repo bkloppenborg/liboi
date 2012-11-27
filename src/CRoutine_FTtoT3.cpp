@@ -33,6 +33,7 @@
  */
 
 #include "CRoutine_FTtoT3.h"
+#include "COILibData.h"
 #include <cstdio>
 #include <complex>
 
@@ -68,7 +69,7 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sig
 	err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
 	COpenCL::CheckOCLError("Failed to determine local size for ft_to_t3 kernel.", err);
 
-	unsigned int offset = COILibData::CalculateOffset(n_vis, n_v2);
+	unsigned int offset = COILibData::CalculateOffset_T3(n_vis, n_v2);
 
 	// Set kernel arguments:
 	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);

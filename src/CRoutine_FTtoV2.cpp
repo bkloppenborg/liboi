@@ -33,7 +33,8 @@
  */
 
 #include "CRoutine_FTtoV2.h"
-#include <cstdio>
+
+#include "COILibData.h"
 
 CRoutine_FTtoV2::CRoutine_FTtoV2(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine(device, context, queue)

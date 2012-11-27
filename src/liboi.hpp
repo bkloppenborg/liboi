@@ -87,6 +87,12 @@ namespace LibOIEnums
 		OPENGL_TEXTUREBUFFER,
 		HOST_MEMORY
 	};
+
+	enum Chi2Types
+	{
+		CONVEX,
+		NON_CONVEX
+	};
 }
 
 class CLibOI
