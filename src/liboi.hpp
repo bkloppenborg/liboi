@@ -169,12 +169,12 @@ public:
 //	void GetT3(unsigned int data_set, vector<CT3DataPtr> & t3);
 //	void GetV2(unsigned int data_set, vector<CV2DataPtr> & v2);
 
-	void ImageToChi(COILibDataPtr data, float * output, int & n);
-	bool ImageToChi(int data_num, float * output, int & n);
+	void ImageToChi(COILibDataPtr data, float * output, unsigned int & n);
+	bool ImageToChi(int data_num, float * output, unsigned int & n);
 	float ImageToChi2(COILibDataPtr data);
 	float ImageToChi2(int data_num);
-	void ImageToChi2(COILibDataPtr data, float * output, int & n);
-	bool ImageToChi2(int data_num, float * output, int & n);
+	void ImageToChi2(COILibDataPtr data, float * output, unsigned int & n);
+	bool ImageToChi2(int data_num, float * output, unsigned int & n);
 	void ImageToData(int data_num);
 	void ImageToData(COILibDataPtr data);
 	float ImageToLogLike(COILibDataPtr data);

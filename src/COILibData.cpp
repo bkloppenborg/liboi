@@ -253,3 +253,9 @@ unsigned int COILibData::CalculateOffset_V2(unsigned int n_vis)
 {
 	return 2*n_vis;
 }
+
+// Calculate the total number of elements in the data buffer following the data storage definition in COILibData.h
+unsigned int COILibData::TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3)
+{
+	return 2*n_vis + n_v2 + 2*n_t3;
+}

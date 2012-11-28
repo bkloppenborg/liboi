@@ -178,7 +178,11 @@ void CLibOI::CopyImageToBuffer(float * host_mem, cl_mem cl_buffer, int width, in
 /// Computes the chi2 between the current simulated data, and the observed data set specified in data
 float CLibOI::DataToChi2(COILibDataPtr data)
 {
-	return mrChi->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true, true);
+	unsigned int n_vis = data->GetNumVis();
+	unsigned int n_v2 = data->GetNumV2();
+	unsigned int n_t3 = data->GetNumT3();
+
+	return mrChi->Chi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
 }
 
 float CLibOI::DataToLogLike(COILibDataPtr data)
@@ -334,19 +338,22 @@ int CLibOI::GetNV2(int data_num)
 /// Uses the current active image to compute the chi (i.e. non-squared version) with respect to the
 /// specified data and returns the chi elements in the floating point array, output.
 /// This is a convenience function that calls FTToData, DataToChi
-void CLibOI::ImageToChi(COILibDataPtr data, float * output, int & n)
+void CLibOI::ImageToChi(COILibDataPtr data, float * output, unsigned int & n)
 {
 	// Simple, call the other functions
 	Normalize();
 	FTToData(data);
 
-	n = data->GetNumData();
-	mrChi->GetChi(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, output);
+	unsigned int n_vis = data->GetNumVis();
+	unsigned int n_v2 = data->GetNumV2();
+	unsigned int n_t3 = data->GetNumT3();
+
+	return mrChi->Chi(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, output, n);
 }
 
 /// Same as ImageToChi above.
 /// Returns false if the data number does not exist, true otherwise.
-bool CLibOI::ImageToChi(int data_num, float * output, int & n)
+bool CLibOI::ImageToChi(int data_num, float * output, unsigned int & n)
 {
 	if(data_num > mDataList->size() - 1)
 		return false;
@@ -380,19 +387,22 @@ float CLibOI::ImageToChi2(int data_num)
 /// Uses the current active image to compute the chi2 with respect to the
 /// specified data and returns the chi elements in the floating point array, output.
 /// This is a convenience function that calls FTToData, DataToChi
-void CLibOI::ImageToChi2(COILibDataPtr data, float * output, int & n)
+void CLibOI::ImageToChi2(COILibDataPtr data, float * output, unsigned int & n)
 {
 	// Simple, call the other functions
 	Normalize();
 	FTToData(data);
 
-	n = data->GetNumData();
-	mrChi->GetChi2(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, output);
+	unsigned int n_vis = data->GetNumVis();
+	unsigned int n_v2 = data->GetNumV2();
+	unsigned int n_t3 = data->GetNumT3();
+
+	return mrChi->Chi(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, output, n);
 }
 
 /// Same as ImageToChi above.
 /// Returns false if the data number does not exist, true otherwise.
-bool CLibOI::ImageToChi2(int data_num, float * output, int & n)
+bool CLibOI::ImageToChi2(int data_num, float * output, unsigned int & n)
 {
 	if(data_num > mDataList->size() - 1)
 		return false;

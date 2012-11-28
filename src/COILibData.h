@@ -118,6 +118,8 @@ public:
 	static unsigned int CalculateOffset_V2(unsigned int n_vis);
 	static unsigned int CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2);
 
+	static unsigned int TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3);
+
 
 //	void GetT3(vector<CT3DataPtr> & t3);
 //	void GetV2(vector<CV2DataPtr> & v2);

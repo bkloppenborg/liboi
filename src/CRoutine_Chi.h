@@ -48,8 +48,9 @@ class CRoutine_Chi: public CRoutine_Sum
 	int mChiConvexKernelID;
 	int mChiNonConvexKernelID;
 
-	cl_mem mChiTemp;
-	cl_mem mChiOutput;
+	unsigned int mChiBufferSize;
+	cl_mem mChiOutput;	// All OpenCL calculations store their result here if the convenience functions are used.
+	cl_mem mChiSquaredOutput;	// Chi2 values are stored here.
 
 	// External routines, deleted elsewhere.
 	CRoutine_Square * mrSquare;
@@ -60,31 +61,40 @@ public:
 
 	// OpenCL routines
 	void Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
-
 	void ChiComplexConvex(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
 	void ChiComplexNonConvex(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
 
+	void Chi(cl_mem data, cl_mem data_err, cl_mem model_data,
+			LibOIEnums::Chi2Types complex_chi_method,
+			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3);
 
-	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value);;
-
-	void GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
-	void GetChi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
-
-	// CPU routines:
-	static void Chi(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output,
+	void Chi(cl_mem data, cl_mem data_err, cl_mem model_data,
+			LibOIEnums::Chi2Types complex_chi_method,
 			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3,
-			LibOIEnums::Chi2Types chi_method);
+			float * output, unsigned int & output_size);
+
 	static void Chi(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model,
 			unsigned int start_index, unsigned int n,
 			valarray<cl_float> & output);
+
 	static void Chi_complex_convex(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model,
 			unsigned int start_index, unsigned int n,
 			valarray<cl_float> & output);
+
 	static void Chi_complex_nonconvex(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model,
 			unsigned int start_index, unsigned int n,
 			valarray<cl_float> & output);
 
-	void Init(int num_elements);
+	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data,
+			LibOIEnums::Chi2Types complex_chi_method,
+			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3, bool compute_sum);
+
+	void Chi2(cl_mem data, cl_mem data_err, cl_mem model_data,
+			LibOIEnums::Chi2Types complex_chi_method,
+			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3,
+			float * output, unsigned int & output_size);
+
+	void Init(unsigned int num_elements);
 };
 
 #endif /* CROUTINE_CHI_H_ */
