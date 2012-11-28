@@ -54,11 +54,20 @@ CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_q
 	mSource.push_back("chi.cl");
 	mChiSourceID = mSource.size() - 1;
 
+	mSource.push_back("chi_complex_convex.cl");
+	mChiConvexSourceID = mSource.size() - 1;
+
+	mSource.push_back("chi_complex_nonconvex.cl");
+	mChiNonConvexSourceID = mSource.size() - 1;
+
 	mrSquare = rSquare;
 
+	// Set the temporary buffers and compiled kernel IDs to something we can verify is invalid.
 	mChiTemp = NULL;
 	mChiOutput = NULL;
 	mChiKernelID = -1;
+	mChiConvexKernelID = -1;
+	mChiNonConvexKernelID = -1;
 }
 
 CRoutine_Chi::~CRoutine_Chi()
@@ -67,12 +76,6 @@ CRoutine_Chi::~CRoutine_Chi()
 
 	if(mChiTemp) clReleaseMemObject(mChiTemp);
 	if(mChiOutput) clReleaseMemObject(mChiOutput);
-}
-
-// A wrapper function
-void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model, unsigned int start, unsigned int n)
-{
-	Chi(data, data_err, model, mChiTemp, start, n);
 }
 
 /// Traditional chi computation under the convex approximation in cartesian coordinates
@@ -98,6 +101,60 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output
 	// Execute the kernel over the entire range of the data set
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChiKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue chi kernel.", err);
+}
+
+/// Traditional chi implementation for polar coordinantes in the convex assumption.
+/// Complex data and model vectors are converted to cartesian by rotating by the data phase. Then the
+/// convex elliptical approximation is applied in computing the chi values.
+void CRoutine_Chi::ChiComplexConvex(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n)
+{
+	int err = CL_SUCCESS;
+	size_t global = (size_t) n;
+	size_t local = 0;
+
+	// Get the maximum work-group size for executing the kernel on the device
+	err = clGetKernelWorkGroupInfo(mKernels[mChiConvexKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	COpenCL::CheckOCLError("Failed to determine workgroup size for chi_complex_convex kernel.", err);
+
+	// Set the arguments to our compute kernel
+	err  = clSetKernelArg(mKernels[mChiConvexKernelID], 0, sizeof(cl_mem), &data);
+	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 1, sizeof(cl_mem), &data_err);
+	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 2, sizeof(cl_mem), &model);
+	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 3, sizeof(cl_mem), &output);
+	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 4, sizeof(unsigned int), &start);
+	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 5, sizeof(unsigned int), &n);
+	COpenCL::CheckOCLError("Failed to set chi_complex_convex kernel arguments.", err);
+
+	// Execute the kernel over the entire range of the data set
+	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChiConvexKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to enqueue chi_complex_convex kernel.", err);
+}
+
+/// Chi implementation for polar coordinantes under the non-convex assumption
+/// Chi values are computed between the complex data and model vectors in polar coordinates.
+/// The phase error is moduo TWO_PI to ensure the minimum difference is reported.
+void CRoutine_Chi::ChiComplexNonConvex(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n)
+{
+	int err = CL_SUCCESS;
+	size_t global = (size_t) n;
+	size_t local = 0;
+
+	// Get the maximum work-group size for executing the kernel on the device
+	err = clGetKernelWorkGroupInfo(mKernels[mChiNonConvexKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	COpenCL::CheckOCLError("Failed to determine workgroup size for chi_complex_nonconvex kernel.", err);
+
+	// Set the arguments to our compute kernel
+	err  = clSetKernelArg(mKernels[mChiNonConvexKernelID], 0, sizeof(cl_mem), &data);
+	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 1, sizeof(cl_mem), &data_err);
+	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 2, sizeof(cl_mem), &model);
+	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 3, sizeof(cl_mem), &output);
+	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 4, sizeof(unsigned int), &start);
+	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 5, sizeof(unsigned int), &n);
+	COpenCL::CheckOCLError("Failed to set chi_complex_nonconvex kernel arguments.", err);
+
+	// Execute the kernel over the entire range of the data set
+	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChiNonConvexKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to enqueue chi_complex_nonconvex kernel.", err);
 }
 
 // Computes the chi for vis, V2, and T3 data following the specified chi approximation method.
@@ -323,8 +380,21 @@ void CRoutine_Chi::Init(int n)
 	if(mChiOutput == NULL)
 		mChiOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
 
-	// Read the kernel, compile it
+	// Read the kernels, compile them
 	string source = ReadSource(mSource[mChiSourceID]);
     BuildKernel(source, "chi", mSource[mChiSourceID]);
     mChiKernelID = mKernels.size() - 1;
+
+	// Read the kernel, compile it
+	source = ReadSource(mSource[mChiConvexSourceID]);
+    BuildKernel(source, "chi_complex_convex", mSource[mChiConvexSourceID]);
+    mChiConvexKernelID = mKernels.size() - 1;
+
+	// The non-convex kernel needs TWO_PI to be defined
+    stringstream tmp;
+    tmp << "#define TWO_PI " << TWO_PI << endl;
+    tmp << ReadSource(mSource[mChiNonConvexSourceID]);
+    source = ReadSource(mSource[mChiNonConvexSourceID]);
+    BuildKernel(tmp.str(), "chi_complex_nonconvex", mSource[mChiNonConvexSourceID]);
+    mChiNonConvexKernelID = mKernels.size() - 1;
 }

@@ -1,12 +1,12 @@
 /*
- * chi_bispectra_convex.cl
+ * chi_complex_mpmconvex.cl
  *
  *  Created on: Oct 24, 2012
  *      Author: bkloppenborg
  *  
  *  Description:
- *      OpenCL kernel that computes the chi elements for bispectra under
- *      the convex assumption.
+ *      OpenCL kernel that computes the chi elements for complex quantities
+ *      under the assumption that the probability distributions is non-convex.
  */
 
 /* 
@@ -33,52 +33,48 @@
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#typedef float2 cfloat;
-
-// Function prototypes:
-float2 MultComplex2(cfloat A, cfloat B);
-
-// Multiply two complex numbers
-float2 MultComplex2(cfloat A, cfloat B)
-{
-    // There is the obvious way to do this (which turns out to be faster)
-    // (a + bi) * (c + di) = (ac - bd) + (bc + ad)i
-    float2 temp;
-    // ac - bd
-    temp.s0 = A.s0*B.s0 - A.s1*B.s1;
-    // bc + ad
-    temp.s1 = A.s1*B.s0 + A.s0*B.s1;
-
-    return temp;
-}
+// The following define should be created during the kernel compilation on the host.
+// but we initialize it here just in case.
+#ifndef TWO_PI
+#define TWO_PI 6.283185307179586
+#endif
 
 /// The chi_bispectra_convex kernel computes the chi elements for the amplitude and
 /// phase of the bispectra.  
-__kernel void chi_bispectra_convex(
+__kernel void chi_complex_nonconvex(
     __global float * data,
     __global float * data_err,
     __global float * model,
     __global float * output,
-    __private int n)
+    __private unsigned int start,
+    __private unsigned int n)
 {
     int i = get_global_id(0);
+    unsigned int index = start + i;
+    float tmp = 0;
     
     // Lookup the phase and other data quantities
-    cfloat tmp_data(data[i], data[2*i]);
-    cfloat tmp_data_err(data_err[i], tmp_data.s0 * data_err[2*i]);
-    cfloat tmp_model(model[i], model[2*i]);
-    
-    cfloat phasor(cos(tmp_data.s1), -sin(tmp_data.s1));
-    
-    // Rotate the phase and data
-    tmp_data = MultComplex2(tmp_data, phasor);
-    tmp_model = MultComplex2(tmp_model, phasor);
-    
-    // Compute the chi, store the result:
-    float2 tmp = (tmp_data - tmp_model) / tmp_data_err;
+    float2 tmp_data;
+    tmp_data.s0 = data[index];
+    tmp_data.s1 = data[n+index];
+
+    float2 tmp_data_err;
+    tmp_data_err.s0 = data_err[index];
+    tmp_data_err.s1 = data_err[n+index];
+
+    float2 tmp_model;
+    tmp_model.s0 = model[index];
+    tmp_model.s1 =  model[n+index];
+
+    // Compute the residual, then chi elements
+    float2 error = tmp_data - tmp_model;
+    error.s0 = error.s0 / tmp_data_err.s0;
+    error.s1 = remainder(error.s1, TWO_PI) / tmp_data_err.s1;    
+
+    // Store the result:
     if(i < n)
     {
-        output[i] = tmp.s0;
-        output[2*i] = tmp.s1;
-    }  
+        output[index] = (tmp_data.s0 - tmp_model.s0) / tmp_data_err.s0;
+        output[n+index] = remainder(tmp_data.s1 - tmp_model.s1, TWO_PI) / tmp_data_err.s1;    
+    }   
 }

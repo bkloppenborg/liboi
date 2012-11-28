@@ -41,7 +41,12 @@ class CRoutine_Zero;
 class CRoutine_Chi: public CRoutine_Sum
 {
 	int mChiSourceID;
+	int mChiConvexSourceID;
+	int mChiNonConvexSourceID;
+
 	int mChiKernelID;
+	int mChiConvexKernelID;
+	int mChiNonConvexKernelID;
 
 	cl_mem mChiTemp;
 	cl_mem mChiOutput;
@@ -54,11 +59,10 @@ public:
 	~CRoutine_Chi();
 
 	// OpenCL routines
-	void Chi(cl_mem data, cl_mem data_err, cl_mem model_data, unsigned int start, unsigned int n);
 	void Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
 
-
-
+	void ChiComplexConvex(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
+	void ChiComplexNonConvex(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
 
 
 	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value);;

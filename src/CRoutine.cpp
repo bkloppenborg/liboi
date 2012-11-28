@@ -96,16 +96,11 @@ int CRoutine::BuildKernel(string source, string kernel_name)
 		size_t length;
 		char build_log[2048];
 		//printf("%s\n", block_source);
-		printf("Error: Failed to create compute program!\n");
+		cout<< "Error: Failed to create compute program from source: " << kernel_name << endl;
 		clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, sizeof(build_log), build_log, &length);
 		printf("%s\n", build_log);
 
-
-//        printf("Error: Failed to create compute program!\n");
-//        printf("%s", tmp_err.c_str());
-//        clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, tmp_err.size(), &tmp_err, &len);
-//        printf("%s\n", tmp_err.c_str());
-		// TODO: Throw an exception, cleanly exit.
+		throw "Could not build compute program " + kernel_name;
 	}
 
 	// Build the program executable
@@ -115,11 +110,11 @@ int CRoutine::BuildKernel(string source, string kernel_name)
 		size_t length;
 		char build_log[2048];
 		//printf("%s\n", block_source);
-		printf("Error: Failed to build compute program!\n");
+		cout<< "Error: Failed to build compute program: " << kernel_name << endl;
 		clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, sizeof(build_log), build_log, &length);
 		printf("%s\n", build_log);
 
-		// TODO: Throw an exception, cleanly exit.
+		throw "Could not compile compute program " + kernel_name;
 	}
 
     // Program built correctly, push it onto the vector
