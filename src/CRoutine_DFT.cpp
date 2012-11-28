@@ -93,19 +93,6 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 #endif //DEBUG_VERBOSE
 }
 
-//void CRoutine_DFT::FT_CPU(cl_mem uv_points, int n_uv_points,
-//		cl_mem image, int image_width, int image_height,
-//		valarray<complex<float>> & output)
-//{
-//	// First pull down the UV points and image.
-//	cl_float2 cpu_uvpts[n_uv_points];
-//	cl_float cpu_image[image_width * image_height];
-//
-//	err = clEnqueueReadBuffer(mQueue, uv_points, CL_TRUE, 0, n_uv_points * sizeof(cl_float2), cpu_uvpts, 0, NULL, NULL);
-//	err = clEnqueueReadBuffer(mQueue, image, CL_TRUE, 0, image_width * image_height * sizeof(cl_float), cpu_image, 0, NULL, NULL);
-//	COpenCL::CheckOCLError("Failed to copy back DFT data, CRoutine_DFT.cpp", err);
-//}
-
 /// CPU implementation of the discrete Fourier transform algorithm.
 void CRoutine_DFT::FT(valarray<cl_float2> & uv_points, unsigned int n_uv_points,
 		valarray<cl_float> & image, unsigned int image_width, unsigned int image_height, float image_scale,
@@ -154,20 +141,6 @@ void CRoutine_DFT::FT(valarray<cl_float2> & uv_points, unsigned int n_uv_points,
 		cpu_output[uu].s1 = imag(ctmp);
 	}
 }
-
-//bool CRoutine_DFT::FT_Test(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output)
-//{
-//	// Run the OpenCL DFT routine:
-//	valarray<complex<float>> cpu_output(n_uv_points);
-//	FT(uv_points, n_uv_points, image, image_width, image_height, image_flux, output);
-//	FT_CPU(uv_points, n_uv_points, image, image_width, image_height, image_flux, cpu_output);
-//
-//	printf("Checking FT (DFT) Routine:\n");
-//	bool norm_pass = Verify(cpu_output, output, n_uv_points, 0);
-//	PassFail(norm_pass);
-//
-//	return norm_pass;
-//}
 
 void CRoutine_DFT::Init(float image_scale)
 {
