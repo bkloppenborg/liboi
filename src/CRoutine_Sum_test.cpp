@@ -14,7 +14,7 @@
 extern string LIBOI_KERNEL_PATH;
 
 /// Checks that the summation algorithm is working on the CPU side
-TEST(CRoutine_Sum, Sum_CPU)
+TEST(CRoutine_Sum, CPU_Sum)
 {
 	// Check a few sums:
 
@@ -37,7 +37,7 @@ TEST(CRoutine_Sum, Sum_CPU)
 }
 
 /// Checks that the sum on the OpenCL device and CPU match
-TEST(CRoutine_Sum, Match_CL_CPU)
+TEST(CRoutine_Sum, CL_Sum_CPU_CHECK)
 {
 	unsigned int test_size = 10000;
 

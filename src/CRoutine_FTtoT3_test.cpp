@@ -74,7 +74,7 @@ TEST(CRoutine_FTtoT3, CPU_PointSource)
 }
 
 /// Checks that the OpenCL routine functions correctly.
-TEST(CRoutine_FTtoT3, OpenCL_PointSource)
+TEST(CRoutine_FTtoT3, CL_PointSource)
 {
 	unsigned int test_size = 1;
 

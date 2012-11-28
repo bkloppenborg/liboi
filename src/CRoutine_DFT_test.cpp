@@ -16,7 +16,7 @@
 extern string LIBOI_KERNEL_PATH;
 
 /// Checks that the CPU algorithm can replicate a point source DFT
-TEST(CRoutine_DFT, PointSource_CPU)
+TEST(CRoutine_DFT, CPU_PointSource)
 {
 	// Create a (normalized) image with a point source at the center:
 	unsigned int image_width = 128;
@@ -90,8 +90,8 @@ TEST(CRoutine_DFT, PointSource_CPU)
 
 /// Checks that the DFT routine replicates the DFT for a point source.
 /// Computations performed on an OpenCL device
-TEST(CRoutine_DFT, PointSource_CL)
-{
+//TEST(CRoutine_DFT, CL_PointSource)
+//{
 //	// First
 //
 //
@@ -134,4 +134,4 @@ TEST(CRoutine_DFT, PointSource_CL)
 //	// Check the results.
 //	for(int i = 0; i < test_size; i++)
 //		EXPECT_NEAR(float(cpu_val[i]), float(cl_val[i]), MAX_REL_ERROR) << " at index " << i;
-}
+//}

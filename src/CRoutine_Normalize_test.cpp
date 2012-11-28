@@ -14,7 +14,7 @@
 extern string LIBOI_KERNEL_PATH;
 
 /// Checks that the CPU normalization routine is working correctly.
-TEST(CRoutine_Normalize, CPUNormalize)
+TEST(CRoutine_Normalize, CPU_Normalize)
 {
 	unsigned int test_size = 10000;
 
@@ -29,7 +29,7 @@ TEST(CRoutine_Normalize, CPUNormalize)
 }
 
 /// Verifies that the CPU and OpenCL normalization routines are working similarly.
-TEST(CRoutine_Normalize, NormalizeBuffer)
+TEST(CRoutine_Normalize, CL_Normalize)
 {
 	unsigned int test_size = 10000;
 

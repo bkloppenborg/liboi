@@ -13,7 +13,7 @@
 
 extern string LIBOI_KERNEL_PATH;
 
-TEST(CRoutine_Zero, ClearBuffer)
+TEST(CRoutine_Zero, CL_ZeroBuffer)
 {
 	unsigned int test_size = 10000;
 
