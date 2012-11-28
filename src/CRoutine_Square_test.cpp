@@ -13,7 +13,34 @@
 
 extern string LIBOI_KERNEL_PATH;
 
-TEST(CRoutine_Square, SquareBuffer)
+TEST(CRoutine_Square, CPU_Square)
+{
+	unsigned int test_size = 8;
+	valarray<cl_float> input(test_size);
+	valarray<cl_float> output(test_size);
+
+	input[0] = 2;
+	input[1] = 4;
+	input[2] = 8;
+	input[3] = 16;
+	input[4] = 32;
+	input[5] = 64;
+	input[6] = 128;
+	input[7] = 256;
+
+    CRoutine_Square::Square(input, output, input.size(), input.size());
+
+    EXPECT_EQ(output[0], 4);
+    EXPECT_EQ(output[1], 16);
+    EXPECT_EQ(output[2], 64);
+    EXPECT_EQ(output[3], 256);
+    EXPECT_EQ(output[4], 1024);
+    EXPECT_EQ(output[5], 4096);
+    EXPECT_EQ(output[6], 16384);
+    EXPECT_EQ(output[7], 65536);
+}
+
+TEST(CRoutine_Square, CL_Square)
 {
 	unsigned int test_size = 10000;
 
