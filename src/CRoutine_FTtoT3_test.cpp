@@ -154,8 +154,3 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 		EXPECT_NEAR(output[test_size + i], model_out[i].s1, MAX_REL_ERROR * model_out[i].s1) << "Phase calculation error.";
 	}
 }
-
-
-
-
-

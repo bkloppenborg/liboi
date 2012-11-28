@@ -83,7 +83,10 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data,
 		LibOIEnums::Chi2Types complex_chi_method,
 		unsigned int n_vis, unsigned int n_v2, unsigned int n_t3)
 {
-	unsigned int vis_offset = 0;
+	// Zero out the result buffer:
+	mrZero->Zero(mChiOutput, mChiBufferSize);
+
+	unsigned int vis_offset = COILibData::CalculateOffset_Vis();
 	unsigned int v2_offset = COILibData::CalculateOffset_V2(n_vis);
 	unsigned int t3_offset = COILibData::CalculateOffset_T3(n_vis, n_v2);
 	unsigned int n_data = COILibData::TotalBufferSize(n_vis, n_v2, n_t3);
@@ -123,9 +126,6 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data,
 /// Traditional chi computation under the convex approximation in cartesian coordinates
 void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n)
 {
-	// Zero out the result buffer:
-	mrZero->Zero(mChiOutput, mChiBufferSize);
-
 	if(n == 0)
 		return;
 
@@ -318,6 +318,7 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data,
 	// Calculate the chi, then square it.
 	unsigned int n_data = COILibData::TotalBufferSize(n_vis, n_v2, n_t3);
 	Chi(data, data_err, model_data, complex_chi_method, n_vis, n_v2, n_t3);
+
 	mrSquare->Square(mChiOutput, mChiSquaredOutput, n_data, n_data);
 
 	// If we are to compute the sum, do so. Store the result in the ChiSquared output buffer.

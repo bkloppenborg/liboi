@@ -176,6 +176,7 @@ protected:
 			data[i] = abs(c_data);
 			data[test_size + i] = arg(c_data);
 
+			// Ensure model is always at least one sigma away from data
 			model[i] = abs(c_data) * (1 + amp_err);
 			model[test_size + i] = arg(c_data) * (1 + phi_err);
 
@@ -377,12 +378,11 @@ TEST_F(ChiTest, CPU_Chi_NonConvex_ONE)
 {
 	unsigned int test_size = 10000;
 
-	unsigned int n = 2*test_size;
 	// Create buffers
-	valarray<cl_float> data(n);
-	valarray<cl_float> data_err(n);
-	valarray<cl_float> model(n);
-	valarray<cl_float> output(n);
+	valarray<cl_float> data;
+	valarray<cl_float> data_err;
+	valarray<cl_float> model;
+	valarray<cl_float> output;
 	MakeChiNonConvexOneBuffers(data, data_err, model, output, test_size);
 
 	// Run the chi algorithm
@@ -393,7 +393,7 @@ TEST_F(ChiTest, CPU_Chi_NonConvex_ONE)
 	{
 		// Check the real and imaginary chi values
 		EXPECT_LT(fabs(output[i]), 1 + amp_err) << "Amplitude error exceeded.";
-		EXPECT_LT(fabs(output[test_size + i]), 1 + phi_err) << "Phase error exceeded.";
+		EXPECT_LT(fabs(output[test_size + i]), 1 + phi_err) << "Phase error exceeded." << i;
 	}
 }
 
@@ -533,4 +533,54 @@ TEST_F(ChiTest, CL_Chi_NonConvex_One)
 	// Compare results. Because model = data + 1sigma all elements should be ~1
 	for(int i = 0; i < test_size; i++)
 		EXPECT_NEAR(fabs(output[i]), 1, MAX_REL_ERROR);
+}
+
+/// Checks that the chi2 functions are working for V2 data
+TEST_F(ChiTest, CL_Chi2_V2)
+{
+	unsigned int test_size = 10000;
+
+	// Create buffers
+	valarray<cl_float> data(test_size);
+	valarray<cl_float> data_err(test_size);
+	valarray<cl_float> model(test_size);
+	valarray<cl_float> output(test_size);
+	MakeChiOneBuffers(data, data_err, model, output, test_size);
+
+	unsigned int n_vis = 0;
+	unsigned int n_v2 = test_size;
+	unsigned int n_t3 = 0;
+
+	// Setup OpenCL and the Chi routine. Teardown is automatic.
+	SetUpCL(data, data_err, model, output);
+	float should_be_one = r->Chi2(data_cl, data_err_cl, model_cl, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
+	should_be_one /= test_size;
+
+	EXPECT_NEAR(should_be_one, 1, MAX_REL_ERROR);
+}
+
+/// Checks that the chi2 functions are working for T3 data
+TEST_F(ChiTest, CL_Chi2_T3)
+{
+	unsigned int test_size = 10000;
+
+	unsigned int n_values = 2*test_size;
+
+	// Create buffers
+	valarray<cl_float> data(test_size);
+	valarray<cl_float> data_err(test_size);
+	valarray<cl_float> model(test_size);
+	valarray<cl_float> output(test_size);
+	MakeChiNonConvexOneBuffers(data, data_err, model, output, test_size);
+
+	unsigned int n_vis = 0;
+	unsigned int n_v2 = 0;
+	unsigned int n_t3 = test_size;
+
+	// Setup OpenCL and the Chi routine. Teardown is automatic.
+	SetUpCL(data, data_err, model, output);
+	float should_be_one = r->Chi2(data_cl, data_err_cl, model_cl, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
+	should_be_one /= n_values;
+
+	EXPECT_NEAR(should_be_one, 1, MAX_REL_ERROR);
 }
