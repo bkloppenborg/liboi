@@ -35,45 +35,6 @@ protected:
 
 	void MakeChiZeroBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
 	{
-		// Create buffers
-		data.resize(test_size);
-		data_err.resize(test_size);
-		model.resize(test_size);
-		output.resize(test_size);
-		cl_float value = 0;
-
-		// Init, chi should evaluate to zero
-		for(int i = 0; i < test_size; i++)
-		{
-			value = i+1;
-			data[i] = value;
-			data_err[i] = 0.1 * value;
-			model[i] = value;
-		}
-
-	}
-
-	void MakeChiOneBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
-	{
-		// Create buffers
-		data.resize(test_size);
-		data_err.resize(test_size);
-		model.resize(test_size);
-		output.resize(test_size);
-		cl_float value = 0;
-
-		// Offset the model by one standard deviation.
-		for(int i = 0; i < test_size; i++)
-		{
-			value = i+1;
-			data[i] = value;
-			data_err[i] = 0.1 * value;
-			model[i] = value + data_err[i];
-		}
-	}
-
-	void MakeChiConvexZeroBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
-	{
 		unsigned int n = 2*test_size;
 		// Create buffers
 		data.resize(n);
@@ -98,7 +59,7 @@ protected:
 		}
 	}
 
-	void MakeChiConvexOneBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
+	void MakeChiOneBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
 	{
 		unsigned int n = 2*test_size;
 		// Create buffers
@@ -118,65 +79,6 @@ protected:
 			data[i] = abs(c_data);
 			data[test_size + i] = arg(c_data);
 
-			model[i] = abs(c_data) * (1 + amp_err);
-			model[test_size + i] = arg(c_data) * (1 + phi_err);
-
-			// Set the errors, avoid zero error
-			data_err[i] = max(fabs(amp_err * data[i]), amp_err);
-			data_err[test_size + i] = max(fabs(phi_err * data[test_size + i]), phi_err);
-		}
-	}
-
-	void MakeChiNonConvexZeroBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
-	{
-		unsigned int n = 2*test_size;
-		// Create buffers
-		data.resize(n);
-		data_err.resize(n);
-		model.resize(n);
-		output.resize(n);
-
-		valarray<cl_float2> t_data = CModel::GenerateUVSpiral_CL(test_size);
-
-		// Generate test data.
-		for(int i = 0; i < test_size; i++)
-		{
-			complex<float> c_data(t_data[i].s0, t_data[i].s1);
-
-			// Data are stored as amplitude and phase.
-			data[i] = abs(c_data);
-			data[test_size + i] = arg(c_data);
-
-			model[i] = abs(c_data);
-			model[test_size + i] = arg(c_data);
-
-			// Set the errors to something non-zero.
-			data_err[i] = amp_err;
-			data_err[test_size + i] = phi_err;
-		}
-	}
-
-	void MakeChiNonConvexOneBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
-	{
-		unsigned int n = 2*test_size;
-		// Create buffers
-		data.resize(n);
-		data_err.resize(n);
-		model.resize(n);
-		output.resize(n);
-
-		valarray<cl_float2> t_data = CModel::GenerateUVSpiral_CL(test_size);
-
-		// Generate test data.
-		for(int i = 0; i < test_size; i++)
-		{
-			complex<float> c_data(t_data[i].s0, t_data[i].s1);
-
-			// Data are stored as amplitude and phase.
-			data[i] = abs(c_data);
-			data[test_size + i] = arg(c_data);
-
-			// Ensure model is always at least one sigma away from data
 			model[i] = abs(c_data) * (1 + amp_err);
 			model[test_size + i] = arg(c_data) * (1 + phi_err);
 
@@ -311,7 +213,7 @@ TEST_F(ChiTest, CPU_Chi_Convex_ZERO)
 	valarray<cl_float> data_err;
 	valarray<cl_float> model;
 	valarray<cl_float> output;
-	MakeChiConvexZeroBuffers(data, data_err, model, output, test_size);
+	MakeChiZeroBuffers(data, data_err, model, output, test_size);
 
 	// Run the chi algorithm
 	CRoutine_Chi::Chi_complex_convex(data, data_err, model, 0, test_size, output);
@@ -335,7 +237,7 @@ TEST_F(ChiTest, CPU_Chi_Convex_ONE)
 	valarray<cl_float> data_err;
 	valarray<cl_float> model;
 	valarray<cl_float> output;
-	MakeChiConvexOneBuffers(data, data_err, model, output, test_size);
+	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	// Run the chi algorithm
 	CRoutine_Chi::Chi_complex_convex(data, data_err, model, 0, test_size, output);
@@ -359,7 +261,7 @@ TEST_F(ChiTest, CPU_Chi_NonConvex_ZERO)
 	valarray<cl_float> data_err;
 	valarray<cl_float> model;
 	valarray<cl_float> output;
-	MakeChiNonConvexZeroBuffers(data, data_err, model, output, test_size);
+	MakeChiZeroBuffers(data, data_err, model, output, test_size);
 
 	// Run the chi algorithm
 	CRoutine_Chi::Chi_complex_nonconvex(data, data_err, model, 0, test_size, output);
@@ -383,7 +285,7 @@ TEST_F(ChiTest, CPU_Chi_NonConvex_ONE)
 	valarray<cl_float> data_err;
 	valarray<cl_float> model;
 	valarray<cl_float> output;
-	MakeChiNonConvexOneBuffers(data, data_err, model, output, test_size);
+	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	// Run the chi algorithm
 	CRoutine_Chi::Chi_complex_nonconvex(data, data_err, model, 0, test_size, output);
@@ -454,7 +356,7 @@ TEST_F(ChiTest, CL_Chi_Convex_Zero)
 	valarray<cl_float> data_err(test_size);
 	valarray<cl_float> model(test_size);
 	valarray<cl_float> output(test_size);
-	MakeChiConvexZeroBuffers(data, data_err, model, output, test_size);
+	MakeChiZeroBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
 	SetUpCL(data, data_err, model, output);
@@ -477,7 +379,7 @@ TEST_F(ChiTest, CL_Chi_Convex_One)
 	valarray<cl_float> data_err(test_size);
 	valarray<cl_float> model(test_size);
 	valarray<cl_float> output(test_size);
-	MakeChiConvexOneBuffers(data, data_err, model, output, test_size);
+	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
 	SetUpCL(data, data_err, model, output);
@@ -500,7 +402,7 @@ TEST_F(ChiTest, CL_Chi_NonConvex_Zero)
 	valarray<cl_float> data_err(test_size);
 	valarray<cl_float> model(test_size);
 	valarray<cl_float> output(test_size);
-	MakeChiNonConvexZeroBuffers(data, data_err, model, output, test_size);
+	MakeChiZeroBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
 	SetUpCL(data, data_err, model, output);
@@ -523,7 +425,7 @@ TEST_F(ChiTest, CL_Chi_NonConvex_One)
 	valarray<cl_float> data_err(test_size);
 	valarray<cl_float> model(test_size);
 	valarray<cl_float> output(test_size);
-	MakeChiNonConvexOneBuffers(data, data_err, model, output, test_size);
+	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
 	SetUpCL(data, data_err, model, output);
@@ -571,7 +473,7 @@ TEST_F(ChiTest, CL_Chi2_T3)
 	valarray<cl_float> data_err(test_size);
 	valarray<cl_float> model(test_size);
 	valarray<cl_float> output(test_size);
-	MakeChiNonConvexOneBuffers(data, data_err, model, output, test_size);
+	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	unsigned int n_vis = 0;
 	unsigned int n_v2 = 0;
