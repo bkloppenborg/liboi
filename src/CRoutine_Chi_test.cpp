@@ -9,27 +9,22 @@
 #include "liboi_tests.h"
 #include "COpenCL.h"
 #include "CRoutine_Chi.h"
+#include "CRoutine_Zero.h"
+#include "CRoutine_Square.h"
 #include "CModel.h"
 
 using namespace std;
 
 extern string LIBOI_KERNEL_PATH;
 
-/// Checks that the CPU chi algorithm evaluates to zero
-/// when data and model are equal.
-TEST(CRoutine_Chi, CPU_Chi_ZERO)
+void MakeChiZeroBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
 {
-	unsigned int test_size = 10000;
 	// Create buffers
-	valarray<cl_float> data(test_size);
-	valarray<cl_float> data_err(test_size);
-	valarray<cl_float> model(test_size);
-	valarray<cl_float> output(test_size);
+	data.resize(test_size);
+	data_err.resize(test_size);
+	model.resize(test_size);
+	output.resize(test_size);
 	cl_float value = 0;
-
-	//
-	// # Test 1: Chi evaluates to zero.
-	//
 
 	// Init, chi should evaluate to zero
 	for(int i = 0; i < test_size; i++)
@@ -39,6 +34,40 @@ TEST(CRoutine_Chi, CPU_Chi_ZERO)
 		data_err[i] = 0.1 * value;
 		model[i] = value;
 	}
+
+}
+
+void MakeChiOneBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
+{
+	// Create buffers
+	data.resize(test_size);
+	data_err.resize(test_size);
+	model.resize(test_size);
+	output.resize(test_size);
+	cl_float value = 0;
+
+	// Offset the model by one standard deviation.
+	for(int i = 0; i < test_size; i++)
+	{
+		value = i+1;
+		data[i] = value;
+		data_err[i] = 0.1 * value;
+		model[i] = value + data_err[i];
+	}
+}
+
+/// Checks that the CPU chi algorithm evaluates to zero
+/// when data and model are equal.
+TEST(CRoutine_Chi, CPU_Chi_ZERO)
+{
+	unsigned int test_size = 10000;
+
+	// Create buffers
+	valarray<cl_float> data(test_size);
+	valarray<cl_float> data_err(test_size);
+	valarray<cl_float> model(test_size);
+	valarray<cl_float> output(test_size);
+	MakeChiZeroBuffers(data, data_err, model, output, test_size);
 
 	// Run the chi algorithm
 	CRoutine_Chi::Chi(data, data_err, model, 0, test_size, output);
@@ -58,16 +87,7 @@ TEST(CRoutine_Chi, CPU_Chi_ONE)
 	valarray<cl_float> data_err(test_size);
 	valarray<cl_float> model(test_size);
 	valarray<cl_float> output(test_size);
-	cl_float value = 0;
-
-	// Offset the model by one standard deviation.
-	for(int i = 0; i < test_size; i++)
-	{
-		value = i+1;
-		data[i] = value;
-		data_err[i] = 0.1 * value;
-		model[i] = value + data_err[i];
-	}
+	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	// Run the chi algorithm
 	CRoutine_Chi::Chi(data, data_err, model, 0, test_size, output);
@@ -75,7 +95,6 @@ TEST(CRoutine_Chi, CPU_Chi_ONE)
 	// Compare results. Because data = model every chi element should be of unit magnitude
 	for(int i = 0; i < test_size; i++)
 		EXPECT_NEAR(fabs(output[i]), 1.0, MAX_REL_ERROR);
-
 }
 
 /// Tests the CPU implementation of the convex chi approximation
@@ -251,4 +270,58 @@ TEST(CRoutine_Chi, CPU_Chi_nonconvex_ONE)
 		EXPECT_LT(fabs(output[i]), 1 + amp_err) << "Amp error exceeded.";
 		EXPECT_LT(fabs(output[test_size + i]), 1 + phi_err) << "Phase error exceeded.";
 	}
+}
+
+/// Checks that the CPU chi algorithm evaluates to zero
+/// when data and model are equal.
+TEST(CRoutine_Chi, CL_Chi_ZERO)
+{
+	unsigned int test_size = 10000;
+
+	// Create buffers
+	valarray<cl_float> data(test_size);
+	valarray<cl_float> data_err(test_size);
+	valarray<cl_float> model(test_size);
+	valarray<cl_float> output(test_size);
+	MakeChiZeroBuffers(data, data_err, model, output, test_size);
+
+	// Init OpenCL and the routine
+	COpenCL cl(CL_DEVICE_TYPE_GPU);
+	CRoutine_Zero zero(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
+	zero.SetSourcePath(LIBOI_KERNEL_PATH);
+	zero.Init();
+	CRoutine_Square square(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
+	square.SetSourcePath(LIBOI_KERNEL_PATH);
+	square.Init();
+	CRoutine_Chi r(cl.GetDevice(), cl.GetContext(), cl.GetQueue(), &zero, &square);
+	r.SetSourcePath(LIBOI_KERNEL_PATH);
+	r.Init(test_size);
+
+	// Make OpenCL buffers for the data, data_err, model, and output.
+	cl_mem data_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+	cl_mem data_err_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+	cl_mem model_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+
+	// Fill the input buffer
+	int err = CL_SUCCESS;
+    err = clEnqueueWriteBuffer(cl.GetQueue(), data_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), data_err_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &data_err[0], 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), model_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &model[0], 0, NULL, NULL);
+
+    // Run the routine
+    r.Chi(data_cl, data_err_cl, model_cl, output_cl, 0, test_size);
+
+	// Read back the results.
+	err = clEnqueueReadBuffer(cl.GetQueue(), output_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &output[0], 0, NULL, NULL);
+
+	// Free buffers
+	clReleaseMemObject(data_cl);
+	clReleaseMemObject(data_err_cl);
+	clReleaseMemObject(model_cl);
+	clReleaseMemObject(output_cl);
+
+	// Compare results. Because data = model every chi element should be zero
+	for(int i = 0; i < test_size; i++)
+		EXPECT_EQ(output[i], 0);
 }

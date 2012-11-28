@@ -37,16 +37,19 @@ __kernel void chi(
     __global float * data_err,
     __global float * mock_data,
     __global float * output,
-    __private int n)
+    __private unsigned int start,
+    __private unsigned int n)
 {
     int i = get_global_id(0);
+    int index = start + i;
+    
     float temp = 0;
     
    	// The loglikelihood kernel executes on the entire output buffer
    	// because the reduce_sum_float kernel uses the entire buffer as input.
    	// Therefore we zero out the elements not directly involved in this computation.
     if(i < n)
-		temp = (data[i] - mock_data[i]) / data_err[i];
+		temp = (data[index] - mock_data[index]) / data_err[index];
     
-    output[i] = temp;
+    output[index] = temp;
 }

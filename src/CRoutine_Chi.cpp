@@ -69,32 +69,36 @@ CRoutine_Chi::~CRoutine_Chi()
 	if(mChiOutput) clReleaseMemObject(mChiOutput);
 }
 
-///// Computes chi = (data - model)/(data_err) and stores it in the internal mChiTemp buffer.
-//void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
-//{
-//	int err = CL_SUCCESS;
-//   	// The loglikelihood kernel executes on the entire output buffer
-//   	// because the reduce_sum_float kernel uses the entire buffer as input.
-//   	// Therefore we zero out the elements not directly involved in this computation.
-//	size_t global = (size_t) mNElements;
-//	size_t local = 0;
-//
-//	// Get the maximum work-group size for executing the kernel on the device
-//	err = clGetKernelWorkGroupInfo(mKernels[mChiKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-//	COpenCL::CheckOCLError("Failed to determine workgroup size for chi kernel.", err);
-//
-//	// Set the arguments to our compute kernel
-//	err  = clSetKernelArg(mKernels[mChiKernelID], 0, sizeof(cl_mem), &data);
-//	err |= clSetKernelArg(mKernels[mChiKernelID], 1, sizeof(cl_mem), &data_err);
-//	err |= clSetKernelArg(mKernels[mChiKernelID], 2, sizeof(cl_mem), &model_data);
-//	err |= clSetKernelArg(mKernels[mChiKernelID], 3, sizeof(cl_mem), &mChiTemp);
-//	err |= clSetKernelArg(mKernels[mChiKernelID], 4, sizeof(int), &n);
-//	COpenCL::CheckOCLError("Failed to set chi kernel arguments.", err);
-//
-//	// Execute the kernel over the entire range of the data set
-//	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChiKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
-//	COpenCL::CheckOCLError("Failed to enqueue chi kernel.", err);
-//}
+// A wrapper function
+void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model, unsigned int start, unsigned int n)
+{
+	Chi(data, data_err, model, mChiTemp, start, n);
+}
+
+/// Traditional chi computation under the convex approximation in cartesian coordinates
+void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n)
+{
+	int err = CL_SUCCESS;
+	size_t global = (size_t) n;
+	size_t local = 0;
+
+	// Get the maximum work-group size for executing the kernel on the device
+	err = clGetKernelWorkGroupInfo(mKernels[mChiKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	COpenCL::CheckOCLError("Failed to determine workgroup size for chi kernel.", err);
+
+	// Set the arguments to our compute kernel
+	err  = clSetKernelArg(mKernels[mChiKernelID], 0, sizeof(cl_mem), &data);
+	err |= clSetKernelArg(mKernels[mChiKernelID], 1, sizeof(cl_mem), &data_err);
+	err |= clSetKernelArg(mKernels[mChiKernelID], 2, sizeof(cl_mem), &model);
+	err |= clSetKernelArg(mKernels[mChiKernelID], 3, sizeof(cl_mem), &output);
+	err |= clSetKernelArg(mKernels[mChiKernelID], 4, sizeof(unsigned int), &start);
+	err |= clSetKernelArg(mKernels[mChiKernelID], 5, sizeof(unsigned int), &n);
+	COpenCL::CheckOCLError("Failed to set chi kernel arguments.", err);
+
+	// Execute the kernel over the entire range of the data set
+	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChiKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Failed to enqueue chi kernel.", err);
+}
 
 // Computes the chi for vis, V2, and T3 data following the specified chi approximation method.
 void CRoutine_Chi::Chi(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output,
@@ -225,23 +229,7 @@ void CRoutine_Chi::Chi_complex_nonconvex(valarray<cl_float> & data, valarray<cl_
 	}
 }
 
-//void CRoutine_Chi::Chi(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output)
-//{
-//	unsigned int n = data.size();
-//	assert(n == data_err.size() && n== model.size());
-//	output.resize(n);
-//
-//	// Now compute the chi, store it.
-//	for(int i = 0; i < n; i++)
-//	{
-//		tmp = 0;
-//
-//		if(i < n)
-//			tmp = (cpu_data[i] - cpu_model_data[i]) / cpu_data_err[i];
-//
-//		output[i] = tmp;
-//	}
-//}
+
 
 
 /// Helper function, calls the chi and then square routines, stores output in the internal mChiTemp buffer.
@@ -320,23 +308,23 @@ void CRoutine_Chi::Chi_complex_nonconvex(valarray<cl_float> & data, valarray<cl_
 //}
 
 
-/// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
-//void CRoutine_Chi::Init(int n)
-//{
-//	int err = CL_SUCCESS;
-//
-//	// First initialize the base-class constructor:
-//	CRoutine_Sum::Init(n);
-//
-//	// Now allocate some memory
-//	if(mChiTemp == NULL)
-//		mChiTemp = clCreateBuffer(mContext, CL_MEM_READ_WRITE, n * sizeof(cl_float), NULL, &err);
-//
-//	if(mChiOutput == NULL)
-//		mChiOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
-//
-//	// Read the kernel, compile it
-//	string source = ReadSource(mSource[mChiSourceID]);
-//    BuildKernel(source, "chi", mSource[mChiSourceID]);
-//    mChiKernelID = mKernels.size() - 1;
-//}
+// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
+void CRoutine_Chi::Init(int n)
+{
+	int err = CL_SUCCESS;
+
+	// First initialize the base-class constructor:
+	CRoutine_Sum::Init(n);
+
+	// Now allocate some memory
+	if(mChiTemp == NULL)
+		mChiTemp = clCreateBuffer(mContext, CL_MEM_READ_WRITE, n * sizeof(cl_float), NULL, &err);
+
+	if(mChiOutput == NULL)
+		mChiOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
+
+	// Read the kernel, compile it
+	string source = ReadSource(mSource[mChiSourceID]);
+    BuildKernel(source, "chi", mSource[mChiSourceID]);
+    mChiKernelID = mKernels.size() - 1;
+}

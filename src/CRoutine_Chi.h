@@ -53,13 +53,20 @@ public:
 	CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero, CRoutine_Square * rSquare);
 	~CRoutine_Chi();
 
-	void Chi(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	// OpenCL routines
+	void Chi(cl_mem data, cl_mem data_err, cl_mem model_data, unsigned int start, unsigned int n);
+	void Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
+
+
+
+
 
 	float Chi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value);;
 
 	void GetChi(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
 	void GetChi2(cl_mem data, cl_mem data_err, cl_mem model_data, int n, float * output);
 
+	// CPU routines:
 	static void Chi(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output,
 			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3,
 			LibOIEnums::Chi2Types chi_method);
