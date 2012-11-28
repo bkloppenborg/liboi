@@ -65,6 +65,7 @@ CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_q
 
 	// Set the temporary buffers and compiled kernel IDs to something we can verify is invalid.
 	mChiOutput = NULL;
+	mChiSquaredOutput = NULL;
 	mChiKernelID = -1;
 	mChiConvexKernelID = -1;
 	mChiNonConvexKernelID = -1;
