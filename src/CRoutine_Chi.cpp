@@ -316,9 +316,8 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data,
 	mrZero->Zero(mChiSquaredOutput, mChiBufferSize);
 
 	// Calculate the chi, then square it.
-	unsigned int n_data = COILibData::TotalBufferSize(n_vis, n_v2, n_t3);
 	Chi(data, data_err, model_data, complex_chi_method, n_vis, n_v2, n_t3);
-
+	unsigned int n_data = COILibData::TotalBufferSize(n_vis, n_v2, n_t3);
 	mrSquare->Square(mChiOutput, mChiSquaredOutput, n_data, n_data);
 
 	// If we are to compute the sum, do so. Store the result in the ChiSquared output buffer.

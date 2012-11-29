@@ -13,6 +13,8 @@
 #include "CRoutine_Square.h"
 #include "CModel.h"
 
+#include <cmath>
+
 using namespace std;
 
 extern string LIBOI_KERNEL_PATH;
@@ -79,8 +81,16 @@ protected:
 			data[i] = abs(c_data);
 			data[test_size + i] = arg(c_data);
 
-			model[i] = abs(c_data) * (1 + amp_err);
-			model[test_size + i] = arg(c_data) * (1 + phi_err);
+			// Avoid any cases where the data yield chi=0.
+			if(fabs(data[i]) < amp_err)
+				model[i] = amp_err;
+			else
+				model[i] = abs(c_data) * (1 + amp_err);
+
+			if(fabs(data[test_size + i]) < phi_err)
+				model[test_size + i] = copysign(phi_err, data[test_size + i]);
+			else
+				model[test_size + i] = arg(c_data) * (1 + phi_err);
 
 			// Set the errors, avoid zero error
 			data_err[i] = max(fabs(amp_err * data[i]), amp_err);
@@ -143,6 +153,10 @@ protected:
 		err = clEnqueueWriteBuffer(cl->GetQueue(), data_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
 		err = clEnqueueWriteBuffer(cl->GetQueue(), data_err_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &data_err[0], 0, NULL, NULL);
 		err = clEnqueueWriteBuffer(cl->GetQueue(), model_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &model[0], 0, NULL, NULL);
+	}
+
+	template <typename T> int sign(T val) {
+	    return (T(0) < val) - (val < T(0));
 	}
 
 	void TearDown()
@@ -464,7 +478,7 @@ TEST_F(ChiTest, CL_Chi2_V2)
 /// Checks that the chi2 functions are working for T3 data
 TEST_F(ChiTest, CL_Chi2_T3)
 {
-	unsigned int test_size = 10000;
+	unsigned int test_size = 5;
 
 	unsigned int n_values = 2*test_size;
 
@@ -486,3 +500,29 @@ TEST_F(ChiTest, CL_Chi2_T3)
 
 	EXPECT_NEAR(should_be_one, 1, MAX_REL_ERROR);
 }
+
+///// Checks that a mixture of V2 and T3 yield a chi2 < 1
+//TEST_F(ChiTest, CL_Chi2_Mix)
+//{
+//	unsigned int test_size = 10000;
+//
+//	unsigned int n_values = 2*test_size;
+//
+//	// Create buffers
+//	valarray<cl_float> data(test_size);
+//	valarray<cl_float> data_err(test_size);
+//	valarray<cl_float> model(test_size);
+//	valarray<cl_float> output(test_size);
+//	MakeChiOneBuffers(data, data_err, model, output, test_size);
+//
+//	unsigned int n_vis = 0;
+//	unsigned int n_v2 = test_size/2;
+//	unsigned int n_t3 = test_size/2;
+//
+//	// Setup OpenCL and the Chi routine. Teardown is automatic.
+//	SetUpCL(data, data_err, model, output);
+//	float should_be_one = r->Chi2(data_cl, data_err_cl, model_cl, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
+//	should_be_one /= n_values;
+//
+//	EXPECT_NEAR(should_be_one, 1, MAX_REL_ERROR);
+//}
