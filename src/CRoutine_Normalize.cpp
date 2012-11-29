@@ -57,7 +57,7 @@ void CRoutine_Normalize::Init()
 void CRoutine_Normalize::Normalize(cl_mem buffer, unsigned int buffer_size, cl_mem divisor)
 {
 	int err = CL_SUCCESS;
-	size_t global = (size_t) buffer_size;
+	size_t global = size_t(buffer_size);
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
@@ -67,11 +67,11 @@ void CRoutine_Normalize::Normalize(cl_mem buffer, unsigned int buffer_size, cl_m
 	// Enqueue the kernel.
     err |= clSetKernelArg(mKernels[0],  0, sizeof(cl_mem), &buffer);
     err |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), &divisor);
-    err |= clSetKernelArg(mKernels[0],  2, sizeof(cl_uint), &buffer_size);
+    err |= clSetKernelArg(mKernels[0],  2, sizeof(unsigned int), &buffer_size);
 	COpenCL::CheckOCLError("Failed to set normalization kernel arguments.", err);
 
     err = CL_SUCCESS;
-    err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, &global, NULL, 0, NULL, NULL);
+    err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to enqueue normalization kernel.", err);
 }
 

@@ -57,7 +57,7 @@ CLibOI::CLibOI(cl_device_type type)
 	mDataList = new COILibDataList();
 
 	mImage_cl = NULL;
-	mImage_cl = NULL;
+	mImage_gl = NULL;
 	mImage_host = NULL;
 	mImageHeight = 1;
 	mImageWidth = 1;
@@ -578,28 +578,10 @@ void CLibOI::LoadData(string filename)
 /// Normalizes a floating point buffer by dividing by the sum of the buffer
 void CLibOI::Normalize()
 {
-	// Temporary variables
-#ifdef DEBUG_VERBOSE
-	float tmp1, tmp2;
-#endif // DEBUG
-
-	// First compute and store the total flux:
-#ifdef DEBUG_VERBOSE
-	tmp1 = TotalFlux(true);
-#else // DEBUG
 	TotalFlux(false);
-#endif // DEBUG
 
 	// Now normalize the image
 	mrNormalize->Normalize(mImage_cl, mImageWidth, mImageHeight, mFluxBuffer);
-
-#ifdef DEBUG_VERBOSE
-	// If we are debugging, do another call to ensure the buffer was indeed normalized.
-	// Note we call the mrTotalFlux routine directly because TotalFlux copies the image over from the OpenGL buffer.
-	tmp2 = mrTotalFlux->ComputeSum(true, mFluxBuffer, mCLImage, NULL, NULL);
-	printf("Pre/post normalization image sums: %f %f\n", tmp1, tmp2);
-
-#endif //DEBUG
 }
 
 /// Computes the total flux for the current image/layer
@@ -754,6 +736,13 @@ void CLibOI::SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type
 	case LibOIEnums::OPENGL_TEXTUREBUFFER:
 		// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.
 		mImage_gl = clCreateFromGLTexture2D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, gl_device_memory, &err);
+		COpenCL::CheckOCLError("Could not create OpenCL image object from GLTexture", err);
+
+		break;
+
+	case LibOIEnums::OPENGL_RENDERBUFFER:
+		// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.
+		mImage_gl = clCreateFromGLRenderbuffer(mOCL->GetContext(), CL_MEM_READ_ONLY, gl_device_memory, &err);
 		COpenCL::CheckOCLError("Could not create OpenCL image object from GLTexture", err);
 
 		break;

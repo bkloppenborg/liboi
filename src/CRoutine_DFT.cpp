@@ -67,11 +67,6 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
     //err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
 	//COpenCL::CheckOCLError("Failed to determine the kernel workgroup size for ft_dft2d kernel.", err);
 
-#ifdef DEBUG_VERBOSE
-    // Output some information about kernel sizes:
-	printf("ft_dft2d Kernel Sizes: Global: %i Local %i \n", (int)global, (int)local);
-#endif //DEBUG
-
 	// Set the kernel arguments and enqueue the kernel
 	err = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &uv_points);
 	err |= clSetKernelArg(mKernels[0], 1, sizeof(int), &n_uv_points);
@@ -86,11 +81,6 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
     // Execute the kernel over the entire range of the data set
     err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue ft_dft2d kernel.", err);
-
-#ifdef DEBUG_VERBOSE
-	// Compare the CPU and OpenCL computed DFT values.
-	FT_CPU(uv_points, n_uv_points, image, image_width, image_height, image_flux, output);
-#endif //DEBUG_VERBOSE
 }
 
 /// CPU implementation of the discrete Fourier transform algorithm.
