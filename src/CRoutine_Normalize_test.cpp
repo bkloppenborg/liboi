@@ -53,10 +53,13 @@ TEST(CRoutine_Normalize, CL_Normalize)
 	cl_mem divisor_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, NULL);
 
 	// Fill the input buffer
-    err = clEnqueueWriteBuffer(cl.GetQueue(), input_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &cpu_val[0], 0, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), divisor_cl, CL_TRUE, 0, sizeof(cl_float), &divisor, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), input_cl, CL_FALSE, 0, sizeof(cl_float) * test_size, &cpu_val[0], 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), divisor_cl, CL_FALSE, 0, sizeof(cl_float), &divisor, 0, NULL, NULL);
 
-    // Normalize on the OpenCL device, do the same on the CPU:
+	// Wait for memory transfers to finish.
+	clFinish(cl.GetQueue());
+
+	// Normalize on the OpenCL device, do the same on the CPU:
 	r_norm.Normalize(input_cl, test_size, divisor_cl);
 	CRoutine_Normalize::Normalize(cpu_val, cpu_val.size());
 

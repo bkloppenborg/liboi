@@ -75,6 +75,7 @@ CRoutine_Chi::~CRoutine_Chi()
 {
 	// Note, the routines are deleted elsewhere, leave them alone.
 	if(mChiOutput) clReleaseMemObject(mChiOutput);
+	if(mChiSquaredOutput) clReleaseMemObject(mChiSquaredOutput);
 }
 
 /// Computes the chi on the entire data buffer. Results are stored on the OpenCL

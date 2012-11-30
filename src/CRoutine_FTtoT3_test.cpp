@@ -76,7 +76,7 @@ TEST(CRoutine_FTtoT3, CPU_PointSource)
 /// Checks that the OpenCL routine functions correctly.
 TEST(CRoutine_FTtoT3, CL_PointSource)
 {
-	unsigned int test_size = 1;
+	unsigned int test_size = 10000;
 
 	unsigned int n_uv = 3 * test_size ;
 
@@ -121,15 +121,18 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	int err = CL_SUCCESS;
 	// FT input
 	cl_mem ft_input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * n_uv, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), ft_input_cl, CL_TRUE, 0, sizeof(cl_float2) * n_uv, &ft_input[0], 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), ft_input_cl, CL_FALSE, 0, sizeof(cl_float2) * n_uv, &ft_input[0], 0, NULL, NULL);
 	// UV references
 	cl_mem uv_ref_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_uint4) * test_size, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_TRUE, 0, sizeof(cl_uint4) * test_size, &uv_ref[0], 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_FALSE, 0, sizeof(cl_uint4) * test_size, &uv_ref[0], 0, NULL, NULL);
 	// UV signs
 	cl_mem uv_sign_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_short4) * test_size, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_sign_cl, CL_TRUE, 0, sizeof(cl_short4) * test_size, &uv_sign[0], 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_sign_cl, CL_FALSE, 0, sizeof(cl_short4) * test_size, &uv_sign[0], 0, NULL, NULL);
     // Output buffer (remember, we write out to a cl_float, not cl_float 2 so we need twice the storage)
 	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * 2 * test_size, NULL, NULL);
+
+	// Wait for memory transfers to finish.
+	clFinish(cl.GetQueue());
 
 	// Run the CPU routine, get results from the model.
 	r.FTtoT3(ft_input_cl, uv_ref_cl, uv_sign_cl, output_cl, 0, 0, test_size);

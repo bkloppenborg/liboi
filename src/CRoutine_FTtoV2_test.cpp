@@ -73,12 +73,15 @@ TEST(CRoutine_FTtoV2, CL_PointSource)
 	int err = CL_SUCCESS;
 	// FT input
 	cl_mem ft_input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * test_size, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), ft_input_cl, CL_TRUE, 0, sizeof(cl_float2) * test_size, &ft_input[0], 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), ft_input_cl, CL_FALSE, 0, sizeof(cl_float2) * test_size, &ft_input[0], 0, NULL, NULL);
 	// UV references
 	cl_mem uv_ref_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_uint) * test_size, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_TRUE, 0, sizeof(cl_uint) * test_size, &uv_ref[0], 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_FALSE, 0, sizeof(cl_uint) * test_size, &uv_ref[0], 0, NULL, NULL);
     // Output bufer
 	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+
+	// Wait for memory transfers to finish.
+	clFinish(cl.GetQueue());
 
 	// Run the OpenCL routine
 	r.FTtoV2(ft_input_cl, uv_ref_cl, output_cl, 0, test_size);
