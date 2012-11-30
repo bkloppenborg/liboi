@@ -51,20 +51,11 @@ CRoutine::CRoutine(cl_device_id device, cl_context context, cl_command_queue que
 CRoutine::~CRoutine()
 {
 	// Release any kernels or programs
-	int i;
-	for(i = mKernels.size() - 1; i > 0; i--)
-	{
-		clReleaseKernel(mKernels[i]);
-		mKernels.pop_back();
-	}
+	for(auto kernel: mKernels)
+		clReleaseKernel(kernel);
 
-	for(i = mPrograms.size() - 1; i > 0; i--)
-	{
-		clReleaseProgram(mPrograms[i]);
-		mPrograms.pop_back();
-	}
-
-
+	for(auto program: mPrograms)
+		clReleaseProgram(program);
 }
 
 /// A more verbose wrapper for BuildKernel, emits the name of the kernel before compilation.
