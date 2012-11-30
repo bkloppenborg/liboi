@@ -57,7 +57,7 @@ class CRoutine_Chi: public CRoutine_Sum
 
 public:
 	CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero, CRoutine_Square * rSquare);
-	~CRoutine_Chi();
+	virtual ~CRoutine_Chi();
 
 	// OpenCL routines
 	void Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);

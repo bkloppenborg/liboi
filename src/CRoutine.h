@@ -109,7 +109,7 @@ protected:
 
 public:
 	CRoutine(cl_device_id mDevice, cl_context mContext, cl_command_queue mQueue);
-	~CRoutine();
+	virtual ~CRoutine();
 
 	int BuildKernel(string source, string kernel_name);
 	int BuildKernel(string source, string kernel_name, string kernel_filename);

@@ -47,7 +47,7 @@ class COILibDataList: public vector<COILibDataPtr>
 
 public:
 	COILibDataList();
-	~COILibDataList();
+	virtual ~COILibDataList();
 
 	int GetNData();
 	int GetNDataAllocated();
