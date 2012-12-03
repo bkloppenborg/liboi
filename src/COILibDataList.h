@@ -55,10 +55,12 @@ public:
 	int GetNDataAllocated();
 	int GetNDataAllocated(unsigned int data_num);
 
+	void LoadData(string filename, cl_context context, cl_command_queue queue);
+	void LoadData(const OIDataList & data, cl_context context, cl_command_queue queue);
+
 	int MaxNumData();
 	int MaxUVPoints();
 
-	void ReadFile(string filename, cl_context context, cl_command_queue queue);
 	void RemoveData(unsigned int data_num);
 };
 

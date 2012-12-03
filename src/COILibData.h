@@ -92,7 +92,7 @@ protected:
 
 public:
 	COILibData(string filename, cl_context context, cl_command_queue queue);
-	COILibData(OIDataList & data, cl_context context, cl_command_queue queue);
+	COILibData(const OIDataList & data, cl_context context, cl_command_queue queue);
 	virtual ~COILibData();
 
 //	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);

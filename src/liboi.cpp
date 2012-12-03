@@ -572,12 +572,26 @@ void CLibOI::InitRoutines()
 
 /// Reads in an OIFITS file and stores it into OpenCL memory
 /// Note, this routine will not load data any routine that uses data is initialized.
-void CLibOI::LoadData(string filename)
+int CLibOI::LoadData(string filename)
 {
 	if(!mDataRoutinesInitialized)
 	{
-		mDataList->ReadFile(filename, mOCL->GetContext(), mOCL->GetQueue());
+		mDataList->LoadData(filename, mOCL->GetContext(), mOCL->GetQueue());
+		return mDataList->size() - 1;
 	}
+
+	return -1;
+}
+
+int CLibOI::LoadData(const OIDataList & data)
+{
+	if(!mDataRoutinesInitialized)
+	{
+		mDataList->LoadData(data, mOCL->GetContext(), mOCL->GetQueue());
+		return mDataList->size() - 1;
+	}
+
+	return -1;
 }
 
 /// Normalizes a floating point buffer by dividing by the sum of the buffer

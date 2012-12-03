@@ -58,7 +58,7 @@ COILibData::COILibData(string filename, cl_context context, cl_command_queue que
 	InitData(context, queue);
 }
 
-COILibData::COILibData(OIDataList & data, cl_context context, cl_command_queue queue)
+COILibData::COILibData(const OIDataList & data, cl_context context, cl_command_queue queue)
 {
 	mData = data;
 	InitData(context, queue);

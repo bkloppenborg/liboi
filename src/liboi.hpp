@@ -187,7 +187,8 @@ public:
 	void InitMemory();
 	void InitRoutines();
 
-	void LoadData(string filename);
+	int LoadData(string filename);
+	int LoadData(const OIDataList & data);
 
 	void Normalize();
 

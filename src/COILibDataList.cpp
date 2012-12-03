@@ -85,6 +85,20 @@ int COILibDataList::GetNDataAllocated(unsigned int data_num)
 	return 0;
 }
 
+/// Reads in an OIFITS file, returns a COILibData object.
+void COILibDataList::LoadData(string filename, cl_context context, cl_command_queue queue)
+{
+	COILibDataPtr tmp(new COILibData(filename, context, queue));
+	this->push_back(tmp);
+}
+
+/// Reads in an OIFITS file, returns a COILibData object.
+void COILibDataList::LoadData(const OIDataList & data, cl_context context, cl_command_queue queue)
+{
+	COILibDataPtr tmp(new COILibData(data, context, queue));
+	this->push_back(tmp);
+}
+
 /// Finds the maximum number of data points (Vis2 + T3) and returns that number.
 int COILibDataList::MaxNumData()
 {
@@ -113,14 +127,6 @@ int COILibDataList::MaxUVPoints()
     }
 
     return max;
-}
-
-
-/// Reads in an OIFITS file, returns a COILibData object.
-void COILibDataList::ReadFile(string filename, cl_context context, cl_command_queue queue)
-{
-	COILibDataPtr tmp(new COILibData(filename, context, queue));
-	this->push_back(tmp);
 }
 
 /// Removes the specified data file from device and host memory
