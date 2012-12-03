@@ -185,7 +185,7 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 	{
 		mData_V2_uv_ref = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_uint) * mNV2, NULL, NULL);
 
-		int offset = 2 * mNVis;
+		int offset = CalculateOffset_V2(mNVis);
 		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2[0], 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2_err[0], 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue, mData_V2_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNV2, &t_vis2_uvref[0], 0, NULL, NULL);
@@ -228,7 +228,7 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 		mData_T3_uv_ref = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_uint4) * mNT3, NULL, NULL);
 		mData_T3_sign = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_short4) * mNT3, NULL, NULL);
 
-		int offset = 2 * mNVis + mNV2;
+		int offset = CalculateOffset_T3(mNVis, mNV2);
 		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3[0], 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3_err[0], 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue, mData_T3_uv_ref, CL_FALSE, 0, sizeof(cl_uint4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
