@@ -36,6 +36,9 @@
 
 #include "COILibData.h"
 
+namespace liboi
+{
+
 CRoutine_FTtoV2::CRoutine_FTtoV2(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine(device, context, queue)
 {
@@ -103,3 +106,5 @@ void CRoutine_FTtoV2::FTtoV2(valarray<cl_float2> & ft_input, valarray<cl_uint> &
 		cpu_output[i] = ft_input[uv_index].s0 * ft_input[uv_index].s0 + ft_input[uv_index].s1 * ft_input[uv_index].s1;
 	}
 }
+
+} /* namespace liboi */

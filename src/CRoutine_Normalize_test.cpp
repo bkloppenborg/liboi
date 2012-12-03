@@ -11,6 +11,8 @@
 #include "COpenCL.h"
 #include "CRoutine_Normalize.h"
 
+using namespace liboi;
+
 extern string LIBOI_KERNEL_PATH;
 
 /// Checks that the CPU normalization routine is working correctly.

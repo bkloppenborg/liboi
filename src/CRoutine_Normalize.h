@@ -35,6 +35,9 @@
 #include "CRoutine.h"
 #include "CRoutine_Sum.h"
 
+namespace liboi
+{
+
 class CRoutine_Normalize: public CRoutine
 {
 public:
@@ -54,5 +57,7 @@ public:
 			buffer[i] /= sum;
 	}
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_NORMALIZE_H_ */

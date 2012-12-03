@@ -11,6 +11,8 @@
 #include "COpenCL.h"
 #include "CRoutine_Square.h"
 
+using namespace liboi;
+
 extern string LIBOI_KERNEL_PATH;
 
 TEST(CRoutine_Square, CPU_Square)

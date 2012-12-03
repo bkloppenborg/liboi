@@ -16,6 +16,7 @@
 #include <cmath>
 
 using namespace std;
+using namespace liboi;
 
 extern string LIBOI_KERNEL_PATH;
 

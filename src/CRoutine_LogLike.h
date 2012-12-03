@@ -36,6 +36,9 @@
 
 #include "CRoutine_Sum.h"
 
+namespace liboi
+{
+
 class CRoutine_Zero;
 
 class CRoutine_LogLike: public CRoutine_Sum
@@ -57,5 +60,7 @@ public:
 
 	void Init(int num_elements);
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_LOGLIKE_H_ */

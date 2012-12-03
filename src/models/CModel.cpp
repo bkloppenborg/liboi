@@ -10,6 +10,9 @@
 
 using namespace std;
 
+namespace liboi
+{
+
 double CModel::RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per milliarcsecond
 
 CModel::CModel(unsigned int image_width, unsigned int image_height, double image_scale)
@@ -188,3 +191,5 @@ double CModel::MasToRad(double value)
 {
 	return value * RPMAS;
 }
+
+} // namespace liboi

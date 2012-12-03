@@ -34,6 +34,9 @@
 
 #include "CRoutine.h"
 
+namespace liboi
+{
+
 class CRoutine_Square: public CRoutine
 {
 public:
@@ -50,5 +53,7 @@ public:
 			output_buffer[i] = input_buffer[i] * input_buffer[i];
 	}
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_SQUARE_H_ */

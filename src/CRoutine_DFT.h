@@ -34,6 +34,9 @@
 
 #include "CRoutine_FT.h"
 
+namespace liboi
+{
+
 class CRoutine_DFT: public CRoutine_FT
 {
 	float mImageScale;
@@ -48,5 +51,7 @@ public:
 			valarray<cl_float> & image, unsigned int image_width, unsigned int image_height, float image_scale,
 			valarray<cl_float2> & cpu_output);
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_DFT_H_ */

@@ -10,6 +10,9 @@
 #include <cmath>
 using namespace std;
 
+namespace liboi
+{
+
 CUniformDisk::CUniformDisk(double image_scale)
 	:CModel(0, 0, image_scale)
 {
@@ -71,3 +74,5 @@ valarray<double> CUniformDisk::GetImage(unsigned int image_width, unsigned int i
 
 	return image;
 }
+
+} // namespace liboi

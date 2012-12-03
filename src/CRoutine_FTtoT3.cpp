@@ -37,6 +37,9 @@
 #include <cstdio>
 #include <complex>
 
+namespace liboi
+{
+
 CRoutine_FTtoT3::CRoutine_FTtoT3(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine(device, context, queue)
 {
@@ -128,3 +131,5 @@ void CRoutine_FTtoT3::FTtoT3(valarray<cl_float2> & ft_input, valarray<cl_uint4> 
 		output[n_t3 + i] = imag(T3);
 	}
 }
+
+} /* namespace liboi */

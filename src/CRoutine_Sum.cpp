@@ -60,6 +60,9 @@
 
 using namespace std;
 
+namespace liboi
+{
+
 CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
 	: CRoutine(device, context, queue)
 {
@@ -248,3 +251,5 @@ void CRoutine_Sum::Init(int n)
 		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
 	}
 }
+
+} /* namespace liboi */

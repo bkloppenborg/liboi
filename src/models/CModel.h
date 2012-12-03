@@ -27,6 +27,9 @@
 
 using namespace std;
 
+namespace liboi
+{
+
 class CModel
 {
 protected:
@@ -69,5 +72,7 @@ public:
 	unsigned int MasToPixel(double value);
 	double MasToRad(double value);
 };
+
+} // namespace liboi
 
 #endif /* CMODEL_H_ */

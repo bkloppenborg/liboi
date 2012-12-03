@@ -37,6 +37,9 @@
 #include "CRoutine.h"
 #include <complex>
 
+namespace liboi
+{
+
 class CRoutine_FT: public CRoutine
 {
 protected:
@@ -53,5 +56,7 @@ public:
 			valarray<cl_float> & image, unsigned int image_width, unsigned int image_height, float image_scale,
 			valarray<cl_float2> & cpu_output) = 0;
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_FT_H_ */

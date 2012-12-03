@@ -34,6 +34,9 @@
 
 #include "CRoutine_Normalize.h"
 
+namespace liboi
+{
+
 CRoutine_Normalize::CRoutine_Normalize(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine(device, context, queue)
 {
@@ -82,3 +85,4 @@ void CRoutine_Normalize::Normalize(cl_mem image, unsigned int image_width, unsig
 	Normalize(image, image_width * image_height, divisor);
 }
 
+} /* namespace liboi */

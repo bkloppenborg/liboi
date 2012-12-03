@@ -11,6 +11,8 @@
 #include "COpenCL.h"
 #include "CRoutine_Zero.h"
 
+using namespace liboi;
+
 extern string LIBOI_KERNEL_PATH;
 
 TEST(CRoutine_Zero, CL_ZeroBuffer)
@@ -45,7 +47,3 @@ TEST(CRoutine_Zero, CL_ZeroBuffer)
 	for(int i = 0; i < test_size; i++)
 		EXPECT_EQ(0, data[i]);
 }
-
-
-
-

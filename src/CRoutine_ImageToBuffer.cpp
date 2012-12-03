@@ -35,6 +35,9 @@
 #include "CRoutine_ImageToBuffer.h"
 #include <cstdio>
 
+namespace liboi
+{
+
 CRoutine_ImageToBuffer::CRoutine_ImageToBuffer(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine(device, context, queue)
 {
@@ -75,3 +78,5 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int wi
     err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, NULL, 0, NULL, NULL);
     COpenCL::CheckOCLError("Failed to enqueue image copying kernel.", err);
 }
+
+} /* namespace liboi */

@@ -63,6 +63,9 @@
 using namespace std;
 using namespace ccoifits;
 
+namespace liboi
+{
+
 class COILibData
 {
 protected:
@@ -132,5 +135,7 @@ public:
 protected:
 	void InitData(cl_context context, cl_command_queue queue);
 };
+
+} // namespace liboi
 
 #endif /* COILIBDATA_H_ */

@@ -8,6 +8,9 @@
 #include "liboi_tests.h"
 #include "PathFinding.h"
 #include "gtest/gtest.h"
+#include "liboi.hpp"
+
+using namespace liboi;
 
 string LIBOI_KERNEL_PATH;
 

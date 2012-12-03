@@ -10,6 +10,9 @@
 
 #include "CModel.h"
 
+namespace liboi
+{
+
 class CPointSource: public CModel
 {
 
@@ -20,5 +23,7 @@ public:
 	complex<double> GetVis(pair<double,double> & uv);
 	valarray<double> GetImage(unsigned int image_width, unsigned int image_height, float image_scale);
 };
+
+} // namespace liboi
 
 #endif /* CPOINTSOURCE_H_ */

@@ -37,9 +37,12 @@
 #include "oi_tools.hpp"
 #include "oi_export.hpp"
 
-#define MJD 2400000.5
-
 using namespace std;
+
+namespace liboi
+{
+
+#define MJD 2400000.5
 
 COILibData::COILibData(string filename, cl_context context, cl_command_queue queue)
 {
@@ -259,3 +262,5 @@ unsigned int COILibData::TotalBufferSize(unsigned int n_vis, unsigned int n_v2, 
 {
 	return 2*n_vis + n_v2 + 2*n_t3;
 }
+
+} // namespace liboi

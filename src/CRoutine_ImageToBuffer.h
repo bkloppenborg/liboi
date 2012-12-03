@@ -34,6 +34,9 @@
 
 #include "CRoutine.h"
 
+namespace liboi
+{
+
 class CRoutine_ImageToBuffer: public CRoutine
 {
 public:
@@ -43,5 +46,7 @@ public:
 	void CopyImage(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int depth);
 	void Init();
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_IMAGETOBUFFER_H_ */

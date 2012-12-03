@@ -36,6 +36,9 @@
 
 using namespace std;
 
+namespace liboi
+{
+
 class CRoutine_FTtoT3: public CRoutine
 {
 public:
@@ -46,5 +49,7 @@ public:
 	void FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sign, cl_mem output, int n_vis, int n_v2, int n_t3);
 	static void FTtoT3(valarray<cl_float2> & ft_input, valarray<cl_uint4> & uv_ref, valarray<cl_short4> & signs, valarray<cl_float> & output);
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_FTTOT3_H_ */

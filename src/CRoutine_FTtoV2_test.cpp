@@ -16,6 +16,8 @@
 
 using namespace std;
 
+using namespace liboi;
+
 extern string LIBOI_KERNEL_PATH;
 
 /// Checks that the CPU routine functions correctly.

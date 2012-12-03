@@ -38,6 +38,9 @@
 #include "CRoutine_FTtoVis.h"
 #include <cstdio>
 
+namespace liboi
+{
+
 CRoutine_FTtoVis::CRoutine_FTtoVis(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine(device, context, queue)
 {
@@ -129,3 +132,5 @@ bool CRoutine_FTtoVis::FTtoVis_Test(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem ou
 //	PassFail(v2_pass);
 //	return v2_pass;
 }
+
+} /* namespace liboi */

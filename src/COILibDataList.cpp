@@ -34,6 +34,9 @@
 
 #include "COILibDataList.h"
 
+namespace liboi
+{
+
 COILibDataList::COILibDataList()
 {
 	// TODO Auto-generated constructor stub
@@ -135,3 +138,5 @@ void COILibDataList::RemoveData(unsigned int data_num)
 	if(data_num < this->size())
 		this->erase(this->begin() + data_num);
 }
+
+} /* namespace liboi */

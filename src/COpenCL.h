@@ -64,15 +64,16 @@
 
 using namespace std;
 
+namespace liboi
+{
+
 // TODO: Make this class support multiple devices.
-// TODO: Permit the user to specify a specific OpenCL device to use.
 
 class COpenCL
 {
 protected:
 	// Datamembers for the OpenCL device, context and queue.
 	// At present we only support one device/context/queue, but could add more in the future
-	// TODO: Make this class support multiple OpenCL devices.
 	cl_device_id mDevice;
 	cl_context mContext;
 	cl_command_queue mQueue;
@@ -106,5 +107,7 @@ public:
 	void PrintDeviceInfo(cl_device_id device_id);
 	void PrintPlatformInfo(cl_platform_id platform_id);
 };
+
+} /* namespace liboi */
 
 #endif /* COPENCL_H_ */

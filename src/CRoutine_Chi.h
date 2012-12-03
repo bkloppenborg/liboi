@@ -35,6 +35,9 @@
 #include "CRoutine_Sum.h"
 #include "liboi.hpp"
 
+namespace liboi
+{
+
 class CRoutine_Square;
 class CRoutine_Zero;
 
@@ -96,5 +99,7 @@ public:
 
 	void Init(unsigned int num_elements);
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_CHI_H_ */

@@ -35,6 +35,9 @@
 
 #include "CRoutine_FT.h"
 
+namespace liboi
+{
+
 double CRoutine_FT::RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per milliarcsecond
 
 CRoutine_FT::CRoutine_FT(cl_device_id device, cl_context context, cl_command_queue queue)
@@ -48,3 +51,5 @@ CRoutine_FT::~CRoutine_FT()
 {
 	// TODO Auto-generated destructor stub
 }
+
+} /* namespace liboi */

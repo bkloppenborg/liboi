@@ -34,6 +34,9 @@
 
 #include "CRoutine.h"
 
+namespace liboi
+{
+
 class CRoutine_Zero: public CRoutine
 {
 public:
@@ -50,5 +53,7 @@ public:
 			buffer[i] = 0;
 	}
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_ZERO_H_ */

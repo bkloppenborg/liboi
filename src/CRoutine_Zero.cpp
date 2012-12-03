@@ -34,6 +34,9 @@
 
 #include "CRoutine_Zero.h"
 
+namespace liboi
+{
+
 CRoutine_Zero::CRoutine_Zero(cl_device_id device, cl_context context, cl_command_queue queue)
 	: CRoutine(device, context, queue)
 {
@@ -74,3 +77,4 @@ void CRoutine_Zero::Zero(cl_mem input, int buffer_size)
 	COpenCL::CheckOCLError("Failed to enqueue square kernel.", err);
 }
 
+} /* namespace liboi */

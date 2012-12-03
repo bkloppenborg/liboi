@@ -7,6 +7,9 @@
 
 #include "CPointSource.h"
 
+namespace liboi
+{
+
 CPointSource::CPointSource(unsigned int image_width, unsigned int image_height, double image_scale)
 	: CModel(image_width, image_height, image_scale)
 {
@@ -39,3 +42,5 @@ valarray<double> CPointSource::GetImage(unsigned int image_width, unsigned int i
 
 	return output;
 }
+
+} // namespace liboi

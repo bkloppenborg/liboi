@@ -13,6 +13,7 @@
 #include "CPointSource.h"
 #include "CUniformDisk.h"
 
+using namespace liboi;
 extern string LIBOI_KERNEL_PATH;
 
 /// Checks that the CPU algorithm can replicate a point source DFT

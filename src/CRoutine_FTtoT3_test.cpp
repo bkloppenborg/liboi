@@ -14,6 +14,7 @@
 #include "CPointSource.h"
 
 using namespace std;
+using namespace liboi;
 
 extern string LIBOI_KERNEL_PATH;
 

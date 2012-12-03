@@ -39,6 +39,9 @@
 
 using namespace std;
 
+namespace liboi
+{
+
 class COILibData;
 typedef shared_ptr<COILibData> COILibDataPtr;
 
@@ -63,5 +66,6 @@ public:
 
 	void RemoveData(unsigned int data_num);
 };
+} /* namespace liboi */
 
 #endif /* COILIBDATALIST_H_ */

@@ -34,6 +34,9 @@
 
 #include "CRoutine_LogLike.h"
 
+namespace liboi
+{
+
 CRoutine_LogLike::CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
 	:CRoutine_Sum(device, context, queue, rZero)
 {
@@ -170,3 +173,5 @@ void CRoutine_LogLike::Init(int num_max_elements)
 
 	COpenCL::CheckOCLError("Could not create loglike temporary buffer.", err);
 }
+
+} /* namespace liboi */

@@ -38,6 +38,9 @@
 
 using namespace std;
 
+namespace liboi
+{
+
 CRoutine_DFT::CRoutine_DFT(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine_FT(device, context, queue)
 {
@@ -149,3 +152,5 @@ void CRoutine_DFT::Init(float image_scale)
 
     BuildKernel(tmp.str(), "dft_2d", mSource[0]);
 }
+
+} /* namespace liboi */

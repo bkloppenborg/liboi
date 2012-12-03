@@ -63,6 +63,9 @@
 using namespace std;
 using namespace ccoifits;
 
+namespace liboi
+{
+
 class COpenCL;
 class CRoutine_Sum;
 class CRoutine_ImageToBuffer;
@@ -204,5 +207,7 @@ public:
 	void SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type);
 	void SetKernelSourcePath(string path_to_kernels);
 };
+
+} /* namespace liboi */
 
 #endif /* LIBOI_H_ */

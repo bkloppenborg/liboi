@@ -50,6 +50,9 @@
 #include "CRoutine_Square.h"
 #include "CRoutine_Zero.h"
 
+namespace liboi
+{
+
 CLibOI::CLibOI(cl_device_type type)
 {
 	// init datamembers
@@ -778,3 +781,5 @@ void CLibOI::SetKernelSourcePath(string path_to_kernels)
 {
 	mKernelSourcePath = path_to_kernels;
 }
+
+} /* namespace liboi */

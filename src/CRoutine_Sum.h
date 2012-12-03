@@ -34,6 +34,9 @@
 
 #include "CRoutine.h"
 
+namespace liboi
+{
+
 class CRoutine_Zero;
 
 class CRoutine_Sum: public CRoutine
@@ -79,5 +82,7 @@ public:
 		return sum;
 	}
 };
+
+} /* namespace liboi */
 
 #endif /* CROUTINE_REDUCE_SUM_H_ */

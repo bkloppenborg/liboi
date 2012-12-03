@@ -10,6 +10,9 @@
 
 #include "CModel.h"
 
+namespace liboi
+{
+
 class CUniformDisk: public CModel
 {
 protected:
@@ -26,5 +29,7 @@ public:
 	virtual complex<double> GetVis(pair<double,double> & uv);
 	virtual valarray<double> GetImage(unsigned int image_width, unsigned int image_height, float image_scale);
 };
+
+} // namespace liboi
 
 #endif /* CPOINTSOURCE_H_ */

@@ -11,6 +11,8 @@
 #include "CRoutine_Sum.h"
 #include "CRoutine_Zero.h"
 
+using namespace liboi;
+
 extern string LIBOI_KERNEL_PATH;
 
 /// Checks that the summation algorithm is working on the CPU side

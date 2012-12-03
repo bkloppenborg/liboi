@@ -44,9 +44,12 @@
 #define PI M_PI
 #endif
 
-#define TWO_PI (2 * PI)
-
 using namespace std;
+
+namespace liboi
+{
+
+#define TWO_PI (2 * PI)
 
 CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero, CRoutine_Square * rSquare)
 	:CRoutine_Sum(device, context, queue, rZero)
@@ -377,3 +380,5 @@ void CRoutine_Chi::Init(unsigned int n)
     BuildKernel(tmp.str(), "chi_complex_nonconvex", mSource[mChiNonConvexSourceID]);
     mChiNonConvexKernelID = mKernels.size() - 1;
 }
+
+} /* namespace liboi */

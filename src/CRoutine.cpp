@@ -39,6 +39,8 @@
 
 using namespace std;
 
+namespace liboi
+{
 
 CRoutine::CRoutine(cl_device_id device, cl_context context, cl_command_queue queue)
 {
@@ -238,3 +240,5 @@ bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffe
 
 	return true;
 }
+
+} /* namespace liboi */

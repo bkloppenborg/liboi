@@ -39,6 +39,9 @@
 
 using namespace std;
 
+namespace liboi
+{
+
 COpenCL::COpenCL(cl_device_type type)
 {
 	mDevice = 0;
@@ -422,3 +425,5 @@ void COpenCL::PrintPlatformInfo(cl_platform_id platform_id)
 
 	delete tmp;
 }
+
+} /* namespace liboi */
