@@ -36,6 +36,7 @@
 
 #include "COILibData.h"
 #include <memory>
+#include <mutex>
 
 using namespace std;
 
@@ -45,12 +46,17 @@ namespace liboi
 class COILibData;
 typedef shared_ptr<COILibData> COILibDataPtr;
 
-class COILibDataList: public vector<COILibDataPtr>
+class COILibDataList
 {
+protected:
+	vector<COILibDataPtr> mDataList;
+	mutex mDataMutex;
 
 public:
 	COILibDataList();
 	virtual ~COILibDataList();
+
+	COILibDataPtr at(unsigned int id);
 
 	OIDataList GetData(unsigned int data_num);
 
@@ -65,6 +71,8 @@ public:
 	int MaxUVPoints();
 
 	void RemoveData(unsigned int data_num);
+
+	unsigned int size();
 };
 } /* namespace liboi */
 

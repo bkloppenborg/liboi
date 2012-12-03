@@ -48,22 +48,39 @@ COILibDataList::~COILibDataList()
 
 }
 
+COILibDataPtr COILibDataList::at(unsigned int id)
+{
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
+	return mDataList.at(id);
+}
+
 OIDataList COILibDataList::GetData(unsigned int data_num)
 {
-	if(data_num < this->size())
-		return this->at(data_num)->GetData();
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
 
-	return OIDataList();
+	try
+	{
+		return mDataList[data_num]->GetData();
+	}
+	catch(...)
+	{
+		return OIDataList();
+	}
 }
 
 /// Returns the total number of data points (UV + T3) in all data sets
 int COILibDataList::GetNData()
 {
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
+	// Calculate the total sum of the number of data points.
 	int tmp = 0;
-    for(vector<COILibDataPtr>::iterator it = this->begin(); it != this->end(); ++it)
-    {
-    	tmp += (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
-    }
+	for(auto data: mDataList)
+		tmp += data->GetNumData();
 
     return tmp;
 }
@@ -72,9 +89,12 @@ int COILibDataList::GetNData()
 /// for all data sets.
 int COILibDataList::GetNDataAllocated()
 {
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
 	int tmp = 0;
-	for(unsigned int i = 0; i < this->size(); i++)
-		tmp += GetNDataAllocated(i);
+	for(auto data: mDataList)
+		tmp += data->GetNumData();
 
     return tmp;
 }
@@ -82,35 +102,52 @@ int COILibDataList::GetNDataAllocated()
 /// Returns the size of the data_num's allocated data block.
 int COILibDataList::GetNDataAllocated(unsigned int data_num)
 {
-	// TODO: Change this function to call the COILibData functions.
-	if(data_num < this->size())
-		return this->at(data_num)->GetNumData();
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
 
-	return 0;
+	unsigned int n_data = 0;
+
+	try
+	{
+		return mDataList[data_num]->GetNumData();
+	}
+	catch(...)
+	{
+		return 0;
+	}
 }
 
 /// Reads in an OIFITS file, returns a COILibData object.
 void COILibDataList::LoadData(string filename, cl_context context, cl_command_queue queue)
 {
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
 	COILibDataPtr tmp(new COILibData(filename, context, queue));
-	this->push_back(tmp);
+	mDataList.push_back(tmp);
 }
 
 /// Reads in an OIFITS file, returns a COILibData object.
 void COILibDataList::LoadData(const OIDataList & data, cl_context context, cl_command_queue queue)
 {
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
 	COILibDataPtr tmp(new COILibData(data, context, queue));
-	this->push_back(tmp);
+	mDataList.push_back(tmp);
 }
 
 /// Finds the maximum number of data points (Vis2 + T3) and returns that number.
 int COILibDataList::MaxNumData()
 {
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
 	int tmp;
 	int max = 0;
-    for(vector<COILibDataPtr>::iterator it = this->begin(); it != this->end(); ++it)
+    for(auto data: mDataList)
     {
-    	tmp = (*it)->GetNumV2() + 2 * (*it)->GetNumT3();
+    	tmp = data->GetNumData();
     	if(tmp > max)
     		max = tmp;
     }
@@ -121,11 +158,14 @@ int COILibDataList::MaxNumData()
 /// Finds the maximum number of data points (Vis2 + T3) and returns that number.
 int COILibDataList::MaxUVPoints()
 {
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
 	int tmp;
 	int max = 0;
-    for(vector<COILibDataPtr>::iterator it = this->begin(); it != this->end(); ++it)
+    for(auto data: mDataList)
     {
-    	tmp = (*it)->GetNumUV();
+    	tmp = data->GetNumUV();
     	if(tmp > max)
     		max = tmp;
     }
@@ -136,8 +176,25 @@ int COILibDataList::MaxUVPoints()
 /// Removes the specified data file from device and host memory
 void COILibDataList::RemoveData(unsigned int data_num)
 {
-	if(data_num < this->size())
-		this->erase(this->begin() + data_num);
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
+	try
+	{
+		mDataList.erase(mDataList.begin() + data_num);
+	}
+	catch(...)
+	{
+		// do nothing
+	}
+}
+
+unsigned int COILibDataList::size()
+{
+	// Lock the data, automatically unlocks
+	lock_guard<std::mutex> lock(mDataMutex);
+
+	return mDataList.size();
 }
 
 } /* namespace liboi */
