@@ -82,8 +82,9 @@ int COILibDataList::GetNDataAllocated()
 /// Returns the size of the data_num's allocated data block.
 int COILibDataList::GetNDataAllocated(unsigned int data_num)
 {
+	// TODO: Change this function to call the COILibData functions.
 	if(data_num < this->size())
-		return this->at(data_num)->GetNumV2() + 2 * this->at(data_num)->GetNumT3();
+		return this->at(data_num)->GetNumData();
 
 	return 0;
 }
