@@ -58,8 +58,10 @@
 
 #include <string>
 #include <memory>
+#include "oi_file.hpp"
 
 using namespace std;
+using namespace ccoifits;
 
 class COpenCL;
 class CRoutine_Sum;
@@ -158,6 +160,7 @@ public:
 	void FreeOpenCLMem();
 	void FTToData(COILibDataPtr data);
 
+	OIDataList GetData(unsigned int data_num);
 	double GetDataAveJD(int data_num);
 	int GetNData();
 	int GetNDataAllocated();

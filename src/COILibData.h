@@ -99,6 +99,7 @@ public:
 
 	// Inline the get location functions
 	double GetAveJD(void) { return mAveJD; };
+	OIDataList GetData(void) { return mData; };
 	string GetFilename(void) { return mFileName; };
 	cl_mem GetLoc_Data() { return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };

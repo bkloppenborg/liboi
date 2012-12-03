@@ -49,6 +49,8 @@ public:
 	COILibDataList();
 	virtual ~COILibDataList();
 
+	OIDataList GetData(unsigned int data_num);
+
 	int GetNData();
 	int GetNDataAllocated();
 	int GetNDataAllocated(unsigned int data_num);

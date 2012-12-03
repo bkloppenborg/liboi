@@ -226,6 +226,11 @@ void CLibOI::FTToData(COILibDataPtr data)
 			data->GetLoc_T3_sign(), mSimDataBuffer, n_vis, n_v2, n_t3);
 }
 
+OIDataList CLibOI::GetData(unsigned int data_num)
+{
+	return mDataList->GetData(data_num);
+}
+
 double CLibOI::GetDataAveJD(int data_num)
 {
 	return mDataList->at(data_num)->GetAveJD();

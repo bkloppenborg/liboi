@@ -45,6 +45,14 @@ COILibDataList::~COILibDataList()
 
 }
 
+OIDataList COILibDataList::GetData(unsigned int data_num)
+{
+	if(data_num < this->size())
+		return this->at(data_num)->GetData();
+
+	return OIDataList();
+}
+
 /// Returns the total number of data points (UV + T3) in all data sets
 int COILibDataList::GetNData()
 {
