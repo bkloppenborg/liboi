@@ -69,6 +69,10 @@ namespace liboi
 class COILibData
 {
 protected:
+	// OpenCL properties:
+	cl_context mContext;
+	cl_command_queue mQueue;
+
 	// Data list
 	OIDataList mData;
 
@@ -98,8 +102,25 @@ public:
 	COILibData(const OIDataList & data, cl_context context, cl_command_queue queue);
 	virtual ~COILibData();
 
-//	void CopyToOpenCLDevice(cl_context context, cl_command_queue queue);
+protected:
+	void AllocateMemory();
 
+public:
+	static unsigned int CalculateOffset_Vis(void);
+	static unsigned int CalculateOffset_V2(unsigned int n_vis);
+	static unsigned int CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2);
+protected:
+	void CopyData(vector<pair<double,double> > uv_points,
+		valarray<complex<double>> & vis, valarray<pair<double,double>> & vis_err, vector<unsigned int> & vis_uv_ref,
+		valarray<double> & vis2, valarray<double> & vis2_err, vector<unsigned int> & vis2_uv_ref,
+		valarray<complex<double>> & t3, valarray<pair<double,double> > & t3_err,
+		vector<tuple<unsigned int, unsigned int, unsigned int>> & t3_uv_ref,
+		vector<tuple<short, short, short>> & t3_uv_sign);
+
+protected:
+	void DeallocateMemory();
+
+public:
 	// Inline the get location functions
 	double GetAveJD(void) { return mAveJD; };
 	OIDataList GetData(void) { return mData; };
@@ -117,23 +138,13 @@ public:
 	unsigned int GetNumV2() { return mNV2; };
 	unsigned int GetNumVis() { return mNVis; };
 
+protected:
+	void InitData();
 
-	static unsigned int CalculateOffset_Vis(void);
-	static unsigned int CalculateOffset_V2(unsigned int n_vis);
-	static unsigned int CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2);
-
+public:
 	static unsigned int TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3);
 
-
-//	void GetT3(vector<CT3DataPtr> & t3);
-//	void GetV2(vector<CV2DataPtr> & v2);
-
-//	void ReadFile(string filename);
-
-//	static float square(float number) { return number*number; };
-
-protected:
-	void InitData(cl_context context, cl_command_queue queue);
+	void Replace(const OIDataList & new_data);
 };
 
 } // namespace liboi

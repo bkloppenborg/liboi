@@ -189,19 +189,14 @@ void COILibDataList::RemoveData(unsigned int data_num)
 	}
 }
 
-// Replaces the data stored in old_data_id with the new_data
+// Replaces the data stored in old_data_id with the new_data. The data must be of the same eize
 void COILibDataList::ReplaceData(unsigned int old_data_id, const OIDataList & new_data, cl_context context, cl_command_queue queue)
 {
 	// Lock the data, automatically unlocks
 	lock_guard<std::mutex> lock(mDataMutex);
 
-	// First load the new data, insert it into old_data_id's position
-	COILibDataPtr tmp(new COILibData(new_data, context, queue));
-	mDataList.insert(mDataList.begin() + old_data_id, tmp);
-
-	// Now remove the old data from the vector.
-	// Remember, it has been pushed back by one element.
-	mDataList.erase(mDataList.begin() + old_data_id + 1);
+	COILibDataPtr temp = mDataList[old_data_id];
+	temp->Replace(new_data);
 }
 
 unsigned int COILibDataList::size()

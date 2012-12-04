@@ -46,6 +46,9 @@ namespace liboi
 
 COILibData::COILibData(string filename, cl_context context, cl_command_queue queue)
 {
+	mContext = context;
+	mQueue = queue;
+
 	// Read in the data.
 	COIFile tmp;
 	try
@@ -58,16 +61,82 @@ COILibData::COILibData(string filename, cl_context context, cl_command_queue que
 
 	}
 
-	InitData(context, queue);
+	// Set the OpenCL buffers to NULL
+	mData_cl = 0;
+	mData_err_cl = 0;
+	mData_uv_cl = 0;
+	mData_Vis_uv_ref = 0;
+	mData_V2_uv_ref = 0;
+	mData_T3_uv_ref = 0;
+	mData_T3_sign = 0;
+
+	InitData();
 }
 
 COILibData::COILibData(const OIDataList & data, cl_context context, cl_command_queue queue)
 {
+	mContext = context;
+	mQueue = queue;
 	mData = data;
-	InitData(context, queue);
+
+	// Set the OpenCL buffers to NULL
+	mData_cl = 0;
+	mData_err_cl = 0;
+	mData_uv_cl = 0;
+	mData_Vis_uv_ref = 0;
+	mData_V2_uv_ref = 0;
+	mData_T3_uv_ref = 0;
+	mData_T3_sign = 0;
+
+	InitData();
 }
 
 COILibData::~COILibData()
+{
+	DeallocateMemory();
+}
+
+/// Initializes statistics on the data set and uploads the data to the OpenCL device.
+void COILibData::AllocateMemory()
+{
+	int err = CL_SUCCESS;
+
+	// In case it has been called before, clean up memory.
+	DeallocateMemory();
+
+	// Main data buffer
+	// An array of cl_floats arranged as follows: [vis_real, vis_imag, v2, t3_amp, t3_phi]
+	// The number of data must always be greater than zero.
+	assert(mNData > 0);
+	mData_cl = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_float) * mNData, NULL, NULL);
+	mData_err_cl = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_float) * mNData, NULL, NULL);
+
+	// Copy over the UV points.  We MUST always have at least one UV point (otherwise the data would be nonsense).
+	assert(mNUV > 0);
+	mData_uv_cl = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
+
+	mData_Vis_uv_ref = 0;
+	if(mNVis > 0)
+		mData_Vis_uv_ref = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_uint) * mNVis, NULL, NULL);
+
+	mData_V2_uv_ref = 0;
+	if(mNV2 > 0)
+		mData_V2_uv_ref = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_uint) * mNV2, NULL, NULL);
+
+	mData_T3_uv_ref = 0;
+	mData_T3_sign = 0;
+	if(mNT3 > 0)
+	{
+		mData_T3_uv_ref = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_uint4) * mNT3, NULL, NULL);
+		mData_T3_sign = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_short4) * mNT3, NULL, NULL);
+	}
+
+	// Wait for the queue to process
+	clFinish(mQueue);
+}
+
+/// Deallocates memory allocated on the OpenCL device.
+void COILibData::DeallocateMemory()
 {
 	// Free OpenCL memory
 	if(mData_cl) clReleaseMemObject(mData_cl);
@@ -82,7 +151,7 @@ COILibData::~COILibData()
 }
 
 /// Initializes statistics on the data set and uploads the data to the OpenCL device.
-void COILibData::InitData(cl_context context, cl_command_queue queue)
+void COILibData::InitData()
 {
 	int err = CL_SUCCESS;
 
@@ -109,10 +178,43 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 	// Average JD (notice we need to add in MJD)
 	mAveJD = AverageMJD(mData) + MJD;
 	// Total number of double/floats allocated for storage on the OpenCL context:
-	mNData = 2*mNVis + mNV2 + 2*mNT3;
+	mNData = TotalBufferSize(mNVis, mNV2, mNT3);
+
+	// Copy data over to the OpenCL device.
+	AllocateMemory();
+	CopyData(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+
+}
+
+unsigned int COILibData::CalculateOffset_Vis(void)
+{
+	return 0;
+}
+
+// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
+unsigned int COILibData::CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2)
+{
+	return 2*n_vis + n_v2;
+}
+
+/// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
+unsigned int COILibData::CalculateOffset_V2(unsigned int n_vis)
+{
+	return 2*n_vis;
+}
+
+void COILibData::CopyData(vector<pair<double,double> > uv_points,
+	valarray<complex<double>> & vis, valarray<pair<double,double>> & vis_err, vector<unsigned int> & vis_uv_ref,
+	valarray<double> & vis2, valarray<double> & vis2_err, vector<unsigned int> & vis2_uv_ref,
+	valarray<complex<double>> & t3, valarray<pair<double,double> > & t3_err,
+	vector<tuple<unsigned int, unsigned int, unsigned int>> & t3_uv_ref,
+	vector<tuple<short, short, short>> & t3_uv_sign)
+{
+
+	int err = CL_SUCCESS;
 
 	//
-	// Now start uploading data to the OpenCL device. We need to copy the above data into
+	// Start uploading data to the OpenCL device. We need to copy the above data into
 	// OpenCL data types to ensure things are moved correctly.
 	//
 
@@ -120,8 +222,6 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 	// An array of cl_floats arranged as follows: [vis_real, vis_imag, v2, t3_amp, t3_phi]
 	// The number of data must always be greater than zero.
 	assert(mNData > 0);
-	mData_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float) * mNData, NULL, NULL);
-	mData_err_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float) * mNData, NULL, NULL);
 
 	// #####
 	// UV points:
@@ -135,8 +235,7 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 
 	// Copy over the UV points.  We MUST always have at least one UV point (otherwise the data would be nonsense).
 	assert(mNUV > 0);
-	mData_uv_cl = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
-	err  = clEnqueueWriteBuffer(queue, mData_uv_cl, CL_FALSE, 0, sizeof(cl_float2) * mNUV, &t_uv_points[0], 0, NULL, NULL);
+	err  = clEnqueueWriteBuffer(mQueue, mData_uv_cl, CL_FALSE, 0, sizeof(cl_float2) * mNUV, &t_uv_points[0], 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy OI UV points to OpenCL device. COILibData::InitData.", err);
 
 	// #####
@@ -155,15 +254,12 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 		t_vis_uvref[i] = vis_uv_ref[i];
 	}
 
-	mData_Vis_uv_ref = 0;
 	if(mNVis > 0)
 	{
-		mData_Vis_uv_ref = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_uint) * mNVis, NULL, NULL);
-
 		// Copy the data.  No offset, this is always at the start of the buffer.
-		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis[0], 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis_err[0], 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_Vis_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNVis, &t_vis_uvref[0], 0, NULL, NULL);
+		err  = clEnqueueWriteBuffer(mQueue, mData_cl, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(mQueue, mData_err_cl, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis_err[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(mQueue, mData_Vis_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNVis, &t_vis_uvref[0], 0, NULL, NULL);
 		COpenCL::CheckOCLError("Could not copy OI_VIS data to OpenCL device. COILibData::InitData", err);
 	}
 
@@ -180,15 +276,12 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 		t_vis2_uvref[i] = vis2_uv_ref[i];
 	}
 
-	mData_V2_uv_ref = 0;
 	if(mNV2 > 0)
 	{
-		mData_V2_uv_ref = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_uint) * mNV2, NULL, NULL);
-
 		int offset = CalculateOffset_V2(mNVis);
-		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2[0], 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2_err[0], 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_V2_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNV2, &t_vis2_uvref[0], 0, NULL, NULL);
+		err  = clEnqueueWriteBuffer(mQueue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(mQueue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2_err[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(mQueue, mData_V2_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNV2, &t_vis2_uvref[0], 0, NULL, NULL);
 		COpenCL::CheckOCLError("Could not copy OI_VIS2 data to OpenCL device. COILibData::InitData", err);
 	}
 
@@ -221,46 +314,65 @@ void COILibData::InitData(cl_context context, cl_command_queue queue)
 		t_t3_sign[i].s3 = 0;
 	}
 
-	mData_T3_uv_ref = 0;
-	mData_T3_sign = 0;
 	if(mNT3 > 0)
 	{
-		mData_T3_uv_ref = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_uint4) * mNT3, NULL, NULL);
-		mData_T3_sign = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_short4) * mNT3, NULL, NULL);
-
 		int offset = CalculateOffset_T3(mNVis, mNV2);
-		err  = clEnqueueWriteBuffer(queue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3[0], 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3_err[0], 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_T3_uv_ref, CL_FALSE, 0, sizeof(cl_uint4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue, mData_T3_sign, CL_FALSE, 0, sizeof(cl_short4) * mNT3, &t_t3_sign[0], 0, NULL, NULL);
+		err  = clEnqueueWriteBuffer(mQueue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(mQueue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3_err[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(mQueue, mData_T3_uv_ref, CL_FALSE, 0, sizeof(cl_uint4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(mQueue, mData_T3_sign, CL_FALSE, 0, sizeof(cl_short4) * mNT3, &t_t3_sign[0], 0, NULL, NULL);
 		COpenCL::CheckOCLError("Could not copy OI_T3 data to OpenCL device. COILibData::InitData", err);
 	}
 
 	// Wait for the queue to process
-	clFinish(queue);
+	clFinish(mQueue);
 }
 
-unsigned int COILibData::CalculateOffset_Vis(void)
-{
-	return 0;
-}
-
-// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
-unsigned int COILibData::CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2)
-{
-	return 2*n_vis + n_v2;
-}
-
-/// Calculates the number of floats before the V2 data segment following the definition in COILibData.h
-unsigned int COILibData::CalculateOffset_V2(unsigned int n_vis)
-{
-	return 2*n_vis;
-}
 
 // Calculate the total number of elements in the data buffer following the data storage definition in COILibData.h
 unsigned int COILibData::TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3)
 {
 	return 2*n_vis + n_v2 + 2*n_t3;
+}
+
+/// Replaces the currently loaded data set with another of the exact same size stored in new_data
+/// this function is useful for bootstrapping.
+void COILibData::Replace(const OIDataList & new_data)
+{
+	// This is essentially a repeat of the InitData function, except we check that the total number of data
+	// doesn't change.
+
+	// Export the data from OIDataList to something we can use here.
+	vector<pair<double,double> > uv_points;
+	valarray<complex<double>> vis;
+	valarray<pair<double,double>> vis_err;
+	vector<unsigned int> vis_uv_ref;
+	valarray<double> vis2;
+	valarray<double> vis2_err;
+	vector<unsigned int> vis2_uv_ref;
+	valarray<complex<double>> t3;
+	valarray<pair<double,double> > t3_err;
+	vector<tuple<unsigned int, unsigned int, unsigned int>> t3_uv_ref;
+	vector<tuple<short, short, short>> t3_uv_sign;
+
+	ccoifits::Export_MinUV(new_data, uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+
+	unsigned int n_vis = vis.size();
+	unsigned int n_v2 = vis2.size();
+	unsigned int n_t3 = t3.size();
+	unsigned int n_uv = uv_points.size();
+	unsigned int total_size = TotalBufferSize(n_vis, n_v2, n_t3);
+
+	// When data is replaced (as is often done in bootstrapping), the number of UV points can be smaller
+	assert(n_uv <= mNUV);
+	// But for statistical information to make sense, the total number of data must match exactly.
+	assert(n_vis == mNVis);
+	assert(n_v2 == mNV2);
+	assert(n_t3 == mNT3);
+	assert(total_size == mNData);
+
+	// Copy data over to the OpenCL device.
+	CopyData(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
 }
 
 } // namespace liboi
