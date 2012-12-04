@@ -206,6 +206,8 @@ public:
 	void SetImageSource(cl_mem cl_device_memory);
 	void SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type);
 	void SetKernelSourcePath(string path_to_kernels);
+
+	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data);
 };
 
 } /* namespace liboi */

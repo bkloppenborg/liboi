@@ -782,4 +782,10 @@ void CLibOI::SetKernelSourcePath(string path_to_kernels)
 	mKernelSourcePath = path_to_kernels;
 }
 
+/// Replaces the data set loaded into old_data_id with new_data
+void CLibOI::ReplaceData(unsigned int old_data_id, const OIDataList & new_data)
+{
+	mDataList->ReplaceData(old_data_id, new_data, mOCL->GetContext(), mOCL->GetQueue());
+}
+
 } /* namespace liboi */
