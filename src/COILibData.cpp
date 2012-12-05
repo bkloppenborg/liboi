@@ -120,6 +120,7 @@ void COILibData::AllocateMemory()
 	// Allocate the optimial buffer size for the UV points
 	// For NVidia Fermi, there are 16 processors per multiprocessor
 	// For ATI hardware, there are 20 processors per multiprocessor
+// TODO: We need to dynamically determine the vendor
 	mNUV = NextHighestMultiple(16, mNUV);
 
 	mData_uv_cl = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
