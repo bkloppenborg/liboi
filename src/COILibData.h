@@ -145,6 +145,12 @@ public:
 	static unsigned int TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3);
 
 	void Replace(const OIDataList & new_data);
+
+	/// Returns the integer multiple of base which is higher than value.
+	inline int NextHighestMultiple(int base, int value)
+	{
+		return (value / base + 1) * base;
+	}
 };
 
 } // namespace liboi

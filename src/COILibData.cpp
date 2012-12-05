@@ -37,6 +37,9 @@
 #include "oi_tools.hpp"
 #include "oi_export.hpp"
 
+//temp
+#include <limits>
+
 using namespace std;
 
 namespace liboi
@@ -113,6 +116,12 @@ void COILibData::AllocateMemory()
 
 	// Copy over the UV points.  We MUST always have at least one UV point (otherwise the data would be nonsense).
 	assert(mNUV > 0);
+
+	// Allocate the optimial buffer size for the UV points
+	// For NVidia Fermi, there are 16 processors per multiprocessor
+	// For ATI hardware, there are 20 processors per multiprocessor
+	mNUV = NextHighestMultiple(16, mNUV);
+
 	mData_uv_cl = clCreateBuffer(mContext, CL_MEM_READ_ONLY, sizeof(cl_float2) * mNUV, NULL, NULL);
 
 	mData_Vis_uv_ref = 0;
@@ -180,10 +189,16 @@ void COILibData::InitData()
 	// Total number of double/floats allocated for storage on the OpenCL context:
 	mNData = TotalBufferSize(mNVis, mNV2, mNT3);
 
+	cout << "Data set information: " << endl;
+	cout << " " << mNVis << " Vis" << endl;
+	cout << " " << mNV2 << " V2" << endl;
+	cout << " " << mNT3 << " T3" << endl;
+	cout << " " << mNUV << " UV points" << endl;
+	cout << " " << mAveJD << " Average JD" << endl;
+
 	// Copy data over to the OpenCL device.
 	AllocateMemory();
 	CopyData(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
-
 }
 
 unsigned int COILibData::CalculateOffset_Vis(void)
@@ -226,11 +241,19 @@ void COILibData::CopyData(vector<pair<double,double> > uv_points,
 	// #####
 	// UV points:
 	// Stored as pair of floats: [(u,v)_0, ..., (u,v)_N]
+
+	// Allocate a buffer, fill it with UV points
 	valarray<cl_float2> t_uv_points(mNUV);
-	for(int i = 0; i < mNUV; i++)
+	for(int i = 0; i < uv_points.size(); i++)
 	{
 		t_uv_points[i].s0 = uv_points[i].first;
 		t_uv_points[i].s1 = uv_points[i].second;
+	}
+	// Pad with infinities after this (results in UV points having value of (0 + 0i))
+	for(int i = uv_points.size(); i < mNUV; i++)
+	{
+		t_uv_points[i].s0 = numeric_limits<float>::infinity();
+		t_uv_points[i].s1 = numeric_limits<float>::infinity();
 	}
 
 	// Copy over the UV points.  We MUST always have at least one UV point (otherwise the data would be nonsense).
