@@ -33,31 +33,29 @@
  */
 
 #include "CRoutine_LogLike.h"
+#include "COILibData.h"
 
 namespace liboi
 {
 
 CRoutine_LogLike::CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
-	:CRoutine_Sum(device, context, queue, rZero)
+	:CRoutine_Chi(device, context, queue, rZero)
 {
 	mSource.push_back("loglike.cl");
 	mLogLikeSourceID = mSource.size() - 1;
 	mLogLikeKernelID = 0;
 
-	mTempLogLike = NULL;
-	mOutput = NULL;
+	mLogLikeOutput = NULL;
 }
 
 CRoutine_LogLike::~CRoutine_LogLike()
 {
-	if(mTempLogLike) clReleaseMemObject(mTempLogLike);
-	if(mOutput) clReleaseMemObject(mOutput);
+	if(mLogLikeOutput) clReleaseMemObject(mLogLikeOutput);
 }
 
-/// Computes the loglikelihood, returns it as a floating point number.
-float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value)
+// Computes the log likelihood of the individual elements in the chi_output buffer
+void CRoutine_LogLike::LogLike(cl_mem chi_output, cl_mem data_err, cl_mem output, unsigned int n)
 {
-	float sum = 0;
 	int err = CL_SUCCESS;
 	// The loglikelihood kernel executes on the entire output buffer
 	// because the reduce_sum_float kernel uses the entire buffer as input.
@@ -70,108 +68,84 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	COpenCL::CheckOCLError("Failed to determine workgroup size for loglike kernel.", err);
 
 	// Set the arguments to our compute kernel
-	err  = clSetKernelArg(mKernels[mLogLikeKernelID], 0, sizeof(cl_mem), &data);
+	err  = clSetKernelArg(mKernels[mLogLikeKernelID], 0, sizeof(cl_mem), &chi_output);
 	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 1, sizeof(cl_mem), &data_err);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 2, sizeof(cl_mem), &model_data);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 3, sizeof(cl_mem), &mTempLogLike);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 4, sizeof(int), &n);
+	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 2, sizeof(cl_mem), &output);
+	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 3, sizeof(unsigned int), &n);
 	COpenCL::CheckOCLError("Failed to set loglike kernel arguments.", err);
 
 	// Execute the kernel over the entire range of the data set
 	err = clEnqueueNDRangeKernel(mQueue, mKernels[mLogLikeKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
 	COpenCL::CheckOCLError("Failed to enqueue loglike kernel.", err);
-
-	// Now fire up the parallel sum kernel and return the output.  Wrap this in a try/catch block.
-	try
-	{
-		if(compute_sum)
-			sum = ComputeSum(mTempLogLike, mOutput, return_value);
-	}
-	catch (...)
-	{
-		printf("Warning, exception in CRoutine_LogLike.  Writing out buffers:\n");
-		LogLike(data, data_err, model_data, n, false, false);
-		DumpFloatBuffer(mTempLogLike, mNElements);
-		throw;
-	}
-
-	return -1*n * log(2 * PI) + sum;
 }
 
-float CRoutine_LogLike::LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, valarray<float> & output)
+//
+void CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
+		LibOIEnums::Chi2Types complex_chi_method,
+		unsigned int n_vis, unsigned int n_v2, unsigned int n_t3)
 {
-	int err = CL_SUCCESS;
-	cl_float cpu_data[n];
-	cl_float cpu_data_err[n];
-	cl_float cpu_model_data[n];
-	err |= clEnqueueReadBuffer(mQueue, data, CL_TRUE, 0, n * sizeof(cl_float), cpu_data, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, data_err, CL_TRUE, 0, n * sizeof(cl_float), cpu_data_err, 0, NULL, NULL);
-	err |= clEnqueueReadBuffer(mQueue, model_data, CL_TRUE, 0, n * sizeof(cl_float), cpu_model_data, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to copy values back to the CPU, CRoutine_LogLike::LogLike_CPU().", err);
+	// First call the chi routine to compute the individual elements
+	Chi(data, data_err, model_data, complex_chi_method, n_vis, n_v2, n_t3);
 
-	// we do this verbose
+	// Now compute the loglike using the mChiOutput buffer:
+	unsigned int n_data = COILibData::TotalBufferSize(n_vis, n_v2, n_t3);
+	LogLike(mChiOutput, data_err, mLogLikeOutput, n_data);
+}
+
+/// Computes the log of the likelihoods for the specified OpenCL buffers then returns the sum if compute_sum is true.
+float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
+		LibOIEnums::Chi2Types complex_chi_method,
+		unsigned int n_vis, unsigned int n_v2, unsigned int n_t3, bool compute_sum)
+{
 	float sum = 0;
-	float temp = 0;
+	unsigned int n_data = COILibData::TotalBufferSize(n_vis, n_v2, n_t3);
+
+	// Call the loglike kernel on the buffer.
+	LogLike(data, data_err, model_data, complex_chi_method, n_vis, n_v2, n_t3);
+
+	// Now compute the sum and return the value
+	if(compute_sum)
+		sum = ComputeSum(mLogLikeOutput, mLogLikeOutput, true);
+
+	return -1*n_data * log(2 * PI) + sum;
+}
+
+/// Computes the log likelihood
+float CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_float> & data_err, valarray<cl_float> & output, unsigned int n)
+{
+	// Verify the buffer sizes are valid
+	assert(n == chi_output.size());
+	assert(n == data_err.size());
+	assert(n == output.size());
+
+	// Compute the individual loglike values. Note, this does not include -1 * log(2 * PI) prefix
 	for(int i = 0; i < n; i++)
 	{
-		temp = 0;
-
 		if(i < n)
-		{
-			temp = (cpu_data[i] - cpu_model_data[i]) / cpu_data_err[i];
-		    temp = -2 * log(cpu_data_err[i]) - temp * temp;
-		}
-
-		output[i] = temp;
-		sum += output[i];
+			output[i] = -2 * log(data_err[i]) - chi_output[i] * chi_output[i];
 	}
 
-	// TODO: Add in model priors
-	return -1*n * log(2 * PI) + sum;
-}
-
-bool CRoutine_LogLike::LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n)
-{
-	valarray<float> cpu_output(n);
-	LogLike(data, data_err, model_data, n, false, false);
-	float cpu_sum = LogLike_CPU(data, data_err, model_data, n, cpu_output);
-
-	// Compare the CL and CPU chi2 elements:
-	printf("Checking individual loglike values:\n");
-	bool loglike_match = Verify(cpu_output, mTempLogLike, n, 0);
-	PassFail(loglike_match);
-
-	printf("Checking summed loglike values:\n");
-	float cl_sum = ComputeSum(mTempLogLike, mOutput, true);
-	bool sum_pass = bool(fabs((cpu_sum - cl_sum)/cpu_sum) < MAX_REL_ERROR);
-	printf("  CPU Value:  %0.4f\n", cpu_sum);
-	printf("  CL  Value:  %0.4f\n", cl_sum);
-	printf("  Difference: %0.4f\n", cpu_sum - cl_sum);
-	PassFail(sum_pass);
-
-	return sum_pass;
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
 void CRoutine_LogLike::Init(int num_max_elements)
 {
 	int err = CL_SUCCESS;
+	mNElements = num_max_elements;
 
 	// First initialize the base-class constructor:
-	CRoutine_Sum::Init(num_max_elements);
+	CRoutine_Chi::Init(mNElements);
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[mLogLikeSourceID]);
     BuildKernel(source, "loglike", mSource[mLogLikeSourceID]);
     mLogLikeKernelID = mKernels.size() - 1;
 
-	if(mOutput == NULL)
-		mOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
-
-	if(mTempLogLike == NULL)
-		mTempLogLike = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
-
-	COpenCL::CheckOCLError("Could not create loglike temporary buffer.", err);
+	if(mLogLikeOutput == NULL)
+	{
+		mLogLikeOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
+		COpenCL::CheckOCLError("Could not create loglike temporary buffer.", err);
+	}
 }
 
 } /* namespace liboi */

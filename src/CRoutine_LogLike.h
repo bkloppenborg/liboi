@@ -34,18 +34,17 @@
 #ifndef CROUTINE_LOGLIKE_H_
 #define CROUTINE_LOGLIKE_H_
 
-#include "CRoutine_Sum.h"
+#include "CRoutine_Chi.h"
 
 namespace liboi
 {
 
 class CRoutine_Zero;
 
-class CRoutine_LogLike: public CRoutine_Sum
+class CRoutine_LogLike: public CRoutine_Chi
 {
 protected:
-	cl_mem mTempLogLike;
-	cl_mem mOutput;
+	cl_mem mLogLikeOutput;
 
 	int mLogLikeSourceID;
 	int mLogLikeKernelID;
@@ -54,9 +53,16 @@ public:
 	CRoutine_LogLike(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero);
 	virtual ~CRoutine_LogLike();
 
-	float LogLike(cl_mem data, cl_mem data_err, cl_mem model_data, int n, bool compute_sum, bool return_value);
-	float LogLike_CPU(cl_mem data, cl_mem data_err, cl_mem model_data, int n, valarray<float> & output);
-	bool LogLike_Test(cl_mem data, cl_mem data_err, cl_mem model_data, int n);
+	void LogLike(cl_mem chi_output, cl_mem data_err, cl_mem output, unsigned int n);
+	void LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
+			LibOIEnums::Chi2Types complex_chi_method,
+			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3);
+
+	float LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
+			LibOIEnums::Chi2Types complex_chi_method,
+			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3, bool compute_sum);
+
+	static float LogLike(valarray<cl_float> & chi_output, valarray<cl_float> & data_err, valarray<cl_float> & output, unsigned int n);
 
 	void Init(int num_elements);
 };

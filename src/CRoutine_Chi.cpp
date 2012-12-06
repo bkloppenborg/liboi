@@ -51,6 +51,29 @@ namespace liboi
 
 #define TWO_PI (2 * PI)
 
+CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
+	:CRoutine_Sum(device, context, queue, rZero)
+{
+	// Specify the source location for the kernel.
+	mSource.push_back("chi.cl");
+	mChiSourceID = mSource.size() - 1;
+
+	mSource.push_back("chi_complex_convex.cl");
+	mChiConvexSourceID = mSource.size() - 1;
+
+	mSource.push_back("chi_complex_nonconvex.cl");
+	mChiNonConvexSourceID = mSource.size() - 1;
+
+	mrSquare = NULL;
+
+	// Set the temporary buffers and compiled kernel IDs to something we can verify is invalid.
+	mChiOutput = NULL;
+	mChiSquaredOutput = NULL;
+	mChiKernelID = -1;
+	mChiConvexKernelID = -1;
+	mChiNonConvexKernelID = -1;
+}
+
 CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero, CRoutine_Square * rSquare)
 	:CRoutine_Sum(device, context, queue, rZero)
 {
@@ -311,11 +334,14 @@ void CRoutine_Chi::Chi_complex_nonconvex(valarray<cl_float> & data, valarray<cl_
 	}
 }
 
-
+/// Computes the Chi squared.
 float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data,
 		LibOIEnums::Chi2Types complex_chi_method,
 		unsigned int n_vis, unsigned int n_v2, unsigned int n_t3, bool compute_sum)
 {
+	if(mrSquare == NULL)
+		throw "Square routine is not allocated. This is a programming error (wrong constructor called).";
+
 	// Clean out the buffer
 	mrZero->Zero(mChiSquaredOutput, mChiBufferSize);
 

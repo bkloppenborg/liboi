@@ -43,6 +43,7 @@ class CRoutine_Zero;
 
 class CRoutine_Chi: public CRoutine_Sum
 {
+protected:
 	int mChiSourceID;
 	int mChiConvexSourceID;
 	int mChiNonConvexSourceID;
@@ -59,10 +60,10 @@ class CRoutine_Chi: public CRoutine_Sum
 	CRoutine_Square * mrSquare;
 
 public:
+	CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero);
 	CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero, CRoutine_Square * rSquare);
 	virtual ~CRoutine_Chi();
 
-	// OpenCL routines
 	void Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
 	void ChiComplexConvex(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);
 	void ChiComplexNonConvex(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output, unsigned int start, unsigned int n);

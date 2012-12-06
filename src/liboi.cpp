@@ -190,7 +190,11 @@ float CLibOI::DataToChi2(COILibDataPtr data)
 
 float CLibOI::DataToLogLike(COILibDataPtr data)
 {
-	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, data->GetNumData(), true, true);
+	unsigned int n_vis = data->GetNumVis();
+	unsigned int n_v2 = data->GetNumV2();
+	unsigned int n_t3 = data->GetNumT3();
+
+	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
 }
 
 /// Copies the current image in mCLImage to the floating point buffer, image, iff the sizes match exactly.
