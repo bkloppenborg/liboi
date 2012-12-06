@@ -194,7 +194,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &mNElements);
 		clSetKernelArg(reductionKernel, 3, sizeof(cl_float) * numThreads, NULL);
 		err = clEnqueueNDRangeKernel(mQueue,reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Unable to enqueue final parallel reduction kernel.", err);
+		COpenCL::CheckOCLError("Unable to enqueue parallel reduction kernel. CRoutine_Sum::ComputeSum", err);
 
 		buff1 = buff2;
 	}
@@ -206,23 +206,25 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
     {
     	cl_float h_odata[mFinalS];
         // copy result from device to host
-        clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, mFinalS * sizeof(cl_float),
-                            h_odata, 0, NULL, NULL);
+        err = clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, mFinalS * sizeof(cl_float), h_odata, 0, NULL, NULL);
+		COpenCL::CheckOCLError("Unable to copy temporary sum buffer to host. CRoutine_Sum::ComputeSum", err);
 
         for(int i=0; i < mFinalS; i++)
         {
             gpu_result += h_odata[i];
         }
 
-        // Copy this value back to the GPU
-    	clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+        // Copy this value back to the OpenCL device
+    	err = clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+		COpenCL::CheckOCLError("Unable to copy summed value from the CPU to the OpenCL device. CRoutine_Sum::ComputeSum", err);
 
         return_value = false;	// don't need to read the value anymore, it is already stored locally.
     }
     else
     {
     	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
-    	clEnqueueCopyBuffer(mQueue, mTempSumBuffer, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
+    	err = clEnqueueCopyBuffer(mQueue, mTempSumBuffer, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
+		COpenCL::CheckOCLError("Unable to copy summed value into final buffer. CRoutine_Sum::ComputeSum", err);
     }
 
 	clFinish(mQueue);
@@ -230,7 +232,8 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 	if (return_value)
 	{
 		// copy final sum from device to host
-		clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+		err = clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+		COpenCL::CheckOCLError("Unable to copy summed value to host. CRoutine_Sum::ComputeSum", err);
 	}
 
 	return float(gpu_result);
