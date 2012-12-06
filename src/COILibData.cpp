@@ -34,6 +34,7 @@
 
 #include "COILibData.h"
 #include <cassert>
+#include <stdexcept>
 #include "oi_tools.hpp"
 #include "oi_export.hpp"
 
@@ -361,6 +362,7 @@ unsigned int COILibData::TotalBufferSize(unsigned int n_vis, unsigned int n_v2, 
 
 /// Replaces the currently loaded data set with another of the exact same size stored in new_data
 /// this function is useful for bootstrapping.
+/// Function throws exceptions if new_data does not match the size of the existing data exactly.
 void COILibData::Replace(const OIDataList & new_data)
 {
 	// This is essentially a repeat of the InitData function, except we check that the total number of data
@@ -388,12 +390,31 @@ void COILibData::Replace(const OIDataList & new_data)
 	unsigned int total_size = TotalBufferSize(n_vis, n_v2, n_t3);
 
 	// When data is replaced (as is often done in bootstrapping), the number of UV points can be smaller
-	assert(n_uv <= mNUV);
+	if(n_uv > mNUV)
+	{
+		throw length_error("Number of UV points exceeds allocated size.");
+	}
+
 	// But for statistical information to make sense, the total number of data must match exactly.
-	assert(n_vis == mNVis);
-	assert(n_v2 == mNV2);
-	assert(n_t3 == mNT3);
-	assert(total_size == mNData);
+	if(n_vis != mNVis)
+	{
+		throw length_error("Number of Vis points does not match allocated size");
+	}
+
+	if(n_v2 != mNV2)
+	{
+		throw length_error("Number of V2 points does not match allocated size");
+	}
+
+	if(n_t3 != mNT3)
+	{
+		throw length_error("Number of T3 points does not match allocated size");
+	}
+
+	if(total_size != mNData)
+	{
+		throw length_error("Size of data allocation does not match allocated size");
+	}
 
 	// Copy data over to the OpenCL device.
 	CopyData(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
