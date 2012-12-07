@@ -62,7 +62,7 @@ public:
 			LibOIEnums::Chi2Types complex_chi_method,
 			unsigned int n_vis, unsigned int n_v2, unsigned int n_t3, bool compute_sum);
 
-	static float LogLike(valarray<cl_float> & chi_output, valarray<cl_float> & data_err, valarray<cl_float> & output, unsigned int n);
+	static void LogLike(valarray<cl_float> & chi_output, valarray<cl_float> & data_err, valarray<cl_float> & output, unsigned int n);
 
 	void Init(int num_elements);
 };

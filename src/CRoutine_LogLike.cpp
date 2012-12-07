@@ -79,7 +79,8 @@ void CRoutine_LogLike::LogLike(cl_mem chi_output, cl_mem data_err, cl_mem output
 	COpenCL::CheckOCLError("Failed to enqueue loglike kernel.", err);
 }
 
-//
+/// Computes the log-likeihoods for the specified OpenCL buffers.
+/// The result is stored in the (protected) buffer mLogLikeOutput
 void CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 		LibOIEnums::Chi2Types complex_chi_method,
 		unsigned int n_vis, unsigned int n_v2, unsigned int n_t3)
@@ -110,21 +111,22 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	return -1*n_data * log(2 * PI) + sum;
 }
 
-/// Computes the log likelihood
-float CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_float> & data_err, valarray<cl_float> & output, unsigned int n)
+/// Computes the log likelihood per each element, returns the result in output.
+void CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_float> & data_err, valarray<cl_float> & output, unsigned int n)
 {
 	// Verify the buffer sizes are valid
 	assert(n == chi_output.size());
 	assert(n == data_err.size());
-	assert(n == output.size());
+
+	// Resize the output buffer if the user didn't already do this.
+	if(n != output.size())
+		output.resize(n);
 
 	// Compute the individual loglike values. Note, this does not include -1 * log(2 * PI) prefix
 	for(int i = 0; i < n; i++)
 	{
-		if(i < n)
-			output[i] = -2 * log(data_err[i]) - chi_output[i] * chi_output[i];
+		output[i] = -2 * log(data_err[i]) - chi_output[i] * chi_output[i];
 	}
-
 }
 
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
