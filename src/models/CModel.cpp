@@ -18,8 +18,8 @@ double CModel::RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per mill
 CModel::CModel(unsigned int image_width, unsigned int image_height, double image_scale)
 {
 	assert(image_scale > 0);
-	assert(image_width > 0);
-	assert(image_height > 0);
+	assert(image_width >= 0);
+	assert(image_height >= 0);
 
 	mImageWidth = image_width;
 	mImageHeight = image_height;
