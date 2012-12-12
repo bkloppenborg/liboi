@@ -51,7 +51,6 @@ __kernel void chi_complex_nonconvex(
 {
     int i = get_global_id(0);
     unsigned int index = start + i;
-    float tmp = 0;
     
     // Lookup the phase and other data quantities
     float2 tmp_data;
@@ -69,12 +68,12 @@ __kernel void chi_complex_nonconvex(
     // Compute the residual, then chi elements
     float2 error = tmp_data - tmp_model;
     error.s0 = error.s0 / tmp_data_err.s0;
-    error.s1 = remainder(error.s1, TWO_PI) / tmp_data_err.s1;    
+    error.s1 = remainder(error.s1, (float)TWO_PI) / tmp_data_err.s1;    
 
     // Store the result:
     if(i < n)
     {
         output[index] = (tmp_data.s0 - tmp_model.s0) / tmp_data_err.s0;
-        output[n+index] = remainder(tmp_data.s1 - tmp_model.s1, TWO_PI) / tmp_data_err.s1;    
+        output[n+index] = remainder(tmp_data.s1 - tmp_model.s1, (float)TWO_PI) / tmp_data_err.s1;    
     }   
 }
