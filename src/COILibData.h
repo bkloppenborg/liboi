@@ -36,24 +36,6 @@
 #ifndef COILIBDATA_H_
 #define COILIBDATA_H_
 
-// cl.hpp throws lot of warnings, but we have no control over these.  Tell GCC to ignore them.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wextra"
-#pragma GCC diagnostic ignored "-Wshadow"
-
-// Enable OpenCL exceptions
-#define __CL_ENABLE_EXCEPTIONS
-
-#if defined(__APPLE__) || defined(__MACOSX)
-	#include <OpenCL/cl.hpp>
-#else
-	#include <CL/cl.hpp>
-#endif
-
-// Restore the GCC warning state
-#pragma GCC diagnostic pop
-
 #include <string>
 #include <complex>
 #include <memory>

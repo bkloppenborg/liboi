@@ -36,6 +36,10 @@ In order to run LibOI you must also have an installation of OpenCL for your grap
 card. If you have an NVidia GPU simply install the video card drivers. On ATI GPUs
 you must install *both* the drivers *and* the [AMD APP SDK](http://developer.amd.com/tools/heterogeneous-computing/amd-accelerated-parallel-processing-app-sdk/).
 
+After the OpenCL implementation is installed, ensure that the `cl.hpp` file got installed
+along with the OpenCL drivers. If it was not installed copy the `liboi/includes/cl.hpp`
+into your system's OpenCL directory.
+
 ## Checkout / getting a copy of LibOI source code
 
 After installing the aforementioned prerequisites, you simply need to checkout

@@ -49,17 +49,25 @@
 // Enable OpenCL exceptions
 #define __CL_ENABLE_EXCEPTIONS
 
+// cl.hpp throws lot of warnings, but we have no control over these.  Tell GCC to ignore them.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #if defined(__APPLE__) || defined(__MACOSX)
 	#include <OpenCL/cl.hpp>
+	#include <OpenGL/gl.h>
 #else
 	#include <CL/cl.hpp>
+	#include <GL/gl.h>
+	#include <GL/glx.h>
 #endif
 
 // Restore the GCC warning state
-//#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 
-#include <GL/gl.h>
-#include <GL/glx.h>
+
 #include <string>
 
 using namespace std;
