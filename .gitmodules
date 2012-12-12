@@ -1,6 +1,6 @@
 [submodule "lib/textio"]
 	path = lib/textio
-	url = http://github.com:bkloppenborg/textio.git
+	url = http://github.com/bkloppenborg/textio.git
 [submodule "lib/ccoifits"]
 	path = lib/ccoifits
-	url = http://github.com:bkloppenborg/ccoifits.git
+	url = http://github.com/bkloppenborg/ccoifits.git
