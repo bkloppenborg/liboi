@@ -7,7 +7,6 @@
 
 #include "liboi_benchmark.h"
 
-#include "liboi.hpp"
 #include "PathFinding.h"
 #include "models/CPointSource.h"
 
@@ -30,6 +29,13 @@ int main(int argc, char **argv)
 	unsigned int image_depth = 1;
 	float image_scale = 0.025;	// mas/pixel
 
+	RunBenchmark(CL_DEVICE_TYPE_GPU, exe_path, image_width, image_height, image_depth, image_scale);
+}
+
+int RunBenchmark(cl_device_type device_type, string exe_path,
+		unsigned int image_width, unsigned int image_height, unsigned int image_depth,
+		float image_scale)
+{
 	// Setup the model, make an image and copy it over to a float buffer.
 	CPointSource ps(image_width, image_height, image_scale);
 	valarray<double> temp = ps.GetImage(image_width, image_height, image_scale);
@@ -38,7 +44,7 @@ int main(int argc, char **argv)
 		image[i] = float(temp[i]);
 
 	// Init the OpenCL device
-	CLibOI liboi(CL_DEVICE_TYPE_GPU);
+	CLibOI liboi(device_type);
 	liboi.SetKernelSourcePath(exe_path + "kernels/");
 	liboi.SetImageInfo(image_width, image_height, image_depth, image_scale);
 	liboi.SetImageSource(&image[0]);

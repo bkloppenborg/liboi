@@ -59,7 +59,6 @@ string do_NSGetExecutablePath()
 	string path = "";
 #endif
 
-
 	return string(path);
 }
 
