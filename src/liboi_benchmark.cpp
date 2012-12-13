@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 
 		if (string(argv[i]) == "-cpu")
 		{
-			device_type = CL_DEVICE_TYPE_GPU;
+			device_type = CL_DEVICE_TYPE_CPU;
 		}
 
 		if (string(argv[i]) == "-w" && i + 1 < argc)
@@ -112,8 +112,15 @@ int RunBenchmark(cl_device_type device_type, string exe_path,
 	for(int i = 0; i < temp.size(); i++)
 		image[i] = float(temp[i]);
 
-	// Init the OpenCL device
+	// Get and OpenCL device:
 	CLibOI liboi(device_type);
+
+	// Print some nice information
+	cout << "Running Benchmark with: " << endl << endl;
+	liboi.PrintDeviceInfo();
+	cout << endl << endl;
+
+	// Setup some information:
 	liboi.SetKernelSourcePath(exe_path + "kernels/");
 	liboi.SetImageInfo(image_width, image_height, image_depth, image_scale);
 	liboi.SetImageSource(&image[0]);

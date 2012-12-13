@@ -610,6 +610,12 @@ void CLibOI::Normalize()
 	mrNormalize->Normalize(mImage_cl, mImageWidth, mImageHeight, mFluxBuffer);
 }
 
+void CLibOI::PrintDeviceInfo()
+{
+	if(mOCL != NULL)
+		mOCL->PrintDeviceInfo(mOCL->GetDevice());
+}
+
 /// Computes the total flux for the current image/layer
 /// If the image is 2D, use zero for the layer.
 float CLibOI::TotalFlux(bool return_value)

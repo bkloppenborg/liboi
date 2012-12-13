@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <vector>
 #include <iostream>
+#include <stdexcept>
 #include "COpenCL.h"
 
 using namespace std;
@@ -68,12 +69,10 @@ void COpenCL::CheckOCLError(string user_message, int error_code)
 		// Something bad happened.  Look up the error code:
 		string error_string = GetOCLErrorString(error_code);
 		// and print out a message:
-		printf("Error Detected\n");
-		printf("%s \n", user_message.c_str());
-		printf("OpenCL Error: %i %s \n", error_code, error_string.c_str());
-		throw;
-		//printf(SEP);
-		//exit(0);
+		cerr << "Error Detected!" << endl;
+		cerr << user_message << endl;
+		cerr << "OpenCL Error: " << error_code << " " << error_string << endl;
+		throw runtime_error("OpenCL error detected.");
 	}
 }
 
@@ -181,7 +180,7 @@ void COpenCL::Init(cl_device_type type)
 	if(platform != 0 && device != 0)
 		this->Init(platform, device, type);
 	else
-		throw "Could not find correct OpenCL platform!";
+		throw runtime_error("Could not find specified OpenCL platform.");
 }
 
 /// Initializes the class.  Creates contexts and command queues.
@@ -343,7 +342,6 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 	size_t j;
 	size_t returned_size;
 
-	printf("\n");
 	// Report the device vendor and device name
 	cl_char vendor_name[1024] = {0};
 	cl_char device_name[1024] = {0};
@@ -380,31 +378,31 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(max_compute_units), &max_compute_units, &returned_size);
 
-	printf("Vendor: %s\n", vendor_name);
-	printf("Device Name: %s\n", device_name);
-	printf("Profile: %s\n", device_profile);
-	printf("Supported Extensions: %s\n\n", device_extensions);
+	// Print out some information about the hardware
+	cout << "Vendor: " << vendor_name << endl;
+	cout << "Device Name: " << device_name << endl;
+	cout << "Profile: " << device_profile << endl;
+	cout << "Supported Extensions: " << device_extensions << endl;
 
-	printf("Local Mem Type (Local=1, Global=2): %i\n",(int) local_mem_type);
-	printf("Global Mem Size (MB): %i\n",(int) global_mem_size/(1024*1024));
-	printf("Global Mem Cache Size (Bytes): %i\n",(int) global_mem_cache_size);
-	printf("Max Mem Alloc Size (MB): %ld\n",(long int) max_mem_alloc_size/(1024*1024));
+	cout << "Local Mem Type (Local=1, Global=2): " << local_mem_type << endl;
+	cout << "Global Mem Size (MB): " << global_mem_size/(1024*1024) << endl;
+	cout << "Global Mem Cache Size (Bytes): " << global_mem_cache_size << endl;
+	cout << "Max Mem Alloc Size (MB): " << max_mem_alloc_size/(1024*1024) << endl;
 
-	printf("Clock Frequency (MHz): %i\n\n",clock_frequency);
+	cout << "Clock Frequency (MHz): " << clock_frequency << endl;
 
 	for(i = 0; i < 6; i++)
 	{
 		err|= clGetDeviceInfo(device_id, vector_types[i], sizeof(clock_frequency), &vector_width, &returned_size);
-		printf("Vector type width for: %s = %i\n",vector_type_names[i].c_str(),vector_width);
+		cout << "Vector type width for: " << vector_type_names[i] << " " << vector_width << endl;
 	}
 
-	printf("\nMax Work Group Size: %lu\n",max_work_group_size);
-	printf("Max Work Item Dims: %lu\n",max_work_item_dims);
+	cout << "nMax Work Group Size: " << max_work_group_size << endl;
+	cout << "Max Work Item Dims: " << max_work_item_dims << endl;
 	for(j = 0; j < max_work_item_dims; j++)
-		printf("Max Work Items in Dim %lu: %lu\n",(long unsigned)(j+1),(long unsigned)max_work_item_sizes[j]);
+		cout << "Max Work Items in Dim: " << (long unsigned)(j+1) << " " << (long unsigned)max_work_item_sizes[j] << endl;
 
-	printf("Max Compute Units: %i\n",max_compute_units);
-	printf("\n");
+	cout << "Max Compute Units: " << max_compute_units << endl;
 }
 
 void COpenCL::PrintPlatformInfo(cl_platform_id platform_id)
@@ -413,15 +411,15 @@ void COpenCL::PrintPlatformInfo(cl_platform_id platform_id)
 	cl::Platform * platform = new cl::Platform(platform_id);
 
 	platform->getInfo(CL_PLATFORM_PROFILE, tmp);
-	printf("Profile: %s\n", tmp->c_str());
+	cout << "Profile: " << tmp << endl;
 	platform->getInfo(CL_PLATFORM_VERSION, tmp);
-	printf("Version: %s\n", tmp->c_str());
+	cout << "Version: " << tmp << endl;
 	platform->getInfo(CL_PLATFORM_NAME, tmp);
-	printf("Name: %s\n", tmp->c_str());
+	cout << "Name: " << tmp << endl;
 	platform->getInfo(CL_PLATFORM_VENDOR, tmp);
-	printf("Vendor: %s\n", tmp->c_str());
+	cout << "Vendor: " << tmp << endl;
 	platform->getInfo(CL_PLATFORM_EXTENSIONS, tmp);
-	printf("Extensions: %s\n", tmp->c_str());
+	cout << "Extensions: " << tmp << endl;
 
 	delete tmp;
 }

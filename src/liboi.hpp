@@ -195,9 +195,10 @@ public:
 
 	void Normalize();
 
-	float TotalFlux(bool return_value);
+	void PrintDeviceInfo();
 
 	void RemoveData(int data_num);
+	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data);
 	void RunVerification(int data_num);
 
 	void SaveImage(string filename);
@@ -207,7 +208,7 @@ public:
 	void SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type);
 	void SetKernelSourcePath(string path_to_kernels);
 
-	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data);
+	float TotalFlux(bool return_value);
 };
 
 } /* namespace liboi */
