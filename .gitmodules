@@ -4,6 +4,3 @@
 [submodule "lib/ccoifits"]
 	path = lib/ccoifits
 	url = http://github.com/bkloppenborg/ccoifits.git
-[submodule "lib/pathfind"]
-	path = lib/pathfind
-	url = https://github.com/bkloppenborg/pathfind.git
