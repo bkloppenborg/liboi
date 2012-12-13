@@ -12,7 +12,7 @@
 #include <sys/timeb.h>
 using namespace std;
 
-#include "PathFinding.h"
+#include "PathFind.hpp"
 #include "models/CPointSource.h"
 
 using namespace liboi;

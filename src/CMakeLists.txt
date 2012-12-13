@@ -38,10 +38,10 @@ file(GLOB BENCHMARK *_benchmark.cpp)
 list(REMOVE_ITEM SOURCE main.cpp ${TESTS} ${BENCHMARK})
 
 add_library(oi SHARED EXCLUDE_FROM_ALL ${SOURCE})
-target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
+target_link_libraries(oi textio ccoifits pathfind ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
 
 add_library(oi_static STATIC ${SOURCE})
-target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
+target_link_libraries(oi_static textio_static ccoifits_static pathfind ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
 
 # Build tests:
 add_executable(liboi_tests ${TESTS})

@@ -20,6 +20,11 @@ if(NOT TARGET textio)
     include_directories(${CMAKE_SOURCE_DIR}/lib/textio/src)
 endif(NOT TARGET textio)
 
+if(NOT TARGET pathfind)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/lib/pathfind EXCLUDE_FROM_ALL)
+    include_directories(${CMAKE_SOURCE_DIR}/lib/pathfind/src)
+endif(NOT TARGET pathfind)
+
 if(NOT TARGET ccoifits)
     add_subdirectory(${CMAKE_SOURCE_DIR}/lib/ccoifits EXCLUDE_FROM_ALL)
     include_directories(${CMAKE_SOURCE_DIR}/lib/ccoifits/src)
