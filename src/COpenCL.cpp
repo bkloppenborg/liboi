@@ -397,7 +397,7 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 		cout << "Vector type width for: " << vector_type_names[i] << " " << vector_width << endl;
 	}
 
-	cout << "nMax Work Group Size: " << max_work_group_size << endl;
+	cout << "Max Work Group Size: " << max_work_group_size << endl;
 	cout << "Max Work Item Dims: " << max_work_item_dims << endl;
 	for(j = 0; j < max_work_item_dims; j++)
 		cout << "Max Work Items in Dim: " << (long unsigned)(j+1) << " " << (long unsigned)max_work_item_sizes[j] << endl;
