@@ -7,12 +7,13 @@
 
 #include "liboi_benchmark.h"
 
-#include "PathFinding.h"
-#include "models/CPointSource.h"
-
-// This probably isn't cross-platform compatable.
+#include <stdexcept>
+// This probably isn't cross-platform compatible.
 #include <sys/timeb.h>
 using namespace std;
+
+#include "PathFinding.h"
+#include "models/CPointSource.h"
 
 using namespace liboi;
 
@@ -20,16 +21,84 @@ int main(int argc, char **argv)
 {
 	// Find the path to the current executable
 	string exe = FindExecutable();
-	// Find the directory (the name of this program is "liboi_benchmark", so just strip off 16 characters)
-	string exe_path = exe.substr(0, exe.size() - 15);
+	size_t folder_end = exe.find_last_of("/\\");
+	string exe_path = exe.substr(0,folder_end+1);
 
 	// Setup properties of the image
 	unsigned int image_width = 128;
 	unsigned int image_height = 128;
 	unsigned int image_depth = 1;
 	float image_scale = 0.025;	// mas/pixel
+	cl_device_type device_type = CL_DEVICE_TYPE_GPU;
 
-	RunBenchmark(CL_DEVICE_TYPE_GPU, exe_path, image_width, image_height, image_depth, image_scale);
+	for(int i = 0; i < argc; i++)
+	{
+		if (string(argv[i]) == "-h")
+		{
+			PrintHelp();
+			return 0;
+		}
+
+		if (string(argv[i]) == "-cpu")
+		{
+			device_type = CL_DEVICE_TYPE_GPU;
+		}
+
+		if (string(argv[i]) == "-w" && i + 1 < argc)
+		{
+			image_width = atoi(argv[i+1]);
+			if(image_width < 1)
+				throw runtime_error("Image width must be greater than 0");
+		}
+
+		if (string(argv[i]) == "-h" && i + 1 < argc)
+		{
+			image_height = atoi(argv[i+1]);
+			if(image_height < 1)
+				throw runtime_error("Image height must be greater than 0");
+		}
+
+		if (string(argv[i]) == "-s" && i + 1 < argc)
+		{
+			image_scale = atof(argv[i+1]);
+			if(image_scale < 1)
+				throw runtime_error("Image scale must be greater than 0");
+		}
+
+	}
+
+	RunBenchmark(device_type, exe_path, image_width, image_height, image_depth, image_scale);
+}
+
+int GetMilliCount()
+{
+	// Something like GetTickCount but portable
+	// It rolls over every ~ 12.1 days (0x100000/24/60/60)
+	// Use GetMilliSpan to correct for rollover
+	timeb tb;
+	ftime( &tb );
+	int nCount = tb.millitm + (tb.time & 0xfffff) * 1000;
+	return nCount;
+}
+
+int GetMilliSpan( int nTimeStart )
+{
+	int nSpan = GetMilliCount() - nTimeStart;
+	if ( nSpan < 0 )
+		nSpan += 0x100000 * 1000;
+	return nSpan;
+}
+
+void PrintHelp()
+{
+	cout << "Running liboi_benchmark:" << endl;
+	cout << " liboi_benchmark [...]" << endl;
+	cout << endl;
+	cout << "Options:" << endl;
+	cout << " -cpu     Runs benchmark on the CPU [default: OpenCL device]" << endl;
+	cout << " -w N     Sets the image width (int, N > 0) [default: 128 pixel]" << endl;
+	cout << " -h N     Sets the image width (int, N > 0) [default: 128 pixel]" << endl;
+	cout << " -s N     Sets the image scale (float, N > 0) [default: 0.025 mas/pixel]" << endl;
 }
 
 int RunBenchmark(cl_device_type device_type, string exe_path,
@@ -77,23 +146,4 @@ int RunBenchmark(cl_device_type device_type, string exe_path,
 	cout << n_iterations << " iterations in " << time << " seconds. Throughput " << n_iterations/time << " iterations/sec.\n" << endl;
 
 	return 0;
-}
-
-int GetMilliCount()
-{
-	// Something like GetTickCount but portable
-	// It rolls over every ~ 12.1 days (0x100000/24/60/60)
-	// Use GetMilliSpan to correct for rollover
-	timeb tb;
-	ftime( &tb );
-	int nCount = tb.millitm + (tb.time & 0xfffff) * 1000;
-	return nCount;
-}
-
-int GetMilliSpan( int nTimeStart )
-{
-	int nSpan = GetMilliCount() - nTimeStart;
-	if ( nSpan < 0 )
-		nSpan += 0x100000 * 1000;
-	return nSpan;
 }

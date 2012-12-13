@@ -13,13 +13,15 @@
 
 using namespace std;
 
+int GetMilliCount();
+int GetMilliSpan( int nTimeStart );
+
 int main(int argc, char **argv);
+
+void PrintHelp();
 
 int RunBenchmark(cl_device_type device_type, string exe_path,
 		unsigned int image_width, unsigned int image_height, unsigned int image_depth,
 		float image_scale);
-
-int GetMilliCount();
-int GetMilliSpan( int nTimeStart );
 
 #endif /* LIBOI_BENCHMARK_H_ */
