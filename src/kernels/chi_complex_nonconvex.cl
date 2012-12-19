@@ -63,17 +63,12 @@ __kernel void chi_complex_nonconvex(
 
     float2 tmp_model;
     tmp_model.s0 = model[index];
-    tmp_model.s1 =  model[n+index];
-
-    // Compute the residual, then chi elements
-    float2 error = tmp_data - tmp_model;
-    error.s0 = error.s0 / tmp_data_err.s0;
-    error.s1 = remainder(error.s1, (float)TWO_PI) / tmp_data_err.s1;    
+    tmp_model.s1 =  model[n+index];    
 
     // Store the result:
     if(i < n)
     {
         output[index] = (tmp_data.s0 - tmp_model.s0) / tmp_data_err.s0;
-        output[n+index] = remainder(tmp_data.s1 - tmp_model.s1, (float)TWO_PI) / tmp_data_err.s1;    
+        output[n+index] = remainder(tmp_data.s1 - tmp_model.s1, (float)TWO_PI) / tmp_data_err.s1 * sign(tmp_data.s1 - tmp_model.s1);    
     }   
 }

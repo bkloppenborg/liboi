@@ -108,7 +108,7 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	if(compute_sum)
 		sum = ComputeSum(mLogLikeOutput, mLogLikeOutput, true);
 
-	return -1*n_data * log(2 * PI) + sum;
+	return -1*n_data/2 * log(2 * PI) - sum;
 }
 
 /// Computes the log likelihood per each element, returns the result in output.
@@ -125,7 +125,7 @@ void CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_floa
 	// Compute the individual loglike values. Note, this does not include -1 * log(2 * PI) prefix
 	for(int i = 0; i < n; i++)
 	{
-		output[i] = -2 * log(data_err[i]) - chi_output[i] * chi_output[i];
+		output[i] = log(data_err[i]) + chi_output[i] * chi_output[i] / 2;
 	}
 }
 

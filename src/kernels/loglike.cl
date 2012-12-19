@@ -43,6 +43,6 @@ __kernel void loglike(
     // Computes the log of the likelihood
     if(i < n)
 	{
-	    output[i] = -2 * native_log(data_err[i]) - chi_buffer[i] * chi_buffer[i];
+	    output[i] = native_log(data_err[i]) + chi_buffer[i] * chi_buffer[i] / 2;
     }
 }
