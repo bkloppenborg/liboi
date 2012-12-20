@@ -6,7 +6,7 @@
  */
 
 #include "liboi_tests.h"
-#include "PathFinding.h"
+#include "PathFind.hpp"
 #include "gtest/gtest.h"
 #include "liboi.hpp"
 
@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 	string exe = FindExecutable();
 	size_t folder_end = exe.find_last_of("/\\");
 	LIBOI_KERNEL_PATH = exe.substr(0,folder_end+1) + "kernels/";
+
 
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();

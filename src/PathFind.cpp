@@ -8,28 +8,23 @@
 /*
  * Copyright (c) 2012 Brian Kloppenborg
  *
- * If you use this software as part of a scientific publication, please cite as:
+ * This file is part of the Path Finding Library (PathFind).
  *
- * Kloppenborg, B.; Baron, F. (2012), "LibOI: The OpenCL Interferometry Library"
- * (Version X). Available from  <https://github.com/bkloppenborg/liboi>.
+ *  PathFind is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation, either version 3
+ *  of the License, or (at your option) any later version.
  *
- * This file is part of the OpenCL Interferometry Library (LIBOI).
+ *  PathFind is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
  *
- * LIBOI is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
- *
- * LIBOI is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PathFinding.h"
+#include "PathFind.hpp"
 
 /// Find the path of the current executable using GetModuleFileNameW (Windows)
 string do_GetModuleFileNameW()
