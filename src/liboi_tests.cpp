@@ -18,8 +18,8 @@ int main(int argc, char **argv)
 {
 	// Find the path to the current executable
 	string exe = FindExecutable();
-	// Find the directory (the name of this program is "liboi_tests", so just strip off five characters)
-	LIBOI_KERNEL_PATH = exe.substr(0, exe.size() - 11) + "kernels/";
+	size_t folder_end = exe.find_last_of("/\\");
+	LIBOI_KERNEL_PATH = exe.substr(0,folder_end+1) + "kernels/";
 
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
