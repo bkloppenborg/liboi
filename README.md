@@ -16,29 +16,75 @@ The library currently provides:
 
 ## Installing prerequisites
 
-If you are building LibOI from scratch, you will need a C and C++ compilers
-along with the CMake build system. On a Debian-based system these can be 
-installed using `apt-get`:
+### Apple / OS X
 
-    sudo apt-get install build-essentials g++ cmake
+To use `liboi` on OS X, the following are required:
 
-If you intend to use Git to checkout the repository (suggested), you also need to 
-install git:
+* OpenCL 1.1 support (OS X 10.7 or higher)
+* `llvm-clang` 3.0 or later (Xcode 3.5 or higher suggested)
+* cmake 2.8 or higher
+* cfitsio and ccfits
 
-    sudo apt-get install git
+At present the default compiler on OS X, Apple clang (based on `llvm-clang`) 
+does not support all of the C++11 features (see issue #34). Until `llvm-clan`
+v3.2 is released and Apple clang / XCode are updated we also require:
 
-LibOI also requires ccfits, cfitsio, and an OpenGL library. These can all be 
-installed via. `apt-get`:
+* An installation of `boost` providing `thread` and `system` (suggested v1.5 or later)
 
-    sudo apt-get install libccfits0 libccfits-dev libqt4-dev libglumesa1 libglumesa1-dev
+The OS and XCode can be installed/upgraded through the Appstore. Several of
+the additional required libraries can be installed through [MacPorts](http://www.macports.org/):
 
-In order to run LibOI you must also have an installation of OpenCL for your graphics
-card. If you have an NVidia GPU simply install the video card drivers. On ATI GPUs
-you must install *both* the drivers *and* the [AMD APP SDK](http://developer.amd.com/tools/heterogeneous-computing/amd-accelerated-parallel-processing-app-sdk/).
+    sudo port install cmake
+    sudo port install boost
+    sudo port install cfitsio
+
+Sadly, `ccfits` will need to be installed manually. 
+[Download and install ccfits from here](http://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
+
+After these are installed follow the building instructions below.
+
+If you wish to keep up with the development version, it is suggested that you also
+install [git](http://git-scm.com/).
+
+### Debian/Ubuntu
+
+To use `liboi` on a Debian / Ubuntu system, the following are should be 
+installed:
+
+* gcc and g++ v4.6.3 (or later)
+* cmake v2.8
+* cfitsio, ccfits
+* An OpenGL library (optional, enables OpenCL-OpenGL interoperability)
+* An OpenCL 1.1 compliant device and library
+
+Most of these packages can be easily installed through `apt-get`. First the
+compiler, cmake, cfitsio, and ccfits:
+
+    sudo apt-get install build-essentials g++ cmake libccfits0 libccfits-dev 
+    
+To enable OpenCL-OpenGL interoperability you should also install an OpenGL
+library. This *should* install the prerequisites:
+    
+    sudo apt-get install libglumesa1 libglumesa1-dev
+    
+For OpenCL capabilities you need to install drivers for your device. The
+proprietary drivers for both NVidia and ATI GPUs distributed through the 
+package manager *should* supply everything that is needed.
+
+* `sudo apt-get install nvidia-current` or [NVidia drivers](www.nvidia.com/Drivers) (only for NVidia GPUs)
+* `sudo apt-get install fglrx` [ATI drivers](http://support.amd.com/us/gpudownload/Pages/index.aspx) (only for ATI/AMD GPUs, also enables CPU computations)
+* [Intel OpenCL SDK](http://software.intel.com/en-us/vcsource/tools/opencl-sdk) (only for Intel CPUs)
 
 After the OpenCL implementation is installed, ensure that the `cl.hpp` file got installed
 along with the OpenCL drivers. If it was not installed copy the `liboi/includes/cl.hpp`
-into your system's OpenCL directory.
+into your system's OpenCL include directory.
+
+After these are installed follow the building instructions below.
+
+If you wish to keep up with the development version, it is suggested that you also
+install [git](http://git-scm.com/) via:
+
+    sudo apt-get install git
 
 ## Checkout / getting a copy of LibOI source code
 
@@ -56,6 +102,8 @@ After you have obtained a copy of the source and initialized the submodules, sim
     cd build
     cmake ..
     make
+    
+If you have any errors in the compilation steps, please contact us.
 
 ## Licensing and Acknowledgements
 
