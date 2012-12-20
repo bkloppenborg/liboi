@@ -51,7 +51,7 @@ COILibDataList::~COILibDataList()
 COILibDataPtr COILibDataList::at(unsigned int id)
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	return mDataList.at(id);
 }
@@ -59,7 +59,7 @@ COILibDataPtr COILibDataList::at(unsigned int id)
 OIDataList COILibDataList::GetData(unsigned int data_num)
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	try
 	{
@@ -75,7 +75,7 @@ OIDataList COILibDataList::GetData(unsigned int data_num)
 int COILibDataList::GetNData()
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	// Calculate the total sum of the number of data points.
 	int tmp = 0;
@@ -90,7 +90,7 @@ int COILibDataList::GetNData()
 int COILibDataList::GetNDataAllocated()
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	int tmp = 0;
 	for(auto data: mDataList)
@@ -103,7 +103,7 @@ int COILibDataList::GetNDataAllocated()
 int COILibDataList::GetNDataAllocated(unsigned int data_num)
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	unsigned int n_data = 0;
 
@@ -121,7 +121,7 @@ int COILibDataList::GetNDataAllocated(unsigned int data_num)
 void COILibDataList::LoadData(string filename, cl_context context, cl_command_queue queue)
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	COILibDataPtr tmp(new COILibData(filename, context, queue));
 	mDataList.push_back(tmp);
@@ -131,7 +131,7 @@ void COILibDataList::LoadData(string filename, cl_context context, cl_command_qu
 void COILibDataList::LoadData(const OIDataList & data, cl_context context, cl_command_queue queue)
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	COILibDataPtr tmp(new COILibData(data, context, queue));
 	mDataList.push_back(tmp);
@@ -141,7 +141,7 @@ void COILibDataList::LoadData(const OIDataList & data, cl_context context, cl_co
 int COILibDataList::MaxNumData()
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	int tmp;
 	int max = 0;
@@ -159,7 +159,7 @@ int COILibDataList::MaxNumData()
 int COILibDataList::MaxUVPoints()
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	int tmp;
 	int max = 0;
@@ -177,7 +177,7 @@ int COILibDataList::MaxUVPoints()
 void COILibDataList::RemoveData(unsigned int data_num)
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	try
 	{
@@ -193,7 +193,7 @@ void COILibDataList::RemoveData(unsigned int data_num)
 void COILibDataList::ReplaceData(unsigned int old_data_id, const OIDataList & new_data, cl_context context, cl_command_queue queue)
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	COILibDataPtr temp = mDataList[old_data_id];
 	temp->Replace(new_data);
@@ -202,7 +202,7 @@ void COILibDataList::ReplaceData(unsigned int old_data_id, const OIDataList & ne
 unsigned int COILibDataList::size()
 {
 	// Lock the data, automatically unlocks
-	lock_guard<std::mutex> lock(mDataMutex);
+	lock_guard<mutex> lock(mDataMutex);
 
 	return mDataList.size();
 }

@@ -29,6 +29,12 @@ find_package(OpenGL REQUIRED)
 find_package(OpenCL REQUIRED)
 include_directories(${OPENCL_INCLUDE_DIRS})
 
+if("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang")
+	MESSAGE(STATUS "NOTICE: clang detected, switching to boost for threads/mutexes/locks/shared_ptr.")
+	FIND_PACKAGE(Boost COMPONENTS system thread REQUIRED)
+	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+endif("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang")
+
 set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTERNAL "")
 
 include_directories(. models/)
@@ -38,10 +44,10 @@ file(GLOB BENCHMARK *_benchmark.cpp)
 list(REMOVE_ITEM SOURCE main.cpp ${TESTS} ${BENCHMARK})
 
 add_library(oi SHARED EXCLUDE_FROM_ALL ${SOURCE})
-target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
+target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(oi_static STATIC ${SOURCE})
-target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES})
+target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES} ${Boost_LIBRARIES})
 
 # Build tests:
 add_executable(liboi_tests ${TESTS})
