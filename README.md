@@ -21,30 +21,33 @@ The library currently provides:
 To use `liboi` on OS X, the following are required:
 
 * OpenCL 1.1 support (OS X 10.7 or higher)
-* `llvm-clang` 3.0 or later (Xcode 3.5 or higher suggested)
+* gcc 4.7.4 or later &dagger;
 * cmake 2.8 or higher
 * cfitsio and ccfits
 
-At present the default compiler on OS X, Apple clang (based on `llvm-clang`) 
-does not support all of the C++11 features (see issue #34). Until `llvm-clan`
-v3.2 is released and Apple clang / XCode are updated we also require:
+The OS can be installed/upgraded through the Appstore. Several of the additional 
+required libraries can be installed through [MacPorts](http://www.macports.org/):
 
-* An installation of `boost` providing `thread` and `system` (suggested v1.5 or later)
-
-The OS and XCode can be installed/upgraded through the Appstore. Several of
-the additional required libraries can be installed through [MacPorts](http://www.macports.org/):
-
+    sudo port install gcc47
     sudo port install cmake
     sudo port install boost
     sudo port install cfitsio
 
-Sadly, `ccfits` will need to be installed manually. 
+`ccfits` will need to be compiled and installed manually.
 [Download and install ccfits from here](http://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
+*NOTE:* When you compile `ccfits` be sure to specify
 
-After these are installed follow the building instructions below.
+    export CC=/path/to/gcc
+    export CXX=/path/to/g++
+
+so that `gcc` compiles and links the libraries. After these are installed follow the 
+building instructions below.
 
 If you wish to keep up with the development version, it is suggested that you also
 install [git](http://git-scm.com/).
+
+&dagger; It is possible that Xcode 4.6 (which includes Apple `clang` 4.2 which is based on 
+`llvm-clang` 3.2svn could compile `liboi`, but we haven't tested this yet.
 
 ### Debian/Ubuntu
 
