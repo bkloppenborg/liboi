@@ -30,7 +30,6 @@ required libraries can be installed through [MacPorts](http://www.macports.org/)
 
     sudo port install gcc47
     sudo port install cmake
-    sudo port install boost
     sudo port install cfitsio
 
 `ccfits` will need to be compiled and installed manually.
