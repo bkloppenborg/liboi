@@ -108,6 +108,25 @@ After you have obtained a copy of the source and initialized the submodules, sim
     
 If you have any errors in the compilation steps, please contact us.
 
+## Overriding library locations
+
+If you have installed a library in a non-standard location, it may be necessary
+to override the library installation location. The following environmental 
+variables are checked by CMake when building:
+
+```
+CFITSIO_ROOT_DIR    - path to directory above cfitstio.h and libcfitsio.*
+CCFITS_ROOT_DIR     - path to directory above CCfits/ (the folder)
+OPENCL_ROOT_DIR     - path to directory containing OpenCL
+                      that is OpenCL/cl.hpp (Apple) or CL/cl.hpp (everyone else)
+```
+   
+    
+These can be set by typing `export VARIABLE=/path/to/directory` before calling
+`cmake` in the building instructions above. CMake should indicate that the
+directory you specified is used, rather than the default search path on your
+computer.
+
 ## Licensing and Acknowledgements
 
 LibOI is free software, distributed under the [GNU Lesser General Public License (Version 3)](<http://www.gnu.org/licenses/lgpl.html). 

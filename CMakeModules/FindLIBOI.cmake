@@ -1,31 +1,62 @@
-# - Try to find the OpenCL Interferometry Library (liboi)
-# Once done this will define
-#  LIBOI_FOUND - System has LIBOI
-#  LIBOI_INCLUDE_DIRS - The LIBOI include directories
-#  LIBOI_LIBRARIES - The libraries needed to use LIBOI (none)
+# - Try to find LIBOI.
+# Once executed, this module will define:
+# Variables defined by this module:
+#  LIBOI_FOUND        - system has LIBOI
+#  LIBOI_INCLUDE_DIR  - the LIBOI include directory (cached)
+#  LIBOI_INCLUDE_DIRS - the LIBOI include directories
+#                         (identical to LIBOI_INCLUDE_DIR)
+#  LIBOI_LIBRARY      - the LIBOI library (cached)
+#  LIBOI_LIBRARIES    - the LIBOI libraries
+#                         (identical to LIBOI_LIBRARY)
+# 
+# This module will use the following enviornmental variable
+# when searching for LIBOI:
+#  LIBOI_ROOT_DIR     - LIBOI root directory
+#
 
-FIND_PACKAGE(OpenCL REQUIRED)
-FIND_PACKAGE(OpenGL)
-FIND_PACKAGE(CCOIFITS REQUIRED)
-FIND_PACKAGE(TEXTIO REQUIRED)
+# 
+#  Copyright (c) 2012 Brian Kloppenborg
+# 
+#  This file is part of the OpenCL Interferometry Library (LIBOI)
+#  
+#  LIBOI is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License 
+#  as published by the Free Software Foundation, either version 3 
+#  of the License, or (at your option) any later version.
+#  
+#  LIBOI is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#  
+#  You should have received a copy of the GNU Lesser General Public 
+#  License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
+# 
 
-FIND_LIBRARY(LIBOI_LIBRARY 
-    NAMES oi
-    HINTS ${LIBOI_HINT}/lib ${CMAKE_INSTALL_PREFIX}/lib
-    DOC "LIBOI library.")
+if(NOT LIBOI_FOUND)
 
-FIND_PATH(LIBOI_INCLUDE_DIR 
-    NAMES oi.hpp
-    HINTS ${LIBOI_HINT}/include ${CMAKE_INSTALL_PREFIX}/include
-    DOC "LIBOI include directory.")
+    find_path(LIBOI_INCLUDE_DIR 
+        NAMES oi.hpp
+        HINTS $ENV{LIBOI_ROOT_DIR} 
+        PATH_SUFFIXES include)
+        
+    find_library(LIBOI_LIBRARY 
+        NAMES oi
+        HINTS $ENV{LIBOI_ROOT_DIR} 
+        PATH_SUFFIXES lib)
+  
+    FIND_PACKAGE(OpenCL REQUIRED)
+    FIND_PACKAGE(OpenGL)
+    FIND_PACKAGE(CCOIFITS REQUIRED)
+  
+    mark_as_advanced(LIBOI_INCLUDE_DIR LIBOI_LIBRARY)
 
-set(LIBOI_LIBRARIES ${LIBOI_LIBRARY} ${OPENCL_LIBRARIES} ${OPENGL_LIBRARIES} ${CCOIFITS_LIBRARIES} ${TEXTIO_LIBRARIES})
-set(LIBOI_INCLUDE_DIRS ${LIBOI_INCLUDE_DIR} ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${CCOIFITS_INCLUDE_DIRS} ${TEXTIO_INCLUDE_DIRS})
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(LIBOI DEFAULT_MSG
+        LIBOI_LIBRARY LIBOI_INCLUDE_DIR)
 
-include(FindPackageHandleStandardArgs)
-# handle the QUIETLY and REQUIRED arguments and set LIBOI_FOUND to TRUE
-# if all listed variables are TRUE
-find_package_handle_standard_args(LIBOI DEFAULT_MSG
-                                  LIBOI_LIBRARY LIBOI_INCLUDE_DIR)
+    set(LIBOI_LIBRARIES ${LIBOI_LIBRARY} ${OPENCL_LIBRARIES} ${OPENGL_LIBRARIES} ${CCOIFITS_LIBRARIES} ${LIBOI_LIBRARIES})
+    set(LIBOI_INCLUDE_DIRS ${LIBOI_INCLUDE_DIR} ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${CCOIFITS_INCLUDE_DIRS} ${LIBOI_INCLUDE_DIRS})
 
-mark_as_advanced(LIBOI_INCLUDE_DIR LIBOI_LIBRARY)
+
+endif(NOT LIBOI_FOUND)

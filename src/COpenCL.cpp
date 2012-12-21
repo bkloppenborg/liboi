@@ -201,15 +201,16 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 #if defined (__APPLE__) || defined(MACOSX)	// Apple / OSX
 
     CGLContextObj context = CGLGetCurrentContext();
-    CGLShareGroupObj share_group = CGLGetShareGroup(kCGLContext);
+    CGLShareGroupObj share_group = CGLGetShareGroup(context);
 
     if(context != NULL && share_group != NULL)
     {
-		properties[0] = CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE;
-		properties[1] = (cl_context_properties)(share_group);
-		properties[2] = (cl_context_properties) (platform)();
-		properties[3] = 0;
-		mCLGLInteropEnabled = true;
+      properties[0] = CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE;
+      properties[1] = (cl_context_properties) share_group;
+      properties[2] = CL_CONTEXT_PLATFORM;
+      properties[3] = (cl_context_properties) platform;
+      properties[4] = 0;
+      mCLGLInteropEnabled = true;
     }
 
 #elif defined WIN32 // Windows
