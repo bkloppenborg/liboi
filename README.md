@@ -47,7 +47,7 @@ If you wish to keep up with the development version, it is suggested that you al
 install [git](http://git-scm.com/).
 
 &dagger; It is possible that Xcode 4.6 (which includes Apple `clang` 4.2 which is based on 
-`llvm-clang` 3.2svn could compile `liboi`, but we haven't tested this yet.
+`llvm-clang` 3.2svn) could compile `liboi`, but we haven't tested this yet.
 
 ### Debian/Ubuntu
 
