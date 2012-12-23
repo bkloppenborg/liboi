@@ -347,63 +347,81 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 	cl_char vendor_name[1024] = {0};
 	cl_char device_name[1024] = {0};
 	cl_char device_profile[1024] = {0};
+	cl_char device_cl_version[1024] = {0};
+	cl_char driver_cl_version[1024] = {0};
 	cl_char device_extensions[1024] = {0};
 	cl_device_local_mem_type local_mem_type;
 
-	cl_ulong global_mem_size, global_mem_cache_size;
+	cl_ulong global_mem_size, global_mem_cache_size, local_mem_size;
 	cl_ulong max_mem_alloc_size;
 
-	cl_uint clock_frequency, vector_width, max_compute_units;
-
-	size_t max_work_item_dims = 3;
-	size_t max_work_group_size, max_work_item_sizes[3];
+	cl_uint clock_frequency, vector_width, max_compute_units, max_samplers, max_work_item_dimensions;
 
 	cl_uint vector_types[] = {CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR, CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT, CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT,CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG,CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT,CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE};
 	string vector_type_names[] = {"char","short","int","long","float","double"};
 
+	// basic device information
 	err = clGetDeviceInfo(device_id, CL_DEVICE_VENDOR, sizeof(vendor_name), vendor_name, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_NAME, sizeof(device_name), device_name, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_PROFILE, sizeof(device_profile), device_profile, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_EXTENSIONS, sizeof(device_extensions), device_extensions, &returned_size);
-	err|= clGetDeviceInfo(device_id, CL_DEVICE_LOCAL_MEM_TYPE, sizeof(local_mem_type), &local_mem_type, &returned_size);
+	err|= clGetDeviceInfo(device_id, CL_DEVICE_VERSION, sizeof(device_cl_version), device_cl_version, &returned_size);
+	err|= clGetDeviceInfo(device_id, CL_DRIVER_VERSION, sizeof(driver_cl_version), driver_cl_version, &returned_size);
 
+	// information about memory
+	err|= clGetDeviceInfo(device_id, CL_DEVICE_LOCAL_MEM_TYPE, sizeof(local_mem_type), &local_mem_type, &returned_size);
+	err|= clGetDeviceInfo(device_id, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(local_mem_size), &local_mem_size, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(global_mem_size), &global_mem_size, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE, sizeof(global_mem_cache_size), &global_mem_cache_size, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(max_mem_alloc_size), &max_mem_alloc_size, &returned_size);
 
+	// Device specifics:
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(clock_frequency), &clock_frequency, &returned_size);
+	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(max_work_item_dimensions), &max_work_item_dimensions, &returned_size);
+
+	size_t max_work_group_size, max_work_item_sizes[max_work_item_dimensions];
 
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size), &max_work_group_size, &returned_size);
-
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(max_work_item_sizes), max_work_item_sizes, &returned_size);
-
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(max_compute_units), &max_compute_units, &returned_size);
+	err|= clGetDeviceInfo(device_id, CL_DEVICE_MAX_SAMPLERS, sizeof(max_samplers), &max_samplers, &returned_size);
+
 
 	// Print out some information about the hardware
-	cout << "Vendor: " << vendor_name << endl;
+	cout << "Device information: " << endl;
 	cout << "Device Name: " << device_name << endl;
+	cout << "Vendor: " << vendor_name << endl;
+	cout << "Device OpenCL version: " << device_cl_version << endl;
+	cout << "Driver OpenCL version: " << driver_cl_version << endl;
 	cout << "Profile: " << device_profile << endl;
 	cout << "Supported Extensions: " << device_extensions << endl;
 
-	cout << "Local Mem Type (Local=1, Global=2): " << local_mem_type << endl;
-	cout << "Global Mem Size (MB): " << global_mem_size/(1024*1024) << endl;
-	cout << "Global Mem Cache Size (Bytes): " << global_mem_cache_size << endl;
-	cout << "Max Mem Alloc Size (MB): " << max_mem_alloc_size/(1024*1024) << endl;
-
+	cout << endl;
+	cout << "Device specifics:" << endl;
 	cout << "Clock Frequency (MHz): " << clock_frequency << endl;
 
 	for(i = 0; i < 6; i++)
 	{
 		err|= clGetDeviceInfo(device_id, vector_types[i], sizeof(clock_frequency), &vector_width, &returned_size);
-		cout << "Vector type width for: " << vector_type_names[i] << " " << vector_width << endl;
+		cout << "Vector type width for " << vector_type_names[i] << ": " << vector_width << endl;
 	}
-
+	cout << "Max Work Dimensions: " << max_work_item_dimensions << endl;
 	cout << "Max Work Group Size: " << max_work_group_size << endl;
-	cout << "Max Work Item Dims: " << max_work_item_dims << endl;
-	for(j = 0; j < max_work_item_dims; j++)
-		cout << "Max Work Items in Dim: " << (long unsigned)(j+1) << " " << (long unsigned)max_work_item_sizes[j] << endl;
+	cout << "Max Work Item Dimensions: " << max_work_item_dimensions << endl;
+	for(j = 0; j < max_work_item_dimensions; j++)
+		cout << "Max Work Items in Dimension " << (long unsigned)(j+1) << ": " << (long unsigned)max_work_item_sizes[j] << endl;
 
 	cout << "Max Compute Units: " << max_compute_units << endl;
+	cout << "Maximum image samplers per kernel: " << max_samplers << endl;
+
+	cout << endl;
+	cout << "Device memory information:" << endl;
+	cout << "Local Mem Type (Local=1, Global=2): " << local_mem_type << endl;
+	cout << "Local Mem Size (kB): " << local_mem_size / (1024) << endl;
+	cout << "Global Mem Size (MB): " << global_mem_size/(1024*1024) << endl;
+	cout << "Global Mem Cache Size (Bytes): " << global_mem_cache_size << endl;
+	cout << "Max Mem Alloc Size (MB): " << max_mem_alloc_size/(1024*1024) << endl;
+	cout << endl;
 }
 
 void COpenCL::PrintPlatformInfo(cl_platform_id platform_id)

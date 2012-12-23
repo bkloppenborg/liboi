@@ -519,7 +519,8 @@ void CLibOI::InitRoutines()
 		mrTotalFlux->Init(mImageWidth * mImageHeight);
 	}
 
-	if(mrCopyImage == NULL)
+	/// Only init the mrCopyImage routine if CL-GL interop is enabled.
+	if(mOCL->CL_GLInteropEnabled() && mrCopyImage == NULL)
 	{
 		mrCopyImage = new CRoutine_ImageToBuffer(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 		mrCopyImage->SetSourcePath(mKernelSourcePath);

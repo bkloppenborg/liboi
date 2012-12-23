@@ -95,6 +95,7 @@ public:
 
 public:
 	static void CheckOCLError(string user_message, int error_code);
+	bool CL_GLInteropEnabled() { return mCLGLInteropEnabled; };
 
 	cl_context		GetContext();
 	cl_device_id	GetDevice();
