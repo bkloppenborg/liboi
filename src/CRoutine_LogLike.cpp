@@ -60,7 +60,7 @@ void CRoutine_LogLike::LogLike(cl_mem chi_output, cl_mem data_err, cl_mem output
 	// The loglikelihood kernel executes on the entire output buffer
 	// because the reduce_sum_float kernel uses the entire buffer as input.
 	// Therefore we zero out the elements not directly involved in this computation.
-	size_t global = (size_t) mNElements;
+	size_t global = (size_t) mInputSize;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
@@ -133,10 +133,9 @@ void CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_floa
 void CRoutine_LogLike::Init(int num_max_elements)
 {
 	int err = CL_SUCCESS;
-	mNElements = num_max_elements;
 
 	// First initialize the base-class constructor:
-	CRoutine_Chi::Init(mNElements);
+	CRoutine_Chi::Init(num_max_elements);
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[mLogLikeSourceID]);
@@ -145,7 +144,7 @@ void CRoutine_LogLike::Init(int num_max_elements)
 
 	if(mLogLikeOutput == NULL)
 	{
-		mLogLikeOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
+		mLogLikeOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mInputSize * sizeof(cl_float), NULL, &err);
 		COpenCL::CheckOCLError("Could not create loglike temporary buffer.", err);
 	}
 }

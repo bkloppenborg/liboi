@@ -360,7 +360,8 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 	cl_uint vector_types[] = {CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR, CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT, CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT,CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG,CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT,CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE};
 	string vector_type_names[] = {"char","short","int","long","float","double"};
 	cl_bool has_image_support;
-	size_t max_image_height, max_image_width;
+	size_t max_image_height = 0;
+	size_t max_image_width = 0;
 
 	// basic device information
 	err = clGetDeviceInfo(device_id, CL_DEVICE_VENDOR, sizeof(vendor_name), vendor_name, &returned_size);
@@ -390,7 +391,7 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_IMAGE_SUPPORT, sizeof(has_image_support), &has_image_support, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(max_image_height), &max_image_height, &returned_size);
-	err|= clGetDeviceInfo(device_id, CL_DEVICE_IMAGE2D_MAX_WIDTH, sizeof(max_image_width), &max_image_height, &returned_size);
+	err|= clGetDeviceInfo(device_id, CL_DEVICE_IMAGE2D_MAX_WIDTH, sizeof(max_image_width), &max_image_width, &returned_size);
 
 	// Print out some information about the hardware
 	cout << "Device information: " << endl;

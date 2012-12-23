@@ -119,7 +119,9 @@ public:
 
 	void DumpFloatBuffer(cl_mem buffer, unsigned int size);
 
-	void PassFail(bool);
+	static bool isPow2(unsigned int x);
+
+	static unsigned int nextPow2( unsigned int x );
 
 	string ReadSource(string filename);
 

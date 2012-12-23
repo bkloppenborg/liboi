@@ -68,8 +68,10 @@ CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_q
 {
 	// Specify the source location, set temporary buffers to null
 	mSource.push_back("reduce_sum_float.cl");
-	mTempSumBuffer = NULL;
-	mNElements = 0;
+	mTempBuffer1 = NULL;
+	mTempBuffer2 = NULL;
+	mBufferSize = 0;
+	mInputSize = 0;
 	mFinalS = 0;
 	mReductionPasses = 0;
 
@@ -79,25 +81,11 @@ CRoutine_Sum::CRoutine_Sum(cl_device_id device, cl_context context, cl_command_q
 
 CRoutine_Sum::~CRoutine_Sum()
 {
-	if(mTempSumBuffer) clReleaseMemObject(mTempSumBuffer);
+	if(mTempBuffer1) clReleaseMemObject(mTempBuffer1);
+	if(mTempBuffer2) clReleaseMemObject(mTempBuffer2);
 }
 
-unsigned int nextPow2( unsigned int x ) {
-    --x;
-    x |= x >> 1;
-    x |= x >> 2;
-    x |= x >> 4;
-    x |= x >> 8;
-    x |= x >> 16;
-    return ++x;
-}
-
-bool isPow2(unsigned int x)
-{
-    return ((x&(x-1))==0);
-}
-
-void getNumBlocksAndThreads(int whichKernel, int n, int maxBlocks, int maxThreads, int &blocks, int &threads)
+void CRoutine_Sum::getNumBlocksAndThreads(int whichKernel, int n, int maxBlocks, int maxThreads, int &blocks, int &threads)
 {
     if (whichKernel < 3)
     {
@@ -128,8 +116,8 @@ void CRoutine_Sum::BuildKernels()
 	int maxBlocks = 64;
 	int cpuFinalThreshold = 1;
 
-	getNumBlocksAndThreads(whichKernel, mNElements, maxBlocks, maxThreads, numBlocks, numThreads);
-	BuildReductionKernel(whichKernel, numThreads, isPow2(mNElements) );
+	getNumBlocksAndThreads(whichKernel, mBufferSize, maxBlocks, maxThreads, numBlocks, numThreads);
+	BuildReductionKernel(whichKernel, numThreads, isPow2(mBufferSize) );
 	mBlocks.push_back(numBlocks);
 	mThreads.push_back(numThreads);
 	mReductionPasses += 1;
@@ -171,16 +159,23 @@ cl_kernel CRoutine_Sum::BuildReductionKernel(int whichKernel, int blockSize, int
 float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
 {
 	// First zero out the temporary sum buffer.
-	mrZero->Zero(mTempSumBuffer, mNElements);
+	mrZero->Zero(mTempBuffer1, mBufferSize);
 
 	int err = CL_SUCCESS;
+	// Copy the input buffer into mTempBuffer1
+	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
+	err = clEnqueueCopyBuffer(mQueue, input_buffer, mTempBuffer1, 0, 0, mInputSize * sizeof(cl_float), 0, NULL, NULL);
+	COpenCL::CheckOCLError("Unable to copy summed value into final buffer. CRoutine_Sum::ComputeSum", err);
+
+	// Init locals:
+
 	cl_float gpu_result = 0;
 	int numThreads = mThreads[0];
 
 	int threads = 0;
 	int blocks = 0;
-	cl_mem buff1 = input_buffer;
-	cl_mem buff2 = mTempSumBuffer;
+	cl_mem buff1 = mTempBuffer1;
+	cl_mem buff2 = mTempBuffer2;
     size_t globalWorkSize[1];
     size_t localWorkSize[1];
 
@@ -195,9 +190,9 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 
 		clSetKernelArg(reductionKernel, 0, sizeof(cl_mem), (void *) &buff1);
 		clSetKernelArg(reductionKernel, 1, sizeof(cl_mem), (void *) &buff2);
-		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &mNElements);
+		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &mBufferSize);
 		clSetKernelArg(reductionKernel, 3, sizeof(cl_float) * numThreads, NULL);
-		err = clEnqueueNDRangeKernel(mQueue,reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
+		err = clEnqueueNDRangeKernel(mQueue, reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to enqueue parallel reduction kernel. CRoutine_Sum::ComputeSum", err);
 
 		buff1 = buff2;
@@ -210,7 +205,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
     {
     	cl_float h_odata[mFinalS];
         // copy result from device to host
-        err = clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, mFinalS * sizeof(cl_float), h_odata, 0, NULL, NULL);
+        err = clEnqueueReadBuffer(mQueue, mTempBuffer2, CL_TRUE, 0, mFinalS * sizeof(cl_float), h_odata, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to copy temporary sum buffer to host. CRoutine_Sum::ComputeSum", err);
 
         for(int i=0; i < mFinalS; i++)
@@ -227,7 +222,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
     else
     {
     	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
-    	err = clEnqueueCopyBuffer(mQueue, mTempSumBuffer, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
+    	err = clEnqueueCopyBuffer(mQueue, mTempBuffer2, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to copy summed value into final buffer. CRoutine_Sum::ComputeSum", err);
     }
 
@@ -236,7 +231,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 	if (return_value)
 	{
 		// copy final sum from device to host
-		err = clEnqueueReadBuffer(mQueue, mTempSumBuffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+		err = clEnqueueReadBuffer(mQueue, mTempBuffer2, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to copy summed value to host. CRoutine_Sum::ComputeSum", err);
 	}
 
@@ -248,13 +243,22 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 void CRoutine_Sum::Init(int n)
 {
 	int err = CL_SUCCESS;
-	// Set the number of elements on which this kernel will operate.
-	mNElements = n;
+
+	mInputSize = n;
+	mBufferSize = n;
+
+	// The NVidia SDK kernel on which this routine is based is designed only for power-of-two
+	// sized buffers. Because of this, we'll create internal buffers that round up to the
+	// next highest power of two.
+	if(!isPow2(mBufferSize))
+		mBufferSize = nextPow2(mBufferSize);
+
 	BuildKernels();
 
-	if(mTempSumBuffer == NULL)
+	if(mTempBuffer1 == NULL)
 	{
-		mTempSumBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mNElements * sizeof(cl_float), NULL, &err);
+		mTempBuffer1 = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &err);
+		mTempBuffer2 = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &err);
 		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
 	}
 }

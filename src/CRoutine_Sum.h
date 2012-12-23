@@ -42,8 +42,10 @@ class CRoutine_Zero;
 class CRoutine_Sum: public CRoutine
 {
 protected:
-	unsigned int mNElements;
-	cl_mem mTempSumBuffer;
+	unsigned int mInputSize;
+	unsigned int mBufferSize;
+	cl_mem mTempBuffer1;
+	cl_mem mTempBuffer2;
 	vector<int> mBlocks;
 	vector<int> mThreads;
 	int mFinalS;
@@ -62,6 +64,8 @@ public:
 	void BuildKernels();
 
 	float ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value);
+	static void getNumBlocksAndThreads(int whichKernel, int n, int maxBlocks, int maxThreads, int &blocks, int &threads);
+
 	void Init(int n);
 
 	template <typename T>

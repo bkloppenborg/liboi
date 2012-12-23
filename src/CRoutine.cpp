@@ -138,16 +138,20 @@ void CRoutine::DumpFloatBuffer(cl_mem buffer, unsigned int size)
 	}
 }
 
-/// Prints out a simple pass/faile notification.
-void CRoutine::PassFail(bool is_true)
+bool CRoutine::isPow2(unsigned int x)
 {
-	printf(" Result: ");
-	if(is_true)
-		printf("Passed");
-	else
-		printf("Failed");
+    return ((x&(x-1))==0);
+}
 
-	printf(".\n");
+unsigned int CRoutine::nextPow2( unsigned int x )
+{
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return ++x;
 }
 
 string CRoutine::ReadSource(string filename)
