@@ -120,7 +120,11 @@ void CRoutine_Sum::BuildKernels()
 	int whichKernel = 6;
 	int numBlocks = 0;
 	int numThreads = 0;
+#ifdef __APPLE__
+	int maxThreads = 64;
+#else
 	int maxThreads = 128;
+#endif
 	int maxBlocks = 64;
 	int cpuFinalThreshold = 1;
 

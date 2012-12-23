@@ -64,12 +64,13 @@ __kernel void dft_2d(
 	__global float2 * output,
 	__local float * sA,
 	__local float * sB,
+	__local float2 * tmp,
 	__global float * flux
 )
 {
-    float2 tmp;
-    tmp.s0 = 0;
-    tmp.s1 = 0;
+//    float2 tmp;
+//    tmp.s0 = 0;
+//    tmp.s1 = 0;
     
     float arg_C;
       
@@ -79,6 +80,8 @@ __kernel void dft_2d(
     int i = 0;
     int j = 0;
     int m = 0;    
+    
+    tmp[lid] = 0;
 
     // Load up the UV information
     float2 uv = uv_points[tid];
@@ -110,13 +113,13 @@ __kernel void dft_2d(
             
             for(m = 0; m < lsize_x; m++)
             {
-                tmp += MultComplex3Special(sA[m], sB[m] * uv.s0, arg_C);
+                tmp[lid] += MultComplex3Special(sA[m], sB[m] * uv.s0, arg_C);
             }
             barrier(CLK_LOCAL_MEM_FENCE);
         }
     }
         
     // Write the result to the output array
-    output[tid] = tmp;
+    output[tid] = tmp[lid];
 }
 

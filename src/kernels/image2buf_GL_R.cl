@@ -49,7 +49,7 @@ __kernel void image2buf_GL_R(__read_only image2d_t image,
     int x = get_global_id(0);
     int y = get_global_id(1);
     
-    float2 coords;
+    int2 coords;
     coords.x = x;
     coords.y = y;
     
