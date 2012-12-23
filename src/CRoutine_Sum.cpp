@@ -253,6 +253,11 @@ void CRoutine_Sum::Init(int n)
 	if(!isPow2(mBufferSize))
 		mBufferSize = nextPow2(mBufferSize);
 
+	// TODO: Workaround for issue 32
+	// https://github.com/bkloppenborg/liboi/issues/32
+	if(mBufferSize < 128)
+		mBufferSize = 128;
+
 	BuildKernels();
 
 	if(mTempBuffer1 == NULL)
