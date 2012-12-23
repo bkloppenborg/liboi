@@ -76,8 +76,8 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	err |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &image);
 	err |= clSetKernelArg(mKernels[0], 3, sizeof(int), &image_width);
 	err |= clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), &output);
-	err |= clSetKernelArg(mKernels[0], 5, local * sizeof(float), NULL);
-	err |= clSetKernelArg(mKernels[0], 6, local * sizeof(float), NULL);
+	err |= clSetKernelArg(mKernels[0], 5, local * sizeof(cl_float), NULL);
+	err |= clSetKernelArg(mKernels[0], 6, local * sizeof(cl_float), NULL);
 	err |= clSetKernelArg(mKernels[0], 7, local * sizeof(cl_float2), NULL);
 	err |= clSetKernelArg(mKernels[0], 8, sizeof(cl_mem), &image_flux);
 	COpenCL::CheckOCLError("Failed to set ft_dft2d kernel arguments.", err);

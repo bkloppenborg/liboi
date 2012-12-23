@@ -58,30 +58,26 @@ float2 MultComplex3Special(float magA, float argB, float argC)
 
 __kernel void dft_2d(
 	__global float2 * uv_points,
-	__private int nuv,
+	__private unsigned int nuv,
 	__global float * image,
-	__private int image_width,
+	__private unsigned image_width,
 	__global float2 * output,
 	__local float * sA,
 	__local float * sB,
-	__local float2 * tmp,
+	__local float2 * sTemp,
 	__global float * flux
 )
-{
-//    float2 tmp;
-//    tmp.s0 = 0;
-//    tmp.s1 = 0;
-    
+{     
+    unsigned int tid = get_global_id(0);
+    unsigned int lid = get_local_id(0);
+    unsigned int lsize_x;
+    unsigned int i = 0;
+    unsigned int j = 0;
+    unsigned int m = 0;    
     float arg_C;
-      
-    int tid = get_global_id(0);
-    int lsize_x;
-    int lid = get_local_id(0);
-    int i = 0;
-    int j = 0;
-    int m = 0;    
     
-    tmp[lid] = 0;
+    // zero out the (shared) temporary buffer
+    sTemp[lid] = 0;
 
     // Load up the UV information
     float2 uv = uv_points[tid];
@@ -113,13 +109,13 @@ __kernel void dft_2d(
             
             for(m = 0; m < lsize_x; m++)
             {
-                tmp[lid] += MultComplex3Special(sA[m], sB[m] * uv.s0, arg_C);
+                sTemp[lid] += MultComplex3Special(sA[m], sB[m] * uv.s0, arg_C);
             }
             barrier(CLK_LOCAL_MEM_FENCE);
         }
     }
         
     // Write the result to the output array
-    output[tid] = tmp[lid];
+    output[tid] = sTemp[lid];
 }
 
