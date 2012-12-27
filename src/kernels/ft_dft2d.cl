@@ -77,7 +77,7 @@ __kernel void dft_2d(
     float arg_C;
     
     // zero out the (shared) temporary buffer
-    sTemp[lid] = 0;
+    sTemp[lid] = (float2)(0.0f, 0.0f);
 
     // Load up the UV information
     float2 uv = uv_points[tid];
