@@ -58,13 +58,14 @@ CRoutine_DFT::~CRoutine_DFT()
 /// the result in output.
 void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output)
 {
-#ifdef DEBUG_VERBOSE
-	printf("Computing the FT using DFT method, %s\n", mSource[0].c_str());
-#endif //DEBUG
+	// NOTE: Below we use the clGetKernelWorkGroupInfo to determine the local execution size of the
+	// kernel.  On present-generation GPUs, the maximum work items per work group is 1024, so we
+	// allocate 4 * sizeof(cl_float) * local = 4 kB < 32 (or 48) kB of memory. If future OpenCL
+	// implementations support more local threads, this may become an issue.
 
     int err = 0;
     size_t global = (size_t) n_uv_points;
-    size_t local = 256;                     // local domain size for our calculation
+    size_t local = 256;                     // init to some value, not important anymore.
 
     // Get the maximum work-group size for executing the kernel on the device
     err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
