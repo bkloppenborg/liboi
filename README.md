@@ -73,9 +73,9 @@ For OpenCL capabilities you need to install drivers for your device. The
 proprietary drivers for both NVidia and ATI GPUs distributed through the 
 package manager *should* supply everything that is needed.
 
-* `sudo apt-get install nvidia-current` or [NVidia drivers](www.nvidia.com/Drivers) (only for NVidia GPUs)
-* `sudo apt-get install fglrx` [ATI drivers](http://support.amd.com/us/gpudownload/Pages/index.aspx) (only for ATI/AMD GPUs, also enables CPU computations)
-* [Intel OpenCL SDK](http://software.intel.com/en-us/vcsource/tools/opencl-sdk) (only for Intel CPUs)
+* For NVIDIA GPUs: `sudo apt-get install nvidia-current` or [NVidia drivers](www.nvidia.com/drivers)
+* For AMD GPUs or AMD CPUs: `sudo apt-get install fglrx` or [AMD graphic drivers](http://support.amd.com/us/gpudownload/Pages/index.aspx), and then install the [OpenCL SDK] (http://developer.amd.com/tools/heterogeneous-computing/amd-accelerated-parallel-processing-app-sdk/downloads/)
+* For Intel CPUs: [Intel OpenCL SDK](http://software.intel.com/en-us/vcsource/tools/opencl-sdk)
 
 After the OpenCL implementation is installed, ensure that the `cl.hpp` file got installed
 along with the OpenCL drivers. If it was not installed copy the `liboi/include/cl.hpp`
