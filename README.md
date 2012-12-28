@@ -62,12 +62,12 @@ installed:
 Most of these packages can be easily installed through `apt-get`. First the
 compiler, cmake, cfitsio, and ccfits:
 
-    sudo apt-get install build-essentials g++ cmake libccfits0 libccfits-dev 
+    sudo apt-get install build-essential g++ cmake libccfits0 libccfits-dev 
     
 To enable OpenCL-OpenGL interoperability you should also install an OpenGL
 library. This *should* install the prerequisites:
     
-    sudo apt-get install libglumesa1 libglumesa1-dev
+    sudo apt-get install libglu1-mesa libglu1-mesa-dev
     
 For OpenCL capabilities you need to install drivers for your device. The
 proprietary drivers for both NVidia and ATI GPUs distributed through the 
@@ -78,7 +78,7 @@ package manager *should* supply everything that is needed.
 * [Intel OpenCL SDK](http://software.intel.com/en-us/vcsource/tools/opencl-sdk) (only for Intel CPUs)
 
 After the OpenCL implementation is installed, ensure that the `cl.hpp` file got installed
-along with the OpenCL drivers. If it was not installed copy the `liboi/includes/cl.hpp`
+along with the OpenCL drivers. If it was not installed copy the `liboi/include/cl.hpp`
 into your system's OpenCL include directory.
 
 After these are installed follow the building instructions below.
