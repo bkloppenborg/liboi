@@ -25,11 +25,13 @@ int main(int argc, char **argv)
 	string exe_path = exe.substr(0,folder_end+1);
 
 	// Setup properties of the image
-	unsigned int image_width = 128;
-	unsigned int image_height = 128;
-	unsigned int image_depth = 1;
+	int image_width = 128;
+	int image_height = 128;
+	int image_depth = 1;
 	float image_scale = 0.025;	// mas/pixel
 	cl_device_type device_type = CL_DEVICE_TYPE_GPU;
+	int n_iterations = 1000;
+	int n_uv = 500;
 
 	for(int i = 0; i < argc; i++)
 	{
@@ -65,9 +67,23 @@ int main(int argc, char **argv)
 				throw runtime_error("Image scale must be greater than 0");
 		}
 
+		if (string(argv[i]) == "-iter" && i + 1 < argc)
+		{
+			n_iterations = atoi(argv[i+1]);
+			if(n_iterations < 1)
+				throw runtime_error("Number of iterations to time must be greater than 0");
+		}
+
+		if (string(argv[i]) == "-nuv" && i + 1 < argc)
+		{
+			n_uv = atoi(argv[i+1]);
+			if(n_uv < 1)
+				throw runtime_error("Number of UV points must be greater than 0");
+		}
+
 	}
 
-	RunBenchmark(device_type, exe_path, image_width, image_height, image_depth, image_scale);
+	RunBenchmark(device_type, exe_path, image_width, image_height, image_depth, image_scale, n_iterations, n_uv);
 }
 
 int GetMilliCount()
@@ -99,11 +115,13 @@ void PrintHelp()
 	cout << " -width N   Sets the image width (int, N > 0) [default: 128 pixel]" << endl;
 	cout << " -height N  Sets the image width (int, N > 0) [default: 128 pixel]" << endl;
 	cout << " -s N       Sets the image scale (float, N > 0) [default: 0.025 mas/pixel]" << endl;
+	cout << " -iter N    Number of iterations to time (int, N > 0) [default: 1000]" << endl;
+//	cout << " -nuv N     Sets the number of UV points (int, N > 0) [default: 500]" << endl;
 }
 
 int RunBenchmark(cl_device_type device_type, string exe_path,
-		unsigned int image_width, unsigned int image_height, unsigned int image_depth,
-		float image_scale)
+		unsigned int image_width, unsigned int image_height, unsigned int image_depth, float image_scale,
+		unsigned int n_iterations, unsigned int n_uv)
 {
 	// Setup the model, make an image and copy it over to a float buffer.
 	CPointSource ps(image_width, image_height, image_scale);
@@ -129,12 +147,14 @@ int RunBenchmark(cl_device_type device_type, string exe_path,
 	liboi.LoadData(exe_path + "../samples/PointSource_noise.oifits");
 
 	// Init the device.
+	cout << "Building kernels." << endl;
 	liboi.Init();
 
 	// Now run liboi as fast as possible:
 	float chi2 = 0;
-	int n_iterations = 1000;
 	double time = 0;
+
+	cout << "Starting benchmark." << endl;
 
 	int start = GetMilliCount();
 
