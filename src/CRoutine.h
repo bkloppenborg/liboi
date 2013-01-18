@@ -119,10 +119,6 @@ public:
 
 	void DumpFloatBuffer(cl_mem buffer, unsigned int size);
 
-	static bool isPow2(unsigned int x);
-
-	static unsigned int nextPow2( unsigned int x );
-
 	string ReadSource(string filename);
 
 	void SetSourcePath(string path_to_kernels);

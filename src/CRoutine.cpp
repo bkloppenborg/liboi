@@ -138,22 +138,6 @@ void CRoutine::DumpFloatBuffer(cl_mem buffer, unsigned int size)
 	}
 }
 
-bool CRoutine::isPow2(unsigned int x)
-{
-    return ((x&(x-1))==0);
-}
-
-unsigned int CRoutine::nextPow2( unsigned int x )
-{
-    --x;
-    x |= x >> 1;
-    x |= x >> 2;
-    x |= x >> 4;
-    x |= x >> 8;
-    x |= x >> 16;
-    return ++x;
-}
-
 string CRoutine::ReadSource(string filename)
 {
 	return ReadFile(mKernelPath + '/' +  filename, "Could not read OpenCL kernel source " + mKernelPath + '/' +  filename);

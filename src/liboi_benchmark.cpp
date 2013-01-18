@@ -44,14 +44,14 @@ int main(int argc, char **argv)
 			device_type = CL_DEVICE_TYPE_CPU;
 		}
 
-		if (string(argv[i]) == "-w" && i + 1 < argc)
+		if (string(argv[i]) == "-width" && i + 1 < argc)
 		{
 			image_width = atoi(argv[i+1]);
 			if(image_width < 1)
 				throw runtime_error("Image width must be greater than 0");
 		}
 
-		if (string(argv[i]) == "-h" && i + 1 < argc)
+		if (string(argv[i]) == "-height" && i + 1 < argc)
 		{
 			image_height = atoi(argv[i+1]);
 			if(image_height < 1)
@@ -95,10 +95,10 @@ void PrintHelp()
 	cout << " liboi_benchmark [...]" << endl;
 	cout << endl;
 	cout << "Options:" << endl;
-	cout << " -cpu     Runs benchmark on the CPU [default: OpenCL device]" << endl;
-	cout << " -w N     Sets the image width (int, N > 0) [default: 128 pixel]" << endl;
-	cout << " -h N     Sets the image width (int, N > 0) [default: 128 pixel]" << endl;
-	cout << " -s N     Sets the image scale (float, N > 0) [default: 0.025 mas/pixel]" << endl;
+	cout << " -cpu       Runs benchmark on the CPU [default: run on GPU]" << endl;
+	cout << " -width N   Sets the image width (int, N > 0) [default: 128 pixel]" << endl;
+	cout << " -height N  Sets the image width (int, N > 0) [default: 128 pixel]" << endl;
+	cout << " -s N       Sets the image scale (float, N > 0) [default: 0.025 mas/pixel]" << endl;
 }
 
 int RunBenchmark(cl_device_type device_type, string exe_path,

@@ -87,21 +87,14 @@ CRoutine_Sum::~CRoutine_Sum()
 
 void CRoutine_Sum::getNumBlocksAndThreads(int whichKernel, int n, int maxBlocks, int maxThreads, int &blocks, int &threads)
 {
-    if (whichKernel < 3)
-    {
-        threads = (n < maxThreads) ? nextPow2(n) : maxThreads;
-        blocks = (n + threads - 1) / threads;
-    }
-    else
-    {
-        threads = (n < maxThreads*2) ? nextPow2((n + 1)/ 2) : maxThreads;
-        blocks = (n + (threads * 2 - 1)) / (threads * 2);
-    }
 
+	threads = (n < maxThreads*2) ? nextPow2((n + 1)/ 2) : maxThreads;
+	blocks = (n + (threads * 2 - 1)) / (threads * 2);
 
-    if (whichKernel == 6)
-        blocks = min(maxBlocks, blocks);
+	if (whichKernel == 6)
+		blocks = min(maxBlocks, blocks);
 }
+
 
 void CRoutine_Sum::BuildKernels()
 {
@@ -166,9 +159,9 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
 	err = clEnqueueCopyBuffer(mQueue, input_buffer, mTempBuffer1, 0, 0, mInputSize * sizeof(cl_float), 0, NULL, NULL);
 	COpenCL::CheckOCLError("Unable to copy summed value into final buffer. CRoutine_Sum::ComputeSum", err);
+	clFinish(mQueue);
 
 	// Init locals:
-
 	cl_float gpu_result = 0;
 	int numThreads = mThreads[0];
 
@@ -178,6 +171,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 	cl_mem buff2 = mTempBuffer2;
     size_t globalWorkSize[1];
     size_t localWorkSize[1];
+    cl_kernel reductionKernel;
 
 	for(int kernel_id = 0; kernel_id < mReductionPasses; kernel_id++)
 	{
@@ -186,7 +180,7 @@ float CRoutine_Sum::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool re
 
 		globalWorkSize[0] = blocks * threads;
 		localWorkSize[0] = threads;
-		cl_kernel reductionKernel = mKernels[kernel_id];
+		reductionKernel = mKernels[kernel_id];
 
 		clSetKernelArg(reductionKernel, 0, sizeof(cl_mem), (void *) &buff1);
 		clSetKernelArg(reductionKernel, 1, sizeof(cl_mem), (void *) &buff2);
@@ -253,7 +247,7 @@ void CRoutine_Sum::Init(int n)
 	if(!isPow2(mBufferSize))
 		mBufferSize = nextPow2(mBufferSize);
 
-	// TODO: Workaround for issue 32
+	// TODO: Workaround for issue 32 in which kernel fails to compute sums for N = [33 - 64]
 	// https://github.com/bkloppenborg/liboi/issues/32
 	if(mBufferSize < 128)
 		mBufferSize = 128;
@@ -263,9 +257,30 @@ void CRoutine_Sum::Init(int n)
 	if(mTempBuffer1 == NULL)
 	{
 		mTempBuffer1 = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &err);
+		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
+	}
+
+	if(mTempBuffer2 == NULL)
+	{
 		mTempBuffer2 = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &err);
 		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
 	}
+}
+
+bool CRoutine_Sum::isPow2(unsigned int x)
+{
+    return ((x&(x-1))==0);
+}
+
+unsigned int CRoutine_Sum::nextPow2( unsigned int x )
+{
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return ++x;
 }
 
 } /* namespace liboi */
