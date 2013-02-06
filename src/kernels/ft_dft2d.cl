@@ -61,6 +61,7 @@ __kernel void dft_2d(
 	__private unsigned int nuv,
 	__global float * image,
 	__private unsigned image_width,
+	__private unsigned image_height,
 	__global float2 * output,
 	__local float * sA,
 	__local float * sB,
@@ -84,7 +85,7 @@ __kernel void dft_2d(
     
     // Iterate over every pixel (i,j) in the image, calculating their contributions to the given UV point.
  
-    for(j=0; j < image_width; j++)
+    for(j=0; j < image_height; j++)
     {       
         arg_C = -1 * ARG * uv.s1 * (float) j;
         
