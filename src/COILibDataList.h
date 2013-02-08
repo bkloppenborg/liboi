@@ -76,7 +76,6 @@ public:
 	COILibDataPtr at(unsigned int id);
 
 	OIDataList GetData(unsigned int data_num);
-
 	int GetNData();
 	int GetNDataAllocated();
 	int GetNDataAllocated(unsigned int data_num);
@@ -89,6 +88,8 @@ public:
 
 	void RemoveData(unsigned int data_num);
 	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data, cl_context context, cl_command_queue queue);
+
+	void SaveToText(unsigned int data_num, string base_filename);
 
 	unsigned int size();
 };

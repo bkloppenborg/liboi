@@ -199,6 +199,14 @@ void COILibDataList::ReplaceData(unsigned int old_data_id, const OIDataList & ne
 	temp->Replace(new_data);
 }
 
+void COILibDataList::SaveToText(unsigned int data_num, string base_filename)
+{
+	// Lock the data against changes. Automatically unlocks.
+	lock_guard<mutex> lock(mDataMutex);
+
+	mDataList[data_num]->SaveToText(base_filename);
+}
+
 unsigned int COILibDataList::size()
 {
 	// Lock the data, automatically unlocks

@@ -213,6 +213,7 @@ public:
 	void RunVerification(int data_num);
 
 	void SaveImage(string filename);
+	void SaveSimulatedData(int data_num, string savefile_dir);
 	void SetImageInfo(unsigned int width, unsigned int height, unsigned int depth, float scale);
 	void SetImageSource(float * host_memory);
 	void SetImageSource(cl_mem cl_device_memory);

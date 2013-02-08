@@ -695,7 +695,7 @@ void   CLibOI::SaveImage(string filename)
 	/*Create primary array image*/
 	if (*status == 0)
 		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, status);
-	/*Write a keywords (datafile, target, image pixelation) */
+	/*Write a keywords (datafile, target, image scale) */
 //	if (*status == 0)
 //		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);
 //	if (*status == 0)
@@ -714,6 +714,22 @@ void   CLibOI::SaveImage(string filename)
 
 	/*Report any errors*/
 	fits_report_error(stderr, *status);
+}
+
+/// Instructs liboi to save the simulated data to a text file in savefile_dir.
+/// NOTE: The savefile names are automatically set to savefile_dir/[oifits file name less extension]_sim_[vis|v2|t3].txt
+///
+/// NOTE: because liboi reuses buffers, you MUST simulate the data before calling
+/// this function (i.e. call CopyToImage and ImageToData with appropriate arguments).
+void 	CLibOI::SaveSimulatedData(int data_num, string savefile_dir)
+{
+	// Look up the name of the data, strip the extension (normally .fits or .oifits)
+	string filename = mDataList->at(data_num)->GetFilename();
+	int lastindex = filename.find_last_of(".");
+	if(lastindex > 0)
+		filename = filename.substr(0, lastindex);
+
+	mDataList->SaveToText(data_num, savefile_dir + filename + "_sim");
 }
 
 /// Tells OpenCL about the size of the image.
