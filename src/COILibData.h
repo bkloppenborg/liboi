@@ -91,16 +91,25 @@ public:
 	static unsigned int CalculateOffset_Vis(void);
 	static unsigned int CalculateOffset_V2(unsigned int n_vis);
 	static unsigned int CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2);
+
 protected:
-	void CopyData(vector<pair<double,double> > uv_points,
+	void CopyFromDevice(vector<pair<double,double> > & uv_points,
 		valarray<complex<double>> & vis, valarray<pair<double,double>> & vis_err, vector<unsigned int> & vis_uv_ref,
 		valarray<double> & vis2, valarray<double> & vis2_err, vector<unsigned int> & vis2_uv_ref,
 		valarray<complex<double>> & t3, valarray<pair<double,double> > & t3_err,
 		vector<tuple<unsigned int, unsigned int, unsigned int>> & t3_uv_ref,
 		vector<tuple<short, short, short>> & t3_uv_sign);
 
+	void CopyToDevice(const vector<pair<double,double> > & uv_points,
+		const valarray<complex<double>> & vis, const valarray<pair<double,double>> & vis_err, const vector<unsigned int> & vis_uv_ref,
+		const valarray<double> & vis2, const valarray<double> & vis2_err, const vector<unsigned int> & vis2_uv_ref,
+		const valarray<complex<double>> & t3, const valarray<pair<double,double> > & t3_err,
+		const vector<tuple<unsigned int, unsigned int, unsigned int>> & t3_uv_ref,
+		const vector<tuple<short, short, short>> & t3_uv_sign);
+
 protected:
 	void DeallocateMemory();
+
 
 public:
 	// Inline the get location functions
@@ -127,6 +136,8 @@ public:
 	static unsigned int TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3);
 
 	void Replace(const OIDataList & new_data);
+
+	void SaveToText(string filename);
 
 	/// Returns the integer multiple of base which is higher than value.
 	inline int NextHighestMultiple(int base, int value)
