@@ -30,8 +30,10 @@ if(NOT TARGET ccoifits)
     include_directories(${CCOIFITS_INCLUDE_DIRS})
 endif(NOT TARGET ccoifits)
 
-ADD_SUBDIRECTORY (lib/gtest-1.6.0)
-enable_testing()
+if(NOT TARGET gtest)
+    ADD_SUBDIRECTORY (lib/gtest-1.6.0)
+    enable_testing()
+endif(NOT TARGET gtest)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_subdirectory(src)
