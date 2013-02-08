@@ -137,7 +137,7 @@ public:
 
 	void Replace(const OIDataList & new_data);
 
-	void SaveToText(string filename);
+	void SaveToText(string base_filename);
 
 	/// Returns the integer multiple of base which is higher than value.
 	inline int NextHighestMultiple(int base, int value)
