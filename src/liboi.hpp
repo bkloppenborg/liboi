@@ -78,6 +78,7 @@ namespace liboi
 {
 
 class COpenCL;
+typedef shared_ptr<COpenCL> COpenCLPtr;
 class CRoutine_Sum;
 class CRoutine_ImageToBuffer;
 class CRoutine_Normalize;
@@ -119,7 +120,7 @@ protected:
 	COILibDataList * mDataList;
 
 	// OpenCL Context, manager, etc.
-	COpenCL * mOCL;
+	COpenCLPtr mOCL;
 
 	// Routines:
 	bool mDataRoutinesInitialized;
@@ -157,7 +158,9 @@ protected:
 
 
 public:
+	CLibOI(COpenCLPtr open_cl);
 	CLibOI(cl_device_type type);
+	CLibOI(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled);
 	virtual ~CLibOI();
 
 public:
@@ -198,6 +201,9 @@ public:
 	float ImageToLogLike(COILibDataPtr data);
 	float ImageToLogLike(int data_num);
 	void Init();
+private:
+	void InitMembers();
+public:
 	void InitMemory();
 	void InitRoutines();
 

@@ -53,41 +53,24 @@
 namespace liboi
 {
 
+CLibOI::CLibOI(COpenCLPtr open_cl)
+{
+	mOCL = open_cl;
+	InitMembers();
+}
+
 CLibOI::CLibOI(cl_device_type type)
 {
 	// init datamembers
-	mOCL = new COpenCL(type);
-	mDataList = new COILibDataList();
+	mOCL = COpenCLPtr(new COpenCL(type));
 
-	mImage_cl = NULL;
-	mImage_gl = NULL;
-	mImage_host = NULL;
-	mImageHeight = 1;
-	mImageWidth = 1;
-	mImageDepth = 1;
-	mFluxBuffer = NULL;
-	mImageType = LibOIEnums::OPENCL_BUFFER;	// By default we assume the image is stored in an OpenCL buffer.
-	mImageScale = 1;
-	mMaxData = 0;
-	mMaxUV = 0;
+	InitMembers();
+}
 
-	// Temporary buffers:
-	mFluxBuffer = NULL;
-	mFTBuffer = NULL;
-	mSimDataBuffer = NULL;
-
-	// Routines
-	mDataRoutinesInitialized = false;
-	mrTotalFlux = NULL;
-	mrCopyImage = NULL;
-	mrNormalize = NULL;
-	mrFT = NULL;
-	mrV2 = NULL;
-	mrT3 = NULL;
-	mrChi = NULL;
-	mrLogLike = NULL;
-	mrSquare = NULL;
-	mrZeroBuffer = NULL;
+CLibOI::CLibOI(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled)
+{
+	mOCL = COpenCLPtr(new COpenCL(device, context, queue, cl_gl_interop_enabled));
+	InitMembers();
 }
 
 CLibOI::~CLibOI()
@@ -111,8 +94,6 @@ CLibOI::~CLibOI()
 	if(mSimDataBuffer) clReleaseMemObject(mSimDataBuffer);
 	if(mImage_gl) clReleaseMemObject(mImage_gl);
 	if(mImage_cl) clReleaseMemObject(mImage_cl);
-
-	delete mOCL;
 }
 
 /// Copies the specified layer from the registered image buffer over to an OpenCL memory buffer.
@@ -464,6 +445,42 @@ void CLibOI::Init()
 {
 	InitMemory();
 	InitRoutines();
+}
+
+/// Initialize local memory.
+void CLibOI::InitMembers()
+{
+	mDataList = new COILibDataList();
+
+	mImage_cl = NULL;
+	mImage_gl = NULL;
+	mImage_host = NULL;
+	mImageHeight = 1;
+	mImageWidth = 1;
+	mImageDepth = 1;
+	mFluxBuffer = NULL;
+	mImageType = LibOIEnums::OPENCL_BUFFER;	// By default we assume the image is stored in an OpenCL buffer.
+	mImageScale = 1;
+	mMaxData = 0;
+	mMaxUV = 0;
+
+	// Temporary buffers:
+	mFluxBuffer = NULL;
+	mFTBuffer = NULL;
+	mSimDataBuffer = NULL;
+
+	// Routines
+	mDataRoutinesInitialized = false;
+	mrTotalFlux = NULL;
+	mrCopyImage = NULL;
+	mrNormalize = NULL;
+	mrFT = NULL;
+	mrV2 = NULL;
+	mrT3 = NULL;
+	mrChi = NULL;
+	mrLogLike = NULL;
+	mrSquare = NULL;
+	mrZeroBuffer = NULL;
 }
 
 /// Initializes memory used for storing various things on the OpenCL context.

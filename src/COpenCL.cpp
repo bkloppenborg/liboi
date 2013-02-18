@@ -54,6 +54,15 @@ COpenCL::COpenCL(cl_device_type type)
 	Init(type);
 }
 
+COpenCL::COpenCL(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled)
+{
+	mDevice = device;
+	mContext = context;
+	mQueue = queue;
+
+	mCLGLInteropEnabled = cl_gl_interop_enabled;
+}
+
 COpenCL::~COpenCL()
 {
 	// Free OpenCL memory:

@@ -90,6 +90,7 @@ protected:
 
 
 public:
+	COpenCL(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled);
 	COpenCL(cl_device_type type);
 	virtual ~COpenCL();
 
