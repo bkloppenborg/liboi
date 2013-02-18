@@ -69,11 +69,12 @@
 
 
 #include <string>
+#include <memory>
 
 using namespace std;
 
-namespace liboi
-{
+class COpenCL;
+typedef shared_ptr<COpenCL> COpenCLPtr;
 
 // TODO: Make this class support multiple devices.
 
@@ -117,7 +118,5 @@ public:
 	void PrintDeviceInfo(cl_device_id device_id);
 	void PrintPlatformInfo(cl_platform_id platform_id);
 };
-
-} /* namespace liboi */
 
 #endif /* COPENCL_H_ */

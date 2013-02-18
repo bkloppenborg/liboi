@@ -39,7 +39,7 @@
 #include <string>
 #include <complex>
 #include <memory>
-#include "COpenCL.h"
+#include "COpenCL.hpp"
 #include "oi_file.hpp"
 
 using namespace std;

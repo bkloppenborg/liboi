@@ -77,7 +77,7 @@
 #include "textio.hpp"
 #include "liboi.hpp"
 
-#include "COpenCL.h"
+#include "COpenCL.hpp"
 
 #define MAX_REL_ERROR 0.001	// Maximum of 0.1% relative error permitted
 

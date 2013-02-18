@@ -74,11 +74,12 @@ namespace ns = boost;
 namespace ns = std;
 #endif
 
+class COpenCL;
+typedef shared_ptr<COpenCL> COpenCLPtr;
+
 namespace liboi
 {
 
-class COpenCL;
-typedef shared_ptr<COpenCL> COpenCLPtr;
 class CRoutine_Sum;
 class CRoutine_ImageToBuffer;
 class CRoutine_Normalize;

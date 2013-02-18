@@ -8,7 +8,7 @@
 
 #include "gtest/gtest.h"
 #include "liboi_tests.h"
-#include "COpenCL.h"
+#include "COpenCL.hpp"
 #include "CRoutine_DFT.h"
 #include "CPointSource.h"
 #include "CUniformDisk.h"

@@ -7,7 +7,7 @@
 
 #include "gtest/gtest.h"
 #include "liboi_tests.h"
-#include "COpenCL.h"
+#include "COpenCL.hpp"
 #include "CRoutine_ImageToBuffer.h"
 
 using namespace std;

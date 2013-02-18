@@ -36,12 +36,9 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
-#include "COpenCL.h"
+#include "COpenCL.hpp"
 
 using namespace std;
-
-namespace liboi
-{
 
 COpenCL::COpenCL(cl_device_type type)
 {
@@ -462,5 +459,3 @@ void COpenCL::PrintPlatformInfo(cl_platform_id platform_id)
 
 	delete tmp;
 }
-
-} /* namespace liboi */

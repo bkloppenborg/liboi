@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "liboi_tests.h"
-#include "COpenCL.h"
+#include "COpenCL.hpp"
 #include "CRoutine_FTtoT3.h"
 #include "CPointSource.h"
 

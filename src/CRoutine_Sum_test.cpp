@@ -7,7 +7,7 @@
 
 #include "gtest/gtest.h"
 #include "liboi_tests.h"
-#include "COpenCL.h"
+#include "COpenCL.hpp"
 #include "CRoutine_Sum.h"
 #include "CRoutine_Zero.h"
 
