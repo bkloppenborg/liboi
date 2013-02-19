@@ -115,6 +115,8 @@ public:
 	// Inline the get location functions
 	double GetAveJD(void) { return mAveJD; };
 	OIDataList GetData(void) { return mData; };
+	void GetData(int data_num, float * output, unsigned int & n);
+	void GetDataUncertainties(int data_num, float * output, unsigned int & n);
 	string GetFilename(void) { return mFileName; };
 	cl_mem GetLoc_Data() { return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };

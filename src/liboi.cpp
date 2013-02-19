@@ -224,6 +224,16 @@ double CLibOI::GetDataAveJD(int data_num)
 	return mDataList->at(data_num)->GetAveJD();
 }
 
+void CLibOI::GetData(int data_num, float * output, unsigned int & n)
+{
+	mDataList->GetData(data_num, output, n);
+}
+
+void CLibOI::GetDataUncertainties(int data_num, float * output, unsigned int & n)
+{
+	mDataList->GetDataUncertainties(data_num, output, n);
+}
+
 int CLibOI::GetNData()
 {
 	return mDataList->GetNData();

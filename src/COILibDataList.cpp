@@ -71,6 +71,36 @@ OIDataList COILibDataList::GetData(unsigned int data_num)
 	}
 }
 
+void COILibDataList::GetData(int data_num, float * output, unsigned int & n)
+{
+	// Lock the data, automatically unlocks
+	lock_guard<mutex> lock(mDataMutex);
+
+	try
+	{
+		mDataList[data_num]->GetData(data_num, output, n);
+	}
+	catch(...)
+	{
+		return;
+	}
+}
+
+void COILibDataList::GetDataUncertainties(int data_num, float * output, unsigned int & n)
+{
+	// Lock the data, automatically unlocks
+	lock_guard<mutex> lock(mDataMutex);
+
+	try
+	{
+		mDataList[data_num]->GetDataUncertainties(data_num, output, n);
+	}
+	catch(...)
+	{
+		return;
+	}
+}
+
 /// Returns the total number of data points (UV + T3) in all data sets
 int COILibDataList::GetNData()
 {

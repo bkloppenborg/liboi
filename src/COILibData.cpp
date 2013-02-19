@@ -490,6 +490,31 @@ void COILibData::CopyToDevice(const vector<pair<double,double> > & uv_points,
 	clFinish(mQueue);
 }
 
+/// Copies up to n of the data from the OpenCL device to output.
+void COILibData::GetData(int data_num, float * output, unsigned int & n)
+{
+	int err = CL_SUCCESS;
+
+	unsigned int n_data = TotalBufferSize(mNVis, mNV2, mNT3);
+
+	// Copy the minimum of the output buffer size and n_data
+	n = min(n, n_data);
+	err |= clEnqueueReadBuffer(mQueue, mData_cl, CL_FALSE, 0, sizeof(cl_float) * n, output, 0, NULL, NULL);
+	clFinish(mQueue);
+}
+
+/// Copies up to n of the data uncertainties from the OpenCL device to output.
+void COILibData::GetDataUncertainties(int data_num, float * output, unsigned int & n)
+{
+	int err = CL_SUCCESS;
+
+	unsigned int n_data = TotalBufferSize(mNVis, mNV2, mNT3);
+
+	// Copy the minimum of the output buffer size and n_data
+	n = min(n, n_data);
+	err |= clEnqueueReadBuffer(mQueue, mData_err_cl, CL_FALSE, 0, sizeof(cl_float) * n, output, 0, NULL, NULL);
+	clFinish(mQueue);
+}
 
 // Calculate the total number of elements in the data buffer following the data storage definition in COILibData.h
 unsigned int COILibData::TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3)

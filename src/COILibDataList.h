@@ -76,6 +76,8 @@ public:
 	COILibDataPtr at(unsigned int id);
 
 	OIDataList GetData(unsigned int data_num);
+	void GetData(int data_num, float * output, unsigned int & n);
+	void GetDataUncertainties(int data_num, float * output, unsigned int & n);
 	int GetNData();
 	int GetNDataAllocated();
 	int GetNDataAllocated(unsigned int data_num);

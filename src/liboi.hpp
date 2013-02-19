@@ -180,6 +180,8 @@ public:
 
 	OIDataList GetData(unsigned int data_num);
 	double GetDataAveJD(int data_num);
+	void GetData(int data_num, float * output, unsigned int & n);
+	void GetDataUncertainties(int data_num, float * output, unsigned int & n);
 	int GetNData();
 	int GetNDataAllocated();
 	int GetNDataAllocated(int data_num);
