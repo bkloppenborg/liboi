@@ -40,9 +40,11 @@ __kernel void loglike(
 {
     int i = get_global_id(0);
     
+    float log_two_pi = log(TWO_PI)
+    
     // Computes the log of the likelihood
     if(i < n)
 	{
-	    output[i] = native_log(data_err[i]) + chi_buffer[i] * chi_buffer[i] / 2;
+	    output[i] = -1*native_log(data_err[i]) - chi_buffer[i] * chi_buffer[i] / 2;
     }
 }

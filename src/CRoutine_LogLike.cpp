@@ -108,10 +108,13 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 	if(compute_sum)
 		sum = ComputeSum(mLogLikeOutput, mLogLikeOutput, true);
 
-	return -1*n_data/2 * log(2 * PI) - sum;
+	// Compute the logZ value, don't forget to include the -N/2 log(TWO_PI) prefix!
+	return -0.5 * n_data * log(2 * PI) + sum;
 }
 
-/// Computes the log likelihood per each element, returns the result in output.
+/// \brief Computes the log likelihood per each element, returns the result in output.
+///
+/// Note, this does not include the -N/2 log(TWO_PI) prefix
 void CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_float> & data_err, valarray<cl_float> & output, unsigned int n)
 {
 	// Verify the buffer sizes are valid
@@ -122,10 +125,12 @@ void CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_floa
 	if(n != output.size())
 		output.resize(n);
 
-	// Compute the individual loglike values. Note, this does not include -1 * log(2 * PI) prefix
+	cl_float log_two_pi = log(TWO_PI);
+
+	// Compute the individual loglike values.
 	for(int i = 0; i < n; i++)
 	{
-		output[i] = log(data_err[i]) + chi_output[i] * chi_output[i] / 2;
+		output[i] = -2* log(data_err[i]) - chi_output[i] * chi_output[i] / 2;
 	}
 }
 
