@@ -52,6 +52,7 @@ COILibData::COILibData(string filename, cl_context context, cl_command_queue que
 {
 	mContext = context;
 	mQueue = queue;
+	mFileName = filename;
 
 	// Read in the data.
 	COIFile tmp;
@@ -159,6 +160,37 @@ void COILibData::DeallocateMemory()
 	if(mData_T3_uv_ref) clReleaseMemObject(mData_T3_uv_ref);
 
 	if(mData_T3_sign) clReleaseMemObject(mData_T3_sign);
+}
+
+/// \brief Exports the real and current simulated data to a file beginning with base_filename;
+///
+/// Here we use ccoifits::ExportToText(...) function to export data to a well-defined format
+/// The format of the text file matches CCOIFITS, namely:
+///  *_vis.txt contains visibility data
+///	 *_v2.txt  contains V2 data
+///  *_t3.txt  contains T3 data.
+/// The model data has the word "model" inserted before the suffixes listed above.
+void COILibData::ExportData(string base_filename)
+{
+	// First export the real data:
+	ccoifits::Export_ToText(mData, base_filename);
+
+	// Now export the simulated data. Start by getting the current OpenCL values:
+	vector<pair<double,double> > uv_points;
+	valarray<complex<double>> vis;
+	valarray<pair<double,double>> vis_err;
+	vector<unsigned int> vis_uv_ref;
+	valarray<double> vis2;
+	valarray<double> vis2_err;
+	vector<unsigned int> vis2_uv_ref;
+	valarray<complex<double>> t3;
+	valarray<pair<double,double> > t3_err;
+	vector<tuple<unsigned int, unsigned int, unsigned int>> t3_uv_ref;
+	vector<tuple<short, short, short>> t3_uv_sign;
+
+	CopyFromDevice(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+	ccoifits::Export_ToText(base_filename + "_model", uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+
 }
 
 /// Initializes statistics on the data set and uploads the data to the OpenCL device.
@@ -328,6 +360,7 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points,
 	// Stored in linear order: [Vis2_1, ..., Vis2_N)] within the mData_cl buffer
 	vis2.resize(mNV2);
 	vis2_err.resize(mNV2);
+	vis2_uv_ref.resize(mNV2);
 	for(int i = 0; i < mNV2; i++)
 	{
 		vis2[i] = t_vis2[i];
@@ -520,31 +553,6 @@ void COILibData::GetDataUncertainties(int data_num, float * output, unsigned int
 unsigned int COILibData::TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3)
 {
 	return 2*n_vis + n_v2 + 2*n_t3;
-}
-
-/// Exports the current simulated data to the specified text file
-/// The format of the text file matches CCOIFITS, namely:
-///  *_vis.txt contains visibility data
-///	 *_v2.txt  contains V2 data
-///  *_t3.txt  contains T3 data.
-void COILibData::SaveToText(string base_filename)
-{
-	// Get the current OpenCL values:
-	vector<pair<double,double> > uv_points;
-	valarray<complex<double>> vis;
-	valarray<pair<double,double>> vis_err;
-	vector<unsigned int> vis_uv_ref;
-	valarray<double> vis2;
-	valarray<double> vis2_err;
-	vector<unsigned int> vis2_uv_ref;
-	valarray<complex<double>> t3;
-	valarray<pair<double,double> > t3_err;
-	vector<tuple<unsigned int, unsigned int, unsigned int>> t3_uv_ref;
-	vector<tuple<short, short, short>> t3_uv_sign;
-
-	CopyFromDevice(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
-
-	ccoifits::Export_ToText(base_filename, uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
 }
 
 /// Replaces the currently loaded data set with another of the exact same size stored in new_data

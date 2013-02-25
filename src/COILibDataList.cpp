@@ -56,6 +56,21 @@ COILibDataPtr COILibDataList::at(unsigned int id)
 	return mDataList.at(id);
 }
 
+void COILibDataList::ExportData(unsigned int data_num, string file_basename)
+{
+	// Lock the data, automatically unlocks
+	lock_guard<mutex> lock(mDataMutex);
+
+	try
+	{
+		mDataList[data_num]->ExportData(file_basename);
+	}
+	catch(...)
+	{
+		// do nothing.
+	}
+}
+
 OIDataList COILibDataList::GetData(unsigned int data_num)
 {
 	// Lock the data, automatically unlocks
@@ -227,14 +242,6 @@ void COILibDataList::ReplaceData(unsigned int old_data_id, const OIDataList & ne
 
 	COILibDataPtr temp = mDataList[old_data_id];
 	temp->Replace(new_data);
-}
-
-void COILibDataList::SaveToText(unsigned int data_num, string base_filename)
-{
-	// Lock the data against changes. Automatically unlocks.
-	lock_guard<mutex> lock(mDataMutex);
-
-	mDataList[data_num]->SaveToText(base_filename);
 }
 
 unsigned int COILibDataList::size()

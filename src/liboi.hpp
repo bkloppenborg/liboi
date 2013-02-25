@@ -174,12 +174,15 @@ public:
 	float DataToLogLike(COILibDataPtr data);
 
 public:
+	void ExportData(int data_num, string file_basename);
+	void ExportImage(string filename);
 	void ExportImage(float * image, unsigned int width, unsigned int height, unsigned int depth);
 	void FreeOpenCLMem();
 	void FTToData(COILibDataPtr data);
 
 	OIDataList GetData(unsigned int data_num);
 	double GetDataAveJD(int data_num);
+	string GetDataFileName(int data_num);
 	void GetData(int data_num, float * output, unsigned int & n);
 	void GetDataUncertainties(int data_num, float * output, unsigned int & n);
 	int GetNData();
@@ -221,8 +224,6 @@ public:
 	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data);
 	void RunVerification(int data_num);
 
-	void SaveImage(string filename);
-	void SaveSimulatedData(int data_num, string savefile_dir);
 	void SetImageInfo(unsigned int width, unsigned int height, unsigned int depth, float scale);
 	void SetImageSource(float * host_memory);
 	void SetImageSource(cl_mem cl_device_memory);

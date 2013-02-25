@@ -110,6 +110,8 @@ protected:
 protected:
 	void DeallocateMemory();
 
+public:
+	void ExportData(string base_filename);
 
 public:
 	// Inline the get location functions
@@ -138,8 +140,6 @@ public:
 	static unsigned int TotalBufferSize(unsigned int n_vis, unsigned int n_v2, unsigned int n_t3);
 
 	void Replace(const OIDataList & new_data);
-
-	void SaveToText(string base_filename);
 
 	/// Returns the integer multiple of base which is higher than value.
 	inline int NextHighestMultiple(int base, int value)

@@ -178,6 +178,68 @@ float CLibOI::DataToLogLike(COILibDataPtr data)
 	return mrLogLike->LogLike(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
 }
 
+/// \brief Exports both the real and simulated data to a file.
+///
+///
+void CLibOI::ExportData(int data_num, string file_basename)
+{
+	mDataList->ExportData(data_num, file_basename);
+}
+
+/// Saves the current image in the OpenCL memory buffer to the specified FITS file
+/// If the OpenCL memory has not been initialzed, this function immediately returns
+void   CLibOI::ExportImage(string filename)
+{
+	if(mImage_cl == NULL)
+		return;
+
+	// TODO: Adapt for multi-spectral images
+	Normalize();
+
+	// Create a storage buffer for the image and copoy the image to it:
+	valarray<float> image(mImageWidth * mImageHeight * mImageDepth);
+	ExportImage(&image[0], mImageWidth, mImageHeight, mImageDepth);
+
+	// write out the FITS file:
+	fitsfile *fptr;
+	int error = 0;
+	int* status = &error;
+	long fpixel = 1, naxis = 2, nelements;
+	long naxes[2];
+
+	/*Initialise storage*/
+	naxes[0] = (long) mImageWidth;
+	naxes[1] = (long) mImageHeight;
+	nelements = mImageWidth * mImageWidth;
+
+	/*Create new file*/
+	if (*status == 0)
+		fits_create_file(&fptr, filename.c_str(), status);
+
+	/*Create primary array image*/
+	if (*status == 0)
+		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, status);
+	/*Write a keywords (datafile, target, image scale) */
+//	if (*status == 0)
+//		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);
+//	if (*status == 0)
+//		fits_update_key(fptr, TSTRING, "TARGET", "FakeImage", "Target Name", status);
+//	if (*status == 0)
+//		fits_update_key(fptr, TFLOAT, "SCALE", &scale, "Scale (mas/pixel)", status);
+
+
+	/*Write image*/
+	if (*status == 0)
+		fits_write_img(fptr, TFLOAT, fpixel, nelements, &image[0], status);
+
+	/*Close file*/
+	if (*status == 0)
+		fits_close_file(fptr, status);
+
+	/*Report any errors*/
+	fits_report_error(stderr, *status);
+}
+
 /// Copies the current image in mCLImage to the floating point buffer, image, iff the sizes match exactly.
 void CLibOI::ExportImage(float * image, unsigned int width, unsigned int height, unsigned int depth)
 {
@@ -222,6 +284,11 @@ OIDataList CLibOI::GetData(unsigned int data_num)
 double CLibOI::GetDataAveJD(int data_num)
 {
 	return mDataList->at(data_num)->GetAveJD();
+}
+
+string CLibOI::GetDataFileName(int data_num)
+{
+	return mDataList->at(data_num)->GetFilename();
 }
 
 void CLibOI::GetData(int data_num, float * output, unsigned int & n)
@@ -687,76 +754,6 @@ void CLibOI::RunVerification(int data_num)
 //	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
 //	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, true);
 //	mrLogLike->LogLike_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
-}
-
-/// Saves the current image in the OpenCL memory buffer to the specified FITS file
-/// If the OpenCL memory has not been initialzed, this function immediately returns
-void   CLibOI::SaveImage(string filename)
-{
-	if(mImage_cl == NULL)
-		return;
-
-	// TODO: Adapt for multi-spectral images
-	Normalize();
-
-	// Create storage space for the image, copy it.
-	float image[mImageWidth * mImageHeight * mImageDepth];
-	ExportImage(image, mImageWidth, mImageHeight, mImageDepth);
-
-	// write out the FITS file:
-	fitsfile *fptr;
-	int error = 0;
-	int* status = &error;
-	long fpixel = 1, naxis = 2, nelements;
-	long naxes[2];
-
-	/*Initialise storage*/
-	naxes[0] = (long) mImageWidth;
-	naxes[1] = (long) mImageHeight;
-	nelements = mImageWidth * mImageWidth;
-
-	/*Create new file*/
-	if (*status == 0)
-		fits_create_file(&fptr, filename.c_str(), status);
-
-	/*Create primary array image*/
-	if (*status == 0)
-		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, status);
-	/*Write a keywords (datafile, target, image scale) */
-//	if (*status == 0)
-//		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);
-//	if (*status == 0)
-//		fits_update_key(fptr, TSTRING, "TARGET", "FakeImage", "Target Name", status);
-//	if (*status == 0)
-//		fits_update_key(fptr, TFLOAT, "SCALE", &scale, "Scale (mas/pixel)", status);
-
-
-	/*Write image*/
-	if (*status == 0)
-		fits_write_img(fptr, TFLOAT, fpixel, nelements, &image[0], status);
-
-	/*Close file*/
-	if (*status == 0)
-		fits_close_file(fptr, status);
-
-	/*Report any errors*/
-	fits_report_error(stderr, *status);
-}
-
-/// Instructs liboi to save the simulated data to a text file in savefile_dir.
-/// NOTE: The savefile names are automatically set to savefile_dir/[oifits file name less extension]_sim_[vis|v2|t3].txt
-///
-/// NOTE: because liboi reuses buffers, you MUST simulate the data before calling
-/// this function (i.e. call CopyToImage and ImageToData with appropriate arguments).
-void 	CLibOI::SaveSimulatedData(int data_num, string savefile_dir)
-{
-	// Look up the name of the data, strip the extension (normally .fits or .oifits)
-	string filename = mDataList->at(data_num)->GetFilename();
-	int lastindex = filename.find_last_of(".");
-	if(lastindex > 0)
-		filename = filename.substr(0, lastindex);
-
-	mDataList->SaveToText(data_num, savefile_dir + filename + "_sim");
 }
 
 /// Tells OpenCL about the size of the image.
