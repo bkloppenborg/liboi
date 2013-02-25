@@ -40,8 +40,6 @@ __kernel void loglike(
 {
     int i = get_global_id(0);
     
-    float log_two_pi = log(TWO_PI)
-    
     // Computes the log of the likelihood
     if(i < n)
 	{

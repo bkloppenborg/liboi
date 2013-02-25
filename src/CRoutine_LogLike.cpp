@@ -125,7 +125,7 @@ void CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_floa
 	if(n != output.size())
 		output.resize(n);
 
-	cl_float log_two_pi = log(TWO_PI);
+	cl_float log_two_pi = log(2 * PI);
 
 	// Compute the individual loglike values.
 	for(int i = 0; i < n; i++)
