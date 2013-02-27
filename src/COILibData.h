@@ -93,12 +93,17 @@ public:
 	static unsigned int CalculateOffset_T3(unsigned int n_vis, unsigned int n_v2);
 
 protected:
-	void CopyFromDevice(vector<pair<double,double> > & uv_points,
-		valarray<complex<double>> & vis, valarray<pair<double,double>> & vis_err, vector<unsigned int> & vis_uv_ref,
-		valarray<double> & vis2, valarray<double> & vis2_err, vector<unsigned int> & vis2_uv_ref,
-		valarray<complex<double>> & t3, valarray<pair<double,double> > & t3_err,
-		vector<tuple<unsigned int, unsigned int, unsigned int>> & t3_uv_ref,
-		vector<tuple<short, short, short>> & t3_uv_sign);
+	void CopyFromDevice(vector<pair<double,double> > & uv_points, cl_mem uv_buffer,
+		valarray<complex<double>> & vis, cl_mem vis_buffer,
+		valarray<pair<double,double>> & vis_err, cl_mem vis_err_buffer,
+		vector<unsigned int> & vis_uv_ref, cl_mem vis_uvref_buffer,
+		valarray<double> & vis2, cl_mem vis2_buffer,
+		valarray<double> & vis2_err, cl_mem vis2_err_buffer,
+		vector<unsigned int> & vis2_uv_ref, cl_mem vis2_uv_ref_buffer,
+		valarray<complex<double>> & t3, cl_mem t3_buffer,
+		valarray<pair<double,double> > & t3_err, cl_mem t3_err_buffer,
+		vector<tuple<unsigned int, unsigned int, unsigned int>> & t3_uv_ref, cl_mem t3_uv_ref_buffer,
+		vector<tuple<short, short, short>> & t3_uv_sign, cl_mem t3_uv_sign_buffer);
 
 	void CopyToDevice(const vector<pair<double,double> > & uv_points,
 		const valarray<complex<double>> & vis, const valarray<pair<double,double>> & vis_err, const vector<unsigned int> & vis_uv_ref,
@@ -111,7 +116,7 @@ protected:
 	void DeallocateMemory();
 
 public:
-	void ExportData(string base_filename);
+	void ExportData(string base_filename, cl_mem simulated_data = 0);
 
 public:
 	// Inline the get location functions

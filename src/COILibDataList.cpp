@@ -56,14 +56,14 @@ COILibDataPtr COILibDataList::at(unsigned int id)
 	return mDataList.at(id);
 }
 
-void COILibDataList::ExportData(unsigned int data_num, string file_basename)
+void COILibDataList::ExportData(unsigned int data_num, string file_basename, cl_mem simulated_data)
 {
 	// Lock the data, automatically unlocks
 	lock_guard<mutex> lock(mDataMutex);
 
 	try
 	{
-		mDataList[data_num]->ExportData(file_basename);
+		mDataList[data_num]->ExportData(file_basename, simulated_data);
 	}
 	catch(...)
 	{

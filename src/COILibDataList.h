@@ -75,7 +75,7 @@ public:
 
 	COILibDataPtr at(unsigned int id);
 
-	void ExportData(unsigned int data_num, string file_basename);
+	void ExportData(unsigned int data_num, string file_basename, cl_mem simulated_data);
 
 	OIDataList GetData(unsigned int data_num);
 	void GetData(int data_num, float * output, unsigned int & n);

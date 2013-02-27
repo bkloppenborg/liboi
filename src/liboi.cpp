@@ -183,7 +183,8 @@ float CLibOI::DataToLogLike(COILibDataPtr data)
 ///
 void CLibOI::ExportData(int data_num, string file_basename)
 {
-	mDataList->ExportData(data_num, file_basename);
+	// First export the real data:
+	mDataList->ExportData(data_num, file_basename, mSimDataBuffer);
 }
 
 /// Saves the current image in the OpenCL memory buffer to the specified FITS file

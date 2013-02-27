@@ -170,12 +170,9 @@ void COILibData::DeallocateMemory()
 ///	 *_v2.txt  contains V2 data
 ///  *_t3.txt  contains T3 data.
 /// The model data has the word "model" inserted before the suffixes listed above.
-void COILibData::ExportData(string base_filename)
+void COILibData::ExportData(string base_filename, cl_mem simulated_data)
 {
-	// First export the real data:
-	ccoifits::Export_ToText(mData, base_filename);
-
-	// Now export the simulated data. Start by getting the current OpenCL values:
+	// Init locals in which we store the data:
 	vector<pair<double,double> > uv_points;
 	valarray<complex<double>> vis;
 	valarray<pair<double,double>> vis_err;
@@ -188,9 +185,38 @@ void COILibData::ExportData(string base_filename)
 	vector<tuple<unsigned int, unsigned int, unsigned int>> t3_uv_ref;
 	vector<tuple<short, short, short>> t3_uv_sign;
 
-	CopyFromDevice(uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
-	ccoifits::Export_ToText(base_filename + "_model", uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+	// First get a copy of the real data, save it to a file
+	CopyFromDevice(uv_points, mData_uv_cl,
+			vis, mData_cl,
+			vis_err, mData_err_cl,
+			vis_uv_ref, mData_Vis_uv_ref,
+			vis2, mData_cl,
+			vis2_err, mData_err_cl,
+			vis2_uv_ref, mData_V2_uv_ref,
+			t3, mData_cl,
+			t3_err, mData_err_cl,
+			t3_uv_ref, mData_T3_uv_ref,
+			t3_uv_sign, mData_T3_sign);
 
+	ccoifits::Export_ToText(base_filename, uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+
+	if(simulated_data != NULL)
+	{
+		// Now get a copy of the simulated data, save it to a file with "_model" in the filename:
+		CopyFromDevice(uv_points, mData_uv_cl,
+				vis, simulated_data,
+				vis_err, mData_err_cl,
+				vis_uv_ref, mData_Vis_uv_ref,
+				vis2, simulated_data,
+				vis2_err, mData_err_cl,
+				vis2_uv_ref, mData_V2_uv_ref,
+				t3, simulated_data,
+				t3_err, mData_err_cl,
+				t3_uv_ref, mData_T3_uv_ref,
+				t3_uv_sign, mData_T3_sign);
+
+		ccoifits::Export_ToText(base_filename + "_model", uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+	}
 }
 
 /// Initializes statistics on the data set and uploads the data to the OpenCL device.
@@ -253,12 +279,17 @@ unsigned int COILibData::CalculateOffset_V2(unsigned int n_vis)
 }
 
 /// Copies the data which resides in OpenCL device memory into the specified buffers
-void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points,
-	valarray<complex<double>> & vis, valarray<pair<double,double>> & vis_err, vector<unsigned int> & vis_uv_ref,
-	valarray<double> & vis2, valarray<double> & vis2_err, vector<unsigned int> & vis2_uv_ref,
-	valarray<complex<double>> & t3, valarray<pair<double,double> > & t3_err,
-	vector<tuple<unsigned int, unsigned int, unsigned int>> & t3_uv_ref,
-	vector<tuple<short, short, short>> & t3_uv_sign)
+void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points, cl_mem uv_buffer,
+		valarray<complex<double>> & vis, cl_mem vis_buffer,
+		valarray<pair<double,double>> & vis_err, cl_mem vis_err_buffer,
+		vector<unsigned int> & vis_uv_ref, cl_mem vis_uv_ref_buffer,
+		valarray<double> & vis2, cl_mem vis2_buffer,
+		valarray<double> & vis2_err, cl_mem vis2_err_buffer,
+		vector<unsigned int> & vis2_uv_ref, cl_mem vis2_uv_ref_buffer,
+		valarray<complex<double>> & t3, cl_mem t3_buffer,
+		valarray<pair<double,double> > & t3_err, cl_mem t3_err_buffer,
+		vector<tuple<unsigned int, unsigned int, unsigned int>> & t3_uv_ref, cl_mem t3_uv_ref_buffer,
+		vector<tuple<short, short, short>> & t3_uv_sign, cl_mem t3_uv_sign_buffer)
 {
 
 	int err = CL_SUCCESS;
@@ -278,7 +309,7 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points,
 	// #####
 	// UV points
 	valarray<cl_float2> t_uv_points(mNUV);
-	err  = clEnqueueReadBuffer(mQueue, mData_uv_cl, CL_FALSE, 0, sizeof(cl_float2) * mNUV, &t_uv_points[0], 0, NULL, NULL);
+	err  = clEnqueueReadBuffer(mQueue, uv_buffer, CL_FALSE, 0, sizeof(cl_float2) * mNUV, &t_uv_points[0], 0, NULL, NULL);
 	COpenCL::CheckOCLError("Could not copy OI UV points from OpenCL device. COILibData::InitData.", err);
 
 	// #####
@@ -289,9 +320,9 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points,
 	if(mNVis > 0)
 	{
 		// Copy the data.  No offset, this is always at the start of the buffer.
-		err  = clEnqueueReadBuffer(mQueue, mData_cl, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis[0], 0, NULL, NULL);
-		err |= clEnqueueReadBuffer(mQueue, mData_err_cl, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis_err[0], 0, NULL, NULL);
-		err |= clEnqueueReadBuffer(mQueue, mData_Vis_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNVis, &t_vis_uvref[0], 0, NULL, NULL);
+		err  = clEnqueueReadBuffer(mQueue, vis_buffer, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis[0], 0, NULL, NULL);
+		err |= clEnqueueReadBuffer(mQueue, vis_err_buffer, CL_FALSE, 0, sizeof(cl_float) * 2*mNVis, &t_vis_err[0], 0, NULL, NULL);
+		err |= clEnqueueReadBuffer(mQueue, vis_uv_ref_buffer, CL_FALSE, 0, sizeof(cl_uint) * mNVis, &t_vis_uvref[0], 0, NULL, NULL);
 		COpenCL::CheckOCLError("Could not copy OI_VIS data from OpenCL device. COILibData::InitData", err);
 	}
 
@@ -304,9 +335,9 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points,
 	if(mNV2 > 0)
 	{
 		int offset = CalculateOffset_V2(mNVis);
-		err  = clEnqueueReadBuffer(mQueue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2[0], 0, NULL, NULL);
-		err |= clEnqueueReadBuffer(mQueue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2_err[0], 0, NULL, NULL);
-		err |= clEnqueueReadBuffer(mQueue, mData_V2_uv_ref, CL_FALSE, 0, sizeof(cl_uint) * mNV2, &t_vis2_uvref[0], 0, NULL, NULL);
+		err  = clEnqueueReadBuffer(mQueue, vis2_buffer, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2[0], 0, NULL, NULL);
+		err |= clEnqueueReadBuffer(mQueue, vis2_err_buffer, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * mNV2, &t_vis2_err[0], 0, NULL, NULL);
+		err |= clEnqueueReadBuffer(mQueue, vis2_uv_ref_buffer, CL_FALSE, 0, sizeof(cl_uint) * mNV2, &t_vis2_uvref[0], 0, NULL, NULL);
 		COpenCL::CheckOCLError("Could not copy OI_VIS2 data from OpenCL device. COILibData::InitData", err);
 	}
 
@@ -319,10 +350,10 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points,
 	if(mNT3 > 0)
 	{
 		int offset = CalculateOffset_T3(mNVis, mNV2);
-		err  = clEnqueueReadBuffer(mQueue, mData_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3[0], 0, NULL, NULL);
-		err |= clEnqueueReadBuffer(mQueue, mData_err_cl, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3_err[0], 0, NULL, NULL);
-		err |= clEnqueueReadBuffer(mQueue, mData_T3_uv_ref, CL_FALSE, 0, sizeof(cl_uint4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
-		err |= clEnqueueReadBuffer(mQueue, mData_T3_sign, CL_FALSE, 0, sizeof(cl_short4) * mNT3, &t_t3_sign[0], 0, NULL, NULL);
+		err  = clEnqueueReadBuffer(mQueue, t3_buffer, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3[0], 0, NULL, NULL);
+		err |= clEnqueueReadBuffer(mQueue, t3_err_buffer, CL_FALSE, sizeof(cl_float) * offset, sizeof(cl_float) * 2*mNT3, &t_t3_err[0], 0, NULL, NULL);
+		err |= clEnqueueReadBuffer(mQueue, t3_uv_ref_buffer, CL_FALSE, 0, sizeof(cl_uint4) * mNT3, &t_t3_uvref[0], 0, NULL, NULL);
+		err |= clEnqueueReadBuffer(mQueue, t3_uv_sign_buffer, CL_FALSE, 0, sizeof(cl_short4) * mNT3, &t_t3_sign[0], 0, NULL, NULL);
 		COpenCL::CheckOCLError("Could not copy OI_T3 data from OpenCL device. COILibData::InitData", err);
 	}
 
