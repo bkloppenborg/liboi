@@ -36,12 +36,9 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
-#include "COpenCL.h"
+#include "COpenCL.hpp"
 
 using namespace std;
-
-namespace liboi
-{
 
 COpenCL::COpenCL(cl_device_type type)
 {
@@ -52,6 +49,15 @@ COpenCL::COpenCL(cl_device_type type)
 	mCLGLInteropEnabled = false;
 
 	Init(type);
+}
+
+COpenCL::COpenCL(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled)
+{
+	mDevice = device;
+	mContext = context;
+	mQueue = queue;
+
+	mCLGLInteropEnabled = cl_gl_interop_enabled;
 }
 
 COpenCL::~COpenCL()
@@ -453,5 +459,3 @@ void COpenCL::PrintPlatformInfo(cl_platform_id platform_id)
 
 	delete tmp;
 }
-
-} /* namespace liboi */

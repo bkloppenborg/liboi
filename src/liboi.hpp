@@ -74,10 +74,12 @@ namespace ns = boost;
 namespace ns = std;
 #endif
 
+class COpenCL;
+typedef shared_ptr<COpenCL> COpenCLPtr;
+
 namespace liboi
 {
 
-class COpenCL;
 class CRoutine_Sum;
 class CRoutine_ImageToBuffer;
 class CRoutine_Normalize;
@@ -119,7 +121,7 @@ protected:
 	COILibDataList * mDataList;
 
 	// OpenCL Context, manager, etc.
-	COpenCL * mOCL;
+	COpenCLPtr mOCL;
 
 	// Routines:
 	bool mDataRoutinesInitialized;
@@ -157,7 +159,9 @@ protected:
 
 
 public:
+	CLibOI(COpenCLPtr open_cl);
 	CLibOI(cl_device_type type);
+	CLibOI(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled);
 	virtual ~CLibOI();
 
 public:
@@ -170,12 +174,17 @@ public:
 	float DataToLogLike(COILibDataPtr data);
 
 public:
+	void ExportData(int data_num, string file_basename);
+	void ExportImage(string filename);
 	void ExportImage(float * image, unsigned int width, unsigned int height, unsigned int depth);
 	void FreeOpenCLMem();
 	void FTToData(COILibDataPtr data);
 
 	OIDataList GetData(unsigned int data_num);
 	double GetDataAveJD(int data_num);
+	string GetDataFileName(int data_num);
+	void GetData(int data_num, float * output, unsigned int & n);
+	void GetDataUncertainties(int data_num, float * output, unsigned int & n);
 	int GetNData();
 	int GetNDataAllocated();
 	int GetNDataAllocated(int data_num);
@@ -198,6 +207,9 @@ public:
 	float ImageToLogLike(COILibDataPtr data);
 	float ImageToLogLike(int data_num);
 	void Init();
+private:
+	void InitMembers();
+public:
 	void InitMemory();
 	void InitRoutines();
 
@@ -212,7 +224,6 @@ public:
 	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data);
 	void RunVerification(int data_num);
 
-	void SaveImage(string filename);
 	void SetImageInfo(unsigned int width, unsigned int height, unsigned int depth, float scale);
 	void SetImageSource(float * host_memory);
 	void SetImageSource(cl_mem cl_device_memory);

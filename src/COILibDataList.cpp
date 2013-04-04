@@ -56,6 +56,21 @@ COILibDataPtr COILibDataList::at(unsigned int id)
 	return mDataList.at(id);
 }
 
+void COILibDataList::ExportData(unsigned int data_num, string file_basename, cl_mem simulated_data)
+{
+	// Lock the data, automatically unlocks
+	lock_guard<mutex> lock(mDataMutex);
+
+	try
+	{
+		mDataList[data_num]->ExportData(file_basename, simulated_data);
+	}
+	catch(...)
+	{
+		// do nothing.
+	}
+}
+
 OIDataList COILibDataList::GetData(unsigned int data_num)
 {
 	// Lock the data, automatically unlocks
@@ -68,6 +83,36 @@ OIDataList COILibDataList::GetData(unsigned int data_num)
 	catch(...)
 	{
 		return OIDataList();
+	}
+}
+
+void COILibDataList::GetData(int data_num, float * output, unsigned int & n)
+{
+	// Lock the data, automatically unlocks
+	lock_guard<mutex> lock(mDataMutex);
+
+	try
+	{
+		mDataList[data_num]->GetData(data_num, output, n);
+	}
+	catch(...)
+	{
+		return;
+	}
+}
+
+void COILibDataList::GetDataUncertainties(int data_num, float * output, unsigned int & n)
+{
+	// Lock the data, automatically unlocks
+	lock_guard<mutex> lock(mDataMutex);
+
+	try
+	{
+		mDataList[data_num]->GetDataUncertainties(data_num, output, n);
+	}
+	catch(...)
+	{
+		return;
 	}
 }
 

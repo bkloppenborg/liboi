@@ -158,6 +158,7 @@ int RunBenchmark(cl_device_type device_type, string exe_path,
 
 	int start = GetMilliCount();
 
+	// Run the iterations
 	for(int i = 0; i < n_iterations; i++)
 	{
 		liboi.CopyImageToBuffer(0);
