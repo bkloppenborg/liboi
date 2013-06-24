@@ -249,12 +249,13 @@ void COILibData::InitData()
 	// Total number of double/floats allocated for storage on the OpenCL context:
 	mNData = TotalBufferSize(mNVis, mNV2, mNT3);
 
-	cout << "Data set information: " << endl;
-	cout << " " << mNVis << " Vis" << endl;
-	cout << " " << mNV2 << " V2" << endl;
-	cout << " " << mNT3 << " T3" << endl;
-	cout << " " << mNUV << " UV points" << endl;
-	cout << " " << mAveJD << " Average JD" << endl;
+	cout << "Data set information for: " << endl;
+	cout << " " << mFileName << endl;
+	cout << "N Vis: " << mNVis << endl;
+	cout << "N V2 : " << mNV2 << endl;
+	cout << "N T3 : " << mNT3 << endl;
+	cout << "N UV : " << mNUV << endl;
+	cout << "Average JD: " << std::fixed << std::setprecision(5) << mAveJD << endl;
 
 	// Copy data over to the OpenCL device.
 	AllocateMemory();
