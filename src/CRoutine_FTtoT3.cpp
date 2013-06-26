@@ -123,7 +123,9 @@ void CRoutine_FTtoT3::FTtoT3(valarray<cl_float2> & ft_input, valarray<cl_uint4> 
 	    // Form complex numbers, carry out the multiplication.
 		V_ab = complex<float>(t_ab.s0, t_ab.s1);
 		V_bc = complex<float>(t_bc.s0, t_bc.s1);
-		V_ca = complex<float>(t_ca.s0, t_ca.s1);
+
+		// V_ca needs to be conjugated, per the bispectra definition:
+		V_ca = complex<float>(t_ca.s0, -1*t_ca.s1);
 		T3 = V_ab * V_bc * V_ca;
 
 		// Assign values to the output (following the specification in COILibData.h)

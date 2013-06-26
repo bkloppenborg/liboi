@@ -80,6 +80,9 @@ __kernel void ft_to_t3(
     vbc.s1 *= sign.s1;
     vca.s1 *= sign.s2;
     
+    // Conjugate the vca visibility:
+    vca.s1 *= -1;
+    
     float2 temp = MultComplex3(vab, vbc, vca);
     
     if(i < n_t3)
