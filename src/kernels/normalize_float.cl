@@ -46,10 +46,12 @@ __kernel void normalize_float(
     // instead of a division.
     
     if(i < image_size)
-    {
+    {    
         image[i] = image[i] / divisor[0];
     
-        if(image[i] < 0)
+        // Force the image to be positive definite. All infinities and NaNs
+        // are forced to zero.
+        if(image[i] < 0 || !isfinite(image[i]) || isnan(image[i]))
         	image[i] = 0;
 	}
 }
