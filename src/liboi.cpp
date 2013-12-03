@@ -220,6 +220,22 @@ void   CLibOI::ExportImage(string filename)
 	/*Create primary array image*/
 	if (*status == 0)
 		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, status);
+
+	double RPMAS = (M_PI / 180.0) / 3600000.0;
+	double image_scale_rad = mImageScale;// * RPMAS;
+
+	// Write keywords to get WCS to work //
+//	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Milli-arcsecs per pixel", status);
+//	fits_write_key_dbl(fptr, "CDELT2", image_scale_rad, 3, "Milli-arcsecs per pixel", status);
+//	fits_write_key_dbl(fptr, "CRVAL1", 0.0, 3, "X-coordinate of ref pixel", status);
+//	fits_write_key_dbl(fptr, "CRVAL2", 0.0, 3, "Y-coordinate of ref pixel", status);
+//	fits_write_key_lng(fptr, "CRPIX1", naxes[0]/2, "Ref pixel in X", status);
+//	fits_write_key_lng(fptr, "CRPIX2", naxes[1]/2, "Ref pixel in Y", status);
+//	fits_write_key_str(fptr, "CTYPE1", "RA",  "Name of X-coordinate", status);
+//	fits_write_key_str(fptr, "CTYPE2", "DEC", "Name of Y-coordinate", status);
+//	fits_write_key_str(fptr, "CUNIT1", "mas", "Unit of X-coordinate", status);
+//	fits_write_key_str(fptr, "CUNIT2", "mas", "Unit of Y-coordinate", status);
+
 	/*Write a keywords (datafile, target, image scale) */
 //	if (*status == 0)
 //		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);

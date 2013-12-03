@@ -39,6 +39,19 @@
 #define TWO_PI 6.283185307179586
 #endif
 
+float cabs(float2 A);
+float carg(float2 A);
+
+float cabs(float2 A)
+{
+    return sqrt(A.s0 * A.s0 + A.s1 * A.s1);
+}
+
+float carg(float2 A)
+{
+    return atan2(A.s1, A.s0);
+}
+
 /// The chi_bispectra_convex kernel computes the chi elements for the amplitude and
 /// phase of the bispectra.  
 __kernel void chi_complex_nonconvex(
@@ -58,17 +71,22 @@ __kernel void chi_complex_nonconvex(
     tmp_data.s1 = data[n+index];
 
     float2 tmp_data_err;
-    tmp_data_err.s0 = data_err[index];
-    tmp_data_err.s1 = data_err[n+index];
+    tmp_data_err.s0 = data_err[index];  // amplitude error
+    tmp_data_err.s1 = data_err[n+index];// phase error
 
     float2 tmp_model;
     tmp_model.s0 = model[index];
-    tmp_model.s1 =  model[n+index];    
+    tmp_model.s1 =  model[n+index];
+    
+    float data_amp = cabs(tmp_data);
+    float data_phi = carg(tmp_data);
+    float model_amp = cabs(tmp_model);
+    float model_phi = carg(tmp_model);
 
     // Store the result:
     if(i < n)
     {
-        output[index] = (tmp_data.s0 - tmp_model.s0) / tmp_data_err.s0;
-        output[n+index] = remainder(tmp_data.s1 - tmp_model.s1, (float)TWO_PI) / tmp_data_err.s1 * sign(tmp_data.s1 - tmp_model.s1);    
+        output[index] = (data_amp - model_amp) / tmp_data_err.s0;
+        output[n+index] = fmod(data_phi - model_phi, (float)TWO_PI) / tmp_data_err.s1;;    
     }   
 }
