@@ -35,21 +35,15 @@
 
 // The following define should be created during the kernel compilation on the host.
 // but we initialize it here just in case.
-#ifndef TWO_PI
-#define TWO_PI 6.283185307179586
+#ifndef PI
+#define PI 3.141592653589793
 #endif
 
-float cabs(float2 A);
-float carg(float2 A);
-
-float cabs(float2 A)
+void complex_to_oi(float real, float imag, float * amp, float * phase);
+void complex_to_oi(float real, float imag, float * amp, float * phase)
 {
-    return sqrt(A.s0 * A.s0 + A.s1 * A.s1);
-}
-
-float carg(float2 A)
-{
-    return atan2(A.s1, A.s0);
+    (*amp) = sqrt(real * real + imag * imag);
+    (*phase) = atan2(imag, real);
 }
 
 /// The chi_bispectra_convex kernel computes the chi elements for the amplitude and
@@ -65,28 +59,21 @@ __kernel void chi_complex_nonconvex(
     int i = get_global_id(0);
     unsigned int index = start + i;
     
-    // Lookup the phase and other data quantities
-    float2 tmp_data;
-    tmp_data.s0 = data[index];
-    tmp_data.s1 = data[n+index];
-
-    float2 tmp_data_err;
-    tmp_data_err.s0 = data_err[index];  // amplitude error
-    tmp_data_err.s1 = data_err[n+index];// phase error
-
-    float2 tmp_model;
-    tmp_model.s0 = model[index];
-    tmp_model.s1 =  model[n+index];
+    float data_amp = 0;
+    float data_phi = 0;
+    float data_amp_err = data_err[index];
+    float data_phi_err = data_err[n+index];
+    float model_amp = 0;
+    float model_phi = 0;
     
-    float data_amp = cabs(tmp_data);
-    float data_phi = carg(tmp_data);
-    float model_amp = cabs(tmp_model);
-    float model_phi = carg(tmp_model);
+    // Retreive the amplitude and phase for the data and model.
+    complex_to_oi(data[index], data[n+index], &data_amp, &data_phi);
+    complex_to_oi(model[index], model[n+index], &model_amp, &model_phi);
 
     // Store the result:
     if(i < n)
     {
-        output[index] = (data_amp - model_amp) / tmp_data_err.s0;
-        output[n+index] = fmod(data_phi - model_phi, (float)TWO_PI) / tmp_data_err.s1;;    
+        output[index] = (data_amp - model_amp) / data_amp_err;
+        output[n+index] = fmod(data_phi - model_phi, (float)PI) / data_phi_err;   
     }   
 }
