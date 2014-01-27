@@ -19,6 +19,7 @@ using namespace std;
 using namespace liboi;
 
 extern string LIBOI_KERNEL_PATH;
+extern cl_device_type OPENCL_DEVICE_TYPE;
 
 class ChiTest : public testing::Test
 {
@@ -132,7 +133,7 @@ protected:
 		assert(output.size() == test_size);
 
 		// Init OpenCL and the routine
-		cl = new COpenCL(CL_DEVICE_TYPE_GPU);
+		cl = new COpenCL(OPENCL_DEVICE_TYPE);
 		zero = new CRoutine_Zero(cl->GetDevice(), cl->GetContext(), cl->GetQueue());
 		zero->SetSourcePath(LIBOI_KERNEL_PATH);
 		zero->Init();

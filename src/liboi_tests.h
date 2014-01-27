@@ -13,5 +13,6 @@
 using namespace std;
 
 int main(int argc, char **argv);
+void PrintHelp();
 
 #endif /* LIBOI_TESTS_H_ */

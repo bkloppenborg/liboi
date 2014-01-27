@@ -14,6 +14,7 @@ using namespace std;
 using namespace liboi;
 
 extern string LIBOI_KERNEL_PATH;
+extern cl_device_type OPENCL_DEVICE_TYPE;
 
 /// TODO: Without an active OpenGL context, we can't test much here. Initialing
 /// OpenGL in a cross-platform fashion is difficult, so we won't throughly
@@ -24,7 +25,7 @@ extern string LIBOI_KERNEL_PATH;
 /// Checks that the ImageToBuffer kernel builds correctly
 TEST(ImageToBuffer, KernelBuilds)
 {
-	COpenCL cl(CL_DEVICE_TYPE_GPU);
+	COpenCL cl(OPENCL_DEVICE_TYPE);
 	CRoutine_ImageToBuffer r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 	r.SetSourcePath(LIBOI_KERNEL_PATH);
 	r.Init();

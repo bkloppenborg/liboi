@@ -17,6 +17,7 @@ using namespace std;
 using namespace liboi;
 
 extern string LIBOI_KERNEL_PATH;
+extern cl_device_type OPENCL_DEVICE_TYPE;
 
 /// Checks that the CPU routine functions correctly.
 TEST(CRoutine_FTtoT3, CPU_PointSource)
@@ -113,7 +114,7 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	}
 
 	// Init the OpenCL device and necessary routines:
-	COpenCL cl(CL_DEVICE_TYPE_GPU);
+	COpenCL cl(OPENCL_DEVICE_TYPE);
 	CRoutine_FTtoT3 r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 	r.SetSourcePath(LIBOI_KERNEL_PATH);
 	r.Init();

@@ -15,6 +15,7 @@
 
 using namespace liboi;
 extern string LIBOI_KERNEL_PATH;
+extern cl_device_type OPENCL_DEVICE_TYPE;
 
 /// Checks that the CPU algorithm can replicate a point source DFT
 TEST(CRoutine_DFT, CPU_PointSource)
@@ -35,7 +36,7 @@ TEST(CRoutine_DFT, CPU_PointSource)
 	valarray<cl_float2> cpu_output(n_uv);
 
 	// Init an CRoutine_DFT object (we aren't using the OpenCL functionality, but we still init it)
-	COpenCL cl(CL_DEVICE_TYPE_GPU);
+	COpenCL cl(OPENCL_DEVICE_TYPE);
 	CRoutine_DFT r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 	r.SetSourcePath(LIBOI_KERNEL_PATH);
 	r.Init(image_scale);
@@ -72,7 +73,7 @@ TEST(CRoutine_DFT, CPU_PointSource)
 //	valarray<cl_float2> cpu_output(n_uv);
 //
 //	// Init an CRoutine_DFT object (we aren't using the OpenCL functionality, but we still init it)
-//	COpenCL cl(CL_DEVICE_TYPE_GPU);
+//	COpenCL cl(OPENCL_DEVICE_TYPE);
 //	CRoutine_DFT r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 //	r.SetSourcePath(LIBOI_KERNEL_PATH);
 //	r.Init(image_scale);
@@ -99,7 +100,7 @@ TEST(CRoutine_DFT, CPU_PointSource)
 //	unsigned int test_size = 10000;
 //
 //	// Init the OpenCL device and necessary routines:
-//	COpenCL cl(CL_DEVICE_TYPE_GPU);
+//	COpenCL cl(OPENCL_DEVICE_TYPE);
 //	CRoutine_Normalize r_norm(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 //	r_norm.SetSourcePath(LIBOI_KERNEL_PATH);
 //	r_norm.Init();

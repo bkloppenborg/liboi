@@ -14,13 +14,14 @@
 using namespace liboi;
 
 extern string LIBOI_KERNEL_PATH;
+extern cl_device_type OPENCL_DEVICE_TYPE;
 
 TEST(CRoutine_Zero, CL_ZeroBuffer)
 {
 	unsigned int test_size = 10000;
 
 	// Init the OpenCL device and necessary routines:
-	COpenCL cl(CL_DEVICE_TYPE_GPU);
+	COpenCL cl(OPENCL_DEVICE_TYPE);
 	CRoutine_Zero r_zero(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 	r_zero.SetSourcePath(LIBOI_KERNEL_PATH);
 	r_zero.Init();

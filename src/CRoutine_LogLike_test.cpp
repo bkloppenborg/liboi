@@ -15,6 +15,7 @@ using namespace std;
 using namespace liboi;
 
 extern string LIBOI_KERNEL_PATH;
+extern cl_device_type OPENCL_DEVICE_TYPE;
 
 ///
 TEST(LogLikeTest, CPU_LogLike_ZERO)
@@ -62,7 +63,7 @@ TEST(LogLikeTest, CL_LogLike_ZERO)
 	}
 
 	// Init OpenCL and the routine
-	COpenCL cl(CL_DEVICE_TYPE_GPU);
+	COpenCL cl(OPENCL_DEVICE_TYPE);
 	CRoutine_Zero zero(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 	zero.SetSourcePath(LIBOI_KERNEL_PATH);
 	zero.Init();

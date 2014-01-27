@@ -14,6 +14,7 @@
 using namespace liboi;
 
 extern string LIBOI_KERNEL_PATH;
+extern cl_device_type OPENCL_DEVICE_TYPE;
 
 /// Checks that the CPU normalization routine is working correctly.
 TEST(CRoutine_Normalize, CPU_Normalize)
@@ -36,7 +37,7 @@ TEST(CRoutine_Normalize, CL_Normalize)
 	unsigned int test_size = 10000;
 
 	// Init the OpenCL device and necessary routines:
-	COpenCL cl(CL_DEVICE_TYPE_GPU);
+	COpenCL cl(OPENCL_DEVICE_TYPE);
 	CRoutine_Normalize r_norm(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 	r_norm.SetSourcePath(LIBOI_KERNEL_PATH);
 	r_norm.Init();
