@@ -480,9 +480,7 @@ TEST_F(ChiTest, CL_Chi2_V2)
 /// Checks that the chi2 functions are working for T3 data
 TEST_F(ChiTest, CL_Chi2_T3)
 {
-	unsigned int test_size = 5;
-
-	unsigned int n_values = 2*test_size;
+	unsigned int test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -498,7 +496,7 @@ TEST_F(ChiTest, CL_Chi2_T3)
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
 	SetUpCL(data, data_err, model, output);
 	float should_be_one = r->Chi2(data_cl, data_err_cl, model_cl, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
-	should_be_one /= n_values;
+	should_be_one /= test_size;
 
 	EXPECT_NEAR(should_be_one, 1, MAX_REL_ERROR);
 }
