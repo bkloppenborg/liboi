@@ -42,7 +42,29 @@ class CRoutine_Sum_AMD: public liboi::CRoutine_Sum
 {
 protected:
 	cl_mem output_buffer;
-	unsigned int mBufferSize;
+	unsigned int length;
+
+    size_t globalThreads[1];        /**< Global NDRange for the kernel */
+    size_t localThreads[1];         /**< Local WorkGroup for kernel */
+
+	struct
+	{
+		cl_ulong localMemoryUsed;           /**< localMemoryUsed amount of local memory used by kernel */
+		size_t kernelWorkGroupSize;         /**< kernelWorkGroupSize Supported WorkGroup size as per OpenCL Runtime*/
+		size_t compileWorkGroupSize[3];     /**< compileWorkGroupSize WorkGroup size as mentioned in kernel source */
+	} kernelInfo;
+
+	struct
+	{
+        cl_uint maxWorkItemDims;            /**< maxWorkItemDims maxWorkItemDimensions VendorId of device*/
+        size_t * maxWorkItemSizes;         /**< maxWorkItemSizes maxWorkItemSizes of device*/
+        size_t maxWorkGroupSize;            /**< maxWorkGroupSize max WorkGroup Size of device*/
+        cl_ulong localMemSize;              /**< localMemSize localMem Size of device*/
+	} deviceInfo;
+
+    int numBlocks;                  /**< Number of groups */
+    size_t groupSize;               /**< Work-group size */
+
 
 public:
 	CRoutine_Sum_AMD(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero);
@@ -51,6 +73,10 @@ public:
 	float ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value);
 
 	void Init(int n);
+
+	void setKernelInfo();
+	void setDeviceInfo();
+	void setWorkGroupSize();
 
 };
 

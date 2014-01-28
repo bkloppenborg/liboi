@@ -53,16 +53,22 @@ CRoutine_Sum_AMD::~CRoutine_Sum_AMD()
 /// if return_value is true. Returns 0 otherwise.
 float CRoutine_Sum_AMD::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
 {
-	// TODO: Copy data back to the final buffer
-	// TODO: Determine where these are defined.
-    size_t globalThreads[1];        /**< Global NDRange for the kernel */
-    size_t localThreads[1];         /**< Local WorkGroup for kernel */
-    cl_uint length;                 /**< length of the input array */
-    int numBlocks;                  /**< Number of groups */
-    size_t groupSize;               /**< Work-group size */
 #define GROUP_SIZE 256
 #define VECTOR_SIZE 4
 #define MULTIPLY  2  // Require because of extra addition before loading to local memory
+
+	// TODO: Copy data back to the final buffer
+	// TODO: Determine where these are defined.
+	size_t globalThreads[1];        /**< Global NDRange for the kernel */
+    size_t localThreads[1];         /**< Local WorkGroup for kernel */
+
+
+    globalThreads[0] = length / MULTIPLY;
+    localThreads[0] = groupSize;
+
+
+
+
 
 	int status = CL_SUCCESS;
 	cl_float output = 0;
@@ -116,14 +122,31 @@ float CRoutine_Sum_AMD::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, boo
 	return output;
 }
 
+/// Run queries to get additional details about the kernel.
+void CRoutine_Sum_AMD::setKernelInfo()
+{
+	cl_int status = CL_SUCCESS;
+
+	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE,
+			sizeof(size_t), &kernelInfo.kernelWorkGroupSize, NULL);
+	COpenCL::CheckOCLError("clGetKernelWorkGroupInfo failed(CL_KERNEL_WORK_GROUP_SIZE). CRoutine_Sum_AMD::ComputeSum", status);
+
+	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_LOCAL_MEM_SIZE,
+			sizeof(cl_ulong), &kernelInfo.localMemoryUsed, NULL);
+	COpenCL::CheckOCLError("clGetKernelWorkGroupInfo failed(CL_KERNEL_LOCAL_MEM_SIZE). CRoutine_Sum_AMD::ComputeSum", status);
+
+	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_COMPILE_WORK_GROUP_SIZE,
+			sizeof(size_t) * 3, kernelInfo.compileWorkGroupSize, NULL);
+	COpenCL::CheckOCLError("clGetKernelWorkGroupInfo failed(CL_KERNEL_COMPILE_WORK_GROUP_SIZE). CRoutine_Sum_AMD::ComputeSum", status);
+}
+
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
 /// allocate_temp_buffers: if true will automatically allocate/deallocate buffers. Otherwise you need to do this elsewhere
 void CRoutine_Sum_AMD::Init(int n)
 {
 	int status = CL_SUCCESS;
 
-	mInputSize = n;
-	mBufferSize = n;
+	length = n;
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[0]);
@@ -131,9 +154,76 @@ void CRoutine_Sum_AMD::Init(int n)
 
 	if(output_buffer == NULL)
 	{
-		output_buffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
+		output_buffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, length * sizeof(cl_float), NULL, &status);
 		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", status);
 	}
 }
+
+void CRoutine_Sum_AMD::setWorkGroupSize()
+{
+    cl_int status = 0;
+
+    setKernelInfo();
+
+    /**
+     * If groupSize exceeds the maximum supported on kernel
+     * fall back
+     */
+    if(groupSize > kernelInfo.kernelWorkGroupSize)
+    {
+// Enable to be more verbose.
+//        if(!sampleArgs->quiet)
+//        {
+//            std::cout << "Out of Resources!" << std::endl;
+//            std::cout << "Group Size specified : " << groupSize << std::endl;
+//            std::cout << "Max Group Size supported on the kernel : "
+//                      << kernelInfo.kernelWorkGroupSize << std::endl;
+//            std::cout << "Falling back to " << kernelInfo.kernelWorkGroupSize << std::endl;
+//        }
+        groupSize = kernelInfo.kernelWorkGroupSize;
+    }
+
+    if(groupSize > deviceInfo.maxWorkItemSizes[0] ||
+            groupSize > deviceInfo.maxWorkGroupSize)
+    {
+        std::cout << "Unsupported: Device does not support"
+                  << "requested number of work items.";
+    }
+
+    if(kernelInfo.localMemoryUsed > deviceInfo.localMemSize)
+    {
+        std::cout << "Unsupported: Insufficient local memory on device." << std::endl;
+    }
+
+    globalThreads[0] = length / MULTIPLY;
+    localThreads[0] = groupSize;
+}
+
+void CRoutine_Sum_AMD::setDeviceInfo()
+{
+    cl_int status = 0;
+
+    status = clGetDeviceInfo(mDeviceID, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t),
+    		&deviceInfo.maxWorkGroupSize, NULL);
+	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_MAX_WORK_GROUP_SIZE) failed", status);
+
+    status = clGetDeviceInfo(mDeviceID, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong),
+    		&deviceInfo.localMemSize, NULL);
+	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_LOCAL_MEM_SIZE) failed", status);
+
+    //Get max work item dimensions
+    status = clGetDeviceInfo(mDeviceID, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(cl_uint),
+    		&deviceInfo.maxWorkItemDims, NULL);
+	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS) failed", status);
+
+    //Get max work item sizes
+    delete deviceInfo.maxWorkItemSizes;
+    deviceInfo.maxWorkItemSizes = new size_t[deviceInfo.maxWorkItemDims];
+
+    status = clGetDeviceInfo(mDeviceID, CL_DEVICE_MAX_WORK_ITEM_SIZES, deviceInfo.maxWorkItemDims * sizeof(size_t),
+    		deviceInfo.maxWorkItemSizes, NULL);
+	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS) failed", status);
+}
+
 
 } /* namespace liboi */
