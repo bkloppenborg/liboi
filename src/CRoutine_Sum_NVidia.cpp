@@ -67,7 +67,7 @@ CRoutine_Sum_NVidia::CRoutine_Sum_NVidia(cl_device_id device, cl_context context
 	: CRoutine_Sum(device, context, queue, rZero)
 {
 	// Specify the source location, set temporary buffers to null
-	mSource.push_back("reduce_sum_float.cl");
+	mSource.push_back("reduce_sum_float_nvidia.cl");
 	mTempBuffer1 = NULL;
 	mTempBuffer2 = NULL;
 	mBufferSize = 0;
