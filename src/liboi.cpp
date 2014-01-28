@@ -39,6 +39,7 @@
 
 #include "COILibDataList.h"
 #include "CRoutine_Sum.h"
+#include "CRoutine_Sum_NVidia.h"
 #include "CRoutine_Normalize.h"
 #include "CRoutine_ImageToBuffer.h"
 #include "CRoutine_FT.h"
@@ -625,7 +626,7 @@ void CLibOI::InitRoutines()
 
 	if(mrTotalFlux == NULL)
 	{
-		mrTotalFlux = new CRoutine_Sum(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue(), mrZeroBuffer);
+		mrTotalFlux = new CRoutine_Sum_NVidia(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue(), mrZeroBuffer);
 		mrTotalFlux->SetSourcePath(mKernelSourcePath);
 		mrTotalFlux->Init(mImageWidth * mImageHeight);
 	}

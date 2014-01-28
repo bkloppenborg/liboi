@@ -52,7 +52,7 @@ namespace liboi
 #define TWO_PI (2 * PI)
 
 CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
-	:CRoutine_Sum(device, context, queue, rZero)
+	:CRoutine_Sum_NVidia(device, context, queue, rZero)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("chi.cl");
@@ -75,7 +75,7 @@ CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_q
 }
 
 CRoutine_Chi::CRoutine_Chi(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero, CRoutine_Square * rSquare)
-	:CRoutine_Sum(device, context, queue, rZero)
+	:CRoutine_Sum_NVidia(device, context, queue, rZero)
 {
 	// Specify the source location for the kernel.
 	mSource.push_back("chi.cl");
@@ -379,7 +379,7 @@ void CRoutine_Chi::Init(unsigned int n)
 	mChiBufferSize = n;
 
 	// First initialize the base-class constructor:
-	CRoutine_Sum::Init(mChiBufferSize);
+	CRoutine_Sum_NVidia::Init(mChiBufferSize);
 
 	// Output buffer
 	if(mChiOutput) clReleaseMemObject(mChiOutput);

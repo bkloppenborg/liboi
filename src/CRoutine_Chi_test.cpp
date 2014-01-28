@@ -37,6 +37,7 @@ protected:
 	cl_float amp_err;
 	cl_float phi_err;
 
+	/// Creates a buffer where data[i] = model[i], thus the chi values should always evaluate to zero.
 	void MakeChiZeroBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
 	{
 		unsigned int n = 2*test_size;
@@ -63,6 +64,7 @@ protected:
 		}
 	}
 
+	/// Creates a buffer in which model is one-sigma away from model, thus all chi elements should evaluate to 1.
 	void MakeChiOneBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
 	{
 		unsigned int n = 2*test_size;
@@ -463,6 +465,7 @@ TEST_F(ChiTest, CL_Chi2_V2)
 	valarray<cl_float> data_err(test_size);
 	valarray<cl_float> model(test_size);
 	valarray<cl_float> output(test_size);
+	// Create a buffer where the chi values should evaluate to 1.
 	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	unsigned int n_vis = 0;

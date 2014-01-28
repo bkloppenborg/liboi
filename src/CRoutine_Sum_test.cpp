@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 #include "liboi_tests.h"
 #include "COpenCL.hpp"
-#include "CRoutine_Sum.h"
+#include "CRoutine_Sum_NVidia.h"
 #include "CRoutine_Zero.h"
 
 using namespace liboi;
@@ -17,7 +17,7 @@ extern string LIBOI_KERNEL_PATH;
 extern cl_device_type OPENCL_DEVICE_TYPE;
 
 /// Checks that the summation algorithm is working on the CPU side
-TEST(CRoutine_Sum, CPU_Sum)
+TEST(CRoutine_Sum_NVidia, CPU_Sum)
 {
 	// Check a few sums:
 
@@ -28,19 +28,19 @@ TEST(CRoutine_Sum, CPU_Sum)
 	valarray<double> a(100);
 	for(int i = 0; i < a.size(); i++)
 		a[i] = i+1;
-	sum = CRoutine_Sum::Sum(a);
+	sum = CRoutine_Sum_NVidia::Sum(a);
     EXPECT_EQ(5050, sum);
 
     // 10000 elements sums to 50005000
 	valarray<double> b(10000);
 	for(int i = 0; i < b.size(); i++)
 		b[i] = i+1;
-	sum = CRoutine_Sum::Sum(b);
+	sum = CRoutine_Sum_NVidia::Sum(b);
     EXPECT_EQ(50005000, sum);
 }
 
 /// Checks that the sum on the OpenCL device and CPU match
-TEST(CRoutine_Sum, CL_Sum_CPU_CHECK)
+TEST(CRoutine_Sum_NVidia, CL_Sum_CPU_CHECK)
 {
 	unsigned int test_size = 10000;
 
@@ -49,7 +49,7 @@ TEST(CRoutine_Sum, CL_Sum_CPU_CHECK)
 	CRoutine_Zero r_zero(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
 	r_zero.SetSourcePath(LIBOI_KERNEL_PATH);
 	r_zero.Init();
-	CRoutine_Sum r_sum(cl.GetDevice(), cl.GetContext(), cl.GetQueue(), &r_zero);
+	CRoutine_Sum_NVidia r_sum(cl.GetDevice(), cl.GetContext(), cl.GetQueue(), &r_zero);
 	r_sum.SetSourcePath(LIBOI_KERNEL_PATH);
 	r_sum.Init(test_size);
 
@@ -64,7 +64,7 @@ TEST(CRoutine_Sum, CL_Sum_CPU_CHECK)
 	// Fill the input buffer (it doesn't matter what is in the output buffer)
     err= clEnqueueWriteBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
 
-	cl_float cpu_sum = CRoutine_Sum::Sum(data);
+	cl_float cpu_sum = CRoutine_Sum_NVidia::Sum(data);
 	float cl_sum = r_sum.ComputeSum(input_buffer, final_buffer, true);
 
 	// Free buffers

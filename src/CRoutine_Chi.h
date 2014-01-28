@@ -32,7 +32,7 @@
 #ifndef CROUTINE_CHI_H_
 #define CROUTINE_CHI_H_
 
-#include "CRoutine_Sum.h"
+#include "CRoutine_Sum_NVidia.h"
 #include "liboi.hpp"
 
 namespace liboi
@@ -41,7 +41,7 @@ namespace liboi
 class CRoutine_Square;
 class CRoutine_Zero;
 
-class CRoutine_Chi: public CRoutine_Sum
+class CRoutine_Chi: public CRoutine_Sum_NVidia
 {
 protected:
 	int mChiSourceID;
