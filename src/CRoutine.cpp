@@ -229,4 +229,25 @@ bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffe
 	return true;
 }
 
+/// Polls for the status of an event and releases the event once it is complete.
+///
+/// From AMDAPP SDK /// Copyright ©2013 Advanced Micro Devices, Inc. All rights reserved.
+/// @param event cl_event object
+/// @return 0 if success else nonzero
+static int waitForEventAndRelease(cl_event *event)
+{
+    cl_int status = CL_SUCCESS;
+    cl_int eventStatus = CL_QUEUED;
+    while(eventStatus != CL_COMPLETE)
+    {
+        status = clGetEventInfo(*event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &eventStatus, NULL);
+        COpenCL::CheckOCLError("clGetEventEventInfo Failed with Error Code:", status);
+    }
+
+    status = clReleaseEvent(*event);
+    COpenCL::CheckOCLError("clReleaseEvent Failed with Error Code:", status);
+
+    return 0;
+}
+
 } /* namespace liboi */

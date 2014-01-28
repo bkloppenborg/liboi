@@ -125,6 +125,8 @@ public:
 
 	bool Verify(valarray<cl_float> & cpu_buffer, cl_mem device_buffer, int n_elements, size_t offset);
 	bool Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset);
+
+	static int waitForEventAndRelease(cl_event *event);
 };
 
 } /* namespace liboi */

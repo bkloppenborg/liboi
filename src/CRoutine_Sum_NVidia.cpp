@@ -187,7 +187,7 @@ float CRoutine_Sum_NVidia::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, 
 		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &mBufferSize);
 		clSetKernelArg(reductionKernel, 3, sizeof(cl_float) * numThreads, NULL);
 		err = clEnqueueNDRangeKernel(mQueue, reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Unable to enqueue parallel reduction kernel. CRoutine_Sum::ComputeSum", err);
+		COpenCL::CheckOCLError("Unable to enqueue parallel reduction kernel. CRoutine_Sum_NVidia::ComputeSum", err);
 
 		buff1 = buff2;
 	}
