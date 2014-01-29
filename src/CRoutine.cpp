@@ -234,7 +234,7 @@ bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffe
 /// From AMDAPP SDK /// Copyright ©2013 Advanced Micro Devices, Inc. All rights reserved.
 /// @param event cl_event object
 /// @return 0 if success else nonzero
-static int waitForEventAndRelease(cl_event *event)
+int CRoutine::waitForEventAndRelease(cl_event *event)
 {
     cl_int status = CL_SUCCESS;
     cl_int eventStatus = CL_QUEUED;

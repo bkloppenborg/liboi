@@ -41,8 +41,12 @@ namespace liboi {
 class CRoutine_Sum_AMD: public liboi::CRoutine_Sum
 {
 protected:
+	const unsigned int GROUP_SIZE = 256;
+	const unsigned int VECTOR_SIZE = 4;
+	const unsigned int MULTIPLY = 2;  // Require because of extra addition before loading to local memory
+
+protected:
 	cl_mem output_buffer;
-	unsigned int length;
 
     size_t globalThreads[1];        /**< Global NDRange for the kernel */
     size_t localThreads[1];         /**< Local WorkGroup for kernel */
@@ -57,7 +61,7 @@ protected:
 	struct
 	{
         cl_uint maxWorkItemDims;            /**< maxWorkItemDims maxWorkItemDimensions VendorId of device*/
-        size_t * maxWorkItemSizes;         /**< maxWorkItemSizes maxWorkItemSizes of device*/
+        size_t * maxWorkItemSizes;          /**< maxWorkItemSizes maxWorkItemSizes of device*/
         size_t maxWorkGroupSize;            /**< maxWorkGroupSize max WorkGroup Size of device*/
         cl_ulong localMemSize;              /**< localMemSize localMem Size of device*/
 	} deviceInfo;

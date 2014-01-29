@@ -38,9 +38,20 @@ CRoutine_Sum_AMD::CRoutine_Sum_AMD(cl_device_id device, cl_context context, cl_c
 {
 	// Specify the source location, set temporary buffers to null
 	mSource.push_back("reduce_sum_float_amd.cl");
-	mInputSize = 0;
 
 	mrZero = rZero;
+
+	// Init the kernel and device info structs.
+	kernelInfo.localMemoryUsed = 0;
+	kernelInfo.kernelWorkGroupSize = 0;
+	kernelInfo.compileWorkGroupSize[0] = 0;
+	kernelInfo.compileWorkGroupSize[1] = 0;
+	kernelInfo.compileWorkGroupSize[2] = 0;
+
+	deviceInfo.maxWorkItemDims = 0;
+	deviceInfo.maxWorkItemSizes = NULL;
+	deviceInfo.maxWorkGroupSize = 0;
+	deviceInfo.localMemSize = 0;
 }
 
 CRoutine_Sum_AMD::~CRoutine_Sum_AMD()
@@ -53,22 +64,8 @@ CRoutine_Sum_AMD::~CRoutine_Sum_AMD()
 /// if return_value is true. Returns 0 otherwise.
 float CRoutine_Sum_AMD::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
 {
-#define GROUP_SIZE 256
-#define VECTOR_SIZE 4
-#define MULTIPLY  2  // Require because of extra addition before loading to local memory
-
-	// TODO: Copy data back to the final buffer
-	// TODO: Determine where these are defined.
-	size_t globalThreads[1];        /**< Global NDRange for the kernel */
-    size_t localThreads[1];         /**< Local WorkGroup for kernel */
-
-
-    globalThreads[0] = length / MULTIPLY;
+    globalThreads[0] = mInputSize / MULTIPLY;
     localThreads[0] = groupSize;
-
-
-
-
 
 	int status = CL_SUCCESS;
 	cl_float output = 0;
@@ -77,13 +74,13 @@ float CRoutine_Sum_AMD::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, boo
 	cl_event outputUnmapEvent;
 
 	// Set appropriate arguments to the kernel the input array
-	status = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), input_buffer);
+	status  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), input_buffer);
 	status |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), output_buffer);
 	status |= clSetKernelArg(mKernels[0], 2, groupSize * sizeof(cl_float), NULL);
 	COpenCL::CheckOCLError("Unable to set kernel arguments. CRoutine_Sum_AMD::ComputeSum", status);
 
 	// Enqueue the kernel:
-	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, globalThreads, localThreads, 0, NULL, &sumCompleteEvent);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, 0, globalThreads, localThreads, 0, NULL, &sumCompleteEvent);
 	COpenCL::CheckOCLError("Unable to enqueue parallel sum kernel. CRoutine_Sum_AMD::ComputeSum", status);
 
 	status = clFlush(mQueue);
@@ -146,15 +143,18 @@ void CRoutine_Sum_AMD::Init(int n)
 {
 	int status = CL_SUCCESS;
 
-	length = n;
+	mInputSize = n;
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[0]);
     BuildKernel(source, "reduce_sum_float_amd", mSource[0]);
 
+    // Determine and set work group sizes.
+	setWorkGroupSize();
+
 	if(output_buffer == NULL)
 	{
-		output_buffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, length * sizeof(cl_float), NULL, &status);
+		output_buffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mInputSize * sizeof(cl_float), NULL, &status);
 		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", status);
 	}
 }
@@ -164,6 +164,7 @@ void CRoutine_Sum_AMD::setWorkGroupSize()
     cl_int status = 0;
 
     setKernelInfo();
+    setDeviceInfo();
 
     /**
      * If groupSize exceeds the maximum supported on kernel
@@ -195,7 +196,7 @@ void CRoutine_Sum_AMD::setWorkGroupSize()
         std::cout << "Unsupported: Insufficient local memory on device." << std::endl;
     }
 
-    globalThreads[0] = length / MULTIPLY;
+    globalThreads[0] = mInputSize / MULTIPLY;
     localThreads[0] = groupSize;
 }
 
@@ -217,7 +218,9 @@ void CRoutine_Sum_AMD::setDeviceInfo()
 	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS) failed", status);
 
     //Get max work item sizes
-    delete deviceInfo.maxWorkItemSizes;
+	if(deviceInfo.maxWorkItemSizes != NULL)
+		delete deviceInfo.maxWorkItemSizes;
+
     deviceInfo.maxWorkItemSizes = new size_t[deviceInfo.maxWorkItemDims];
 
     status = clGetDeviceInfo(mDeviceID, CL_DEVICE_MAX_WORK_ITEM_SIZES, deviceInfo.maxWorkItemDims * sizeof(size_t),
