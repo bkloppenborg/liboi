@@ -17,6 +17,7 @@
 
 # Ignore files for Eclipse
 .project
+.cproject
 .metadata
 tmp/**
 tmp/**/*
