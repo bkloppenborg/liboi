@@ -50,7 +50,10 @@ public:
 	CRoutine_Sum(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero);
 	virtual ~CRoutine_Sum();
 
-	virtual float ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value) = 0;
+	/// Computes the sum on the OpenCL device, returns a float to the CPU.
+	virtual float Sum(cl_mem input_buffer) = 0;
+	 // Computes the sum on the OpenCL device, stores the result in final_buffer and returns the result.
+	virtual float Sum(cl_mem input_buffer, cl_mem final_buffer);
 
 	virtual void Init(int n) = 0;
 

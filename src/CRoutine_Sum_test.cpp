@@ -66,8 +66,8 @@ TEST(CRoutine_Sum_NVidia, CL_Sum_CPU_CHECK)
 	// Fill the input buffer (it doesn't matter what is in the output buffer)
     err= clEnqueueWriteBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
 
-	cl_float cpu_sum = CRoutine_Sum_NVidia::Sum(data);
-	float cl_sum = r_sum.ComputeSum(input_buffer, final_buffer, true);
+	cl_float cpu_sum = CRoutine_Sum::Sum(data);
+	float cl_sum = r_sum.Sum(input_buffer);
 
 	// Free buffers
 	clReleaseMemObject(input_buffer);
@@ -102,7 +102,7 @@ TEST(CRoutine_Sum_AMD, CL_Sum_CPU_CHECK)
     err = clEnqueueWriteBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
 
 	cl_float cpu_sum = CRoutine_Sum::Sum(data);
-	float cl_sum = r_sum.ComputeSum(input_buffer, final_buffer, true);
+	float cl_sum = r_sum.Sum(input_buffer);
 
 	// Free buffers
 	clReleaseMemObject(input_buffer);

@@ -717,7 +717,7 @@ int CLibOI::LoadData(const OIDataList & data)
 /// Normalizes a floating point buffer by dividing by the sum of the buffer
 void CLibOI::Normalize()
 {
-	TotalFlux(false);
+	TotalFlux();
 
 	// Now normalize the image
 	mrNormalize->Normalize(mImage_cl, mImageWidth, mImageHeight, mFluxBuffer);
@@ -729,12 +729,11 @@ void CLibOI::PrintDeviceInfo()
 		mOCL->PrintDeviceInfo(mOCL->GetDevice());
 }
 
-/// Computes the total flux for the current image/layer
-/// If the image is 2D, use zero for the layer.
-float CLibOI::TotalFlux(bool return_value)
+/// Computes the total flux for the current image/layer.
+/// The result is stored in mFluxBuffer AND returned by default.
+float CLibOI::TotalFlux()
 {
-	float flux = mrTotalFlux->ComputeSum(mImage_cl, mFluxBuffer, true);
-	return flux;
+	return mrTotalFlux->Sum(mImage_cl, mFluxBuffer);
 }
 
 /// Removes the specified data set from memory.

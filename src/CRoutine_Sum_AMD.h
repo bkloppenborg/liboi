@@ -77,7 +77,7 @@ public:
 	CRoutine_Sum_AMD(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero);
 	virtual ~CRoutine_Sum_AMD();
 
-	float ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value);
+	float Sum(cl_mem input_buffer);
 
 	void Init(int n);
 

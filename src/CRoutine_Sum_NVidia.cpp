@@ -148,8 +148,7 @@ cl_kernel CRoutine_Sum_NVidia::BuildReductionKernel(int whichKernel, int blockSi
     return mKernels[mKernels.size() - 1];
 }
 
-// Performs an out-of-plate sum storing temporary values in output_buffer and partial_sum_buffer.
-float CRoutine_Sum_NVidia::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
+float CRoutine_Sum_NVidia::Sum(cl_mem input_buffer)
 {
 	// First zero out the temporary sum buffer.
 	mrZero->Zero(mTempBuffer1, mBufferSize);
@@ -207,30 +206,17 @@ float CRoutine_Sum_NVidia::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, 
             gpu_result += h_odata[i];
         }
 
-        // Copy this value back to the OpenCL device
-    	err = clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Unable to copy summed value from the CPU to the OpenCL device. CRoutine_Sum::ComputeSum", err);
-
-        return_value = false;	// don't need to read the value anymore, it is already stored locally.
     }
     else
     {
-    	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
-    	err = clEnqueueCopyBuffer(mQueue, mTempBuffer2, final_buffer, 0, 0, sizeof(cl_float), 0, NULL, NULL);
-		COpenCL::CheckOCLError("Unable to copy summed value into final buffer. CRoutine_Sum::ComputeSum", err);
-    }
-
-	clFinish(mQueue);
-
-	if (return_value)
-	{
-		// copy final sum from device to host
+    	// The work was all completed on the GPU.  Copy the summed value to the CPU:
 		err = clEnqueueReadBuffer(mQueue, mTempBuffer2, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
 		COpenCL::CheckOCLError("Unable to copy summed value to host. CRoutine_Sum::ComputeSum", err);
-	}
+    }
 
 	return float(gpu_result);
 }
+
 
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
 /// allocate_temp_buffers: if true will automatically allocate/deallocate buffers. Otherwise you need to do this elsewhere

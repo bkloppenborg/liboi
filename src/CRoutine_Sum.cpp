@@ -64,4 +64,18 @@ unsigned int CRoutine_Sum::nextPow2( unsigned int x )
     return ++x;
 }
 
+float CRoutine_Sum::Sum(cl_mem input_buffer, cl_mem final_buffer)
+{
+	// Compute the sum on the OpenCL device:
+	float result = Sum(input_buffer);
+
+	int status = CL_SUCCESS;
+
+    // Copy the summed value to the OpenCL device:
+	status = clEnqueueWriteBuffer(mQueue, final_buffer, CL_TRUE, 0, sizeof(cl_float), &result, 0, NULL, NULL);
+	COpenCL::CheckOCLError("Unable to copy summed value from the CPU to the OpenCL device. CRoutine_Sum::Sum", status);
+
+	return result;
+}
+
 } /* namespace liboi */

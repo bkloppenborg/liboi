@@ -352,7 +352,7 @@ float CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data,
 
 	// If we are to compute the sum, do so. Store the result in the ChiSquared output buffer.
 	if(compute_sum)
-		return ComputeSum(mChiSquaredOutput, mChiSquaredOutput, true);
+		return Sum(mChiSquaredOutput);
 
 	return 0;
 }

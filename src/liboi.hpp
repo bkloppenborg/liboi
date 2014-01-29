@@ -230,7 +230,7 @@ public:
 	void SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type);
 	void SetKernelSourcePath(string path_to_kernels);
 
-	float TotalFlux(bool return_value);
+	float TotalFlux();
 };
 
 } /* namespace liboi */

@@ -74,7 +74,7 @@ CRoutine_Sum_AMD::~CRoutine_Sum_AMD()
 
 /// Computes the sum of the input_buffer. Stores the result in the final_buffer and returns the result
 /// if return_value is true. Returns 0 otherwise.
-float CRoutine_Sum_AMD::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
+float CRoutine_Sum_AMD::Sum(cl_mem input_buffer)
 {
 	int status = CL_SUCCESS;
 	cl_float output = 0;

@@ -32,6 +32,8 @@
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <limits>
+
 #include "CRoutine_LogLike.h"
 #include "COILibData.h"
 
@@ -94,6 +96,7 @@ void CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 }
 
 /// Computes the log of the likelihoods for the specified OpenCL buffers then returns the sum if compute_sum is true.
+/// Returns -1*numeric_limits<double>::max();
 float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 		LibOIEnums::Chi2Types complex_chi_method,
 		unsigned int n_vis, unsigned int n_v2, unsigned int n_t3, bool compute_sum)
@@ -106,10 +109,13 @@ float CRoutine_LogLike::LogLike(cl_mem data, cl_mem data_err, cl_mem model_data,
 
 	// Now compute the sum and return the value
 	if(compute_sum)
-		sum = ComputeSum(mLogLikeOutput, mLogLikeOutput, true);
+	{
+		sum = Sum(mLogLikeOutput);
+		return -0.5 * n_data * log(2 * PI) + sum;
+	}
 
 	// Compute the logZ value, don't forget to include the -N/2 log(TWO_PI) prefix!
-	return -0.5 * n_data * log(2 * PI) + sum;
+	return -1*numeric_limits<double>::max();
 }
 
 /// \brief Computes the log likelihood per each element, returns the result in output.
