@@ -35,9 +35,9 @@
  */
 
 __kernel void normalize_float(
-    __global float * image,
-    __global float * divisor,
-    __private unsigned int image_size)
+    __global float * buffer,
+    __private unsigned int buffer_size,
+    __private float one_over_sum)
 {
     int i = get_global_id(0);
     
@@ -45,13 +45,13 @@ __kernel void normalize_float(
     // compute 1/divisor and store that into local memory so we do a multiplication
     // instead of a division.
     
-    if(i < image_size)
+    if(i < buffer_size)
     {    
-        image[i] = image[i] / divisor[0];
+        buffer[i] = buffer[i] * one_over_sum;
     
-        // Force the image to be positive definite. All infinities and NaNs
+        // Force the buffer to be positive definite. All infinities and NaNs
         // are forced to zero.
-        if(image[i] < 0 || !isfinite(image[i]) || isnan(image[i]))
-        	image[i] = 0;
+        if(buffer[i] < 0 || !isfinite(buffer[i]) || isnan(buffer[i]))
+        	buffer[i] = 0;
 	}
 }

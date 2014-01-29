@@ -46,8 +46,8 @@ public:
 
 	void Init();
 
-	void Normalize(cl_mem buffer, unsigned int buffer_size, cl_mem divisor);
-	void Normalize(cl_mem image, unsigned int image_width, unsigned int image_height, cl_mem divisor);
+	void Normalize(cl_mem buffer, unsigned int buffer_size, float one_over_sum);
+	void Normalize(cl_mem image, unsigned int image_width, unsigned int image_height, float one_over_sum);
 
 	template <typename T>
 	static void Normalize(valarray<T> & buffer, unsigned int buffer_size)

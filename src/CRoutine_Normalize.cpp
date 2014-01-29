@@ -57,7 +57,11 @@ void CRoutine_Normalize::Init()
 }
 
 /// Calls a kernel to normalize an OpenCL buffer
-void CRoutine_Normalize::Normalize(cl_mem buffer, unsigned int buffer_size, cl_mem divisor)
+///
+/// @param buffer The buffer to be normalized
+/// @param buffer_size The size of buffer
+/// @param one_over_sum The value equal to 1/sum(buffer)
+void CRoutine_Normalize::Normalize(cl_mem buffer, unsigned int buffer_size, float one_over_sum)
 {
 	int status = CL_SUCCESS;
 	size_t global = size_t(buffer_size);
@@ -69,8 +73,10 @@ void CRoutine_Normalize::Normalize(cl_mem buffer, unsigned int buffer_size, cl_m
 
 	// Enqueue the kernel.
     status |= clSetKernelArg(mKernels[0],  0, sizeof(cl_mem), &buffer);
-    status |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), &divisor);
-    status |= clSetKernelArg(mKernels[0],  2, sizeof(unsigned int), &buffer_size);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
+    status |= clSetKernelArg(mKernels[0],  1, sizeof(unsigned int), &buffer_size);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
+    status |= clSetKernelArg(mKernels[0],  2, sizeof(cl_float), &one_over_sum);
 	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	status = CL_SUCCESS;
@@ -78,11 +84,16 @@ void CRoutine_Normalize::Normalize(cl_mem buffer, unsigned int buffer_size, cl_m
 	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
-/// Normalizes the specified image.
-void CRoutine_Normalize::Normalize(cl_mem image, unsigned int image_width, unsigned int image_height, cl_mem divisor)
+/// Normalizes an image
+///
+/// @param image The image to be normalized
+/// @param image_width The width of the image
+/// @param image_height The width of the image
+/// @param one_over_sum The value equal to 1/sum(buffer)
+void CRoutine_Normalize::Normalize(cl_mem image, unsigned int image_width, unsigned int image_height, float one_over_sum)
 {
 	// Calculate the size of the buffer and then normalize it
-	Normalize(image, image_width * image_height, divisor);
+	Normalize(image, image_width * image_height, one_over_sum);
 }
 
 } /* namespace liboi */

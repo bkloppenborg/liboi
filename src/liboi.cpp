@@ -727,10 +727,10 @@ int CLibOI::LoadData(const OIDataList & data)
 /// Normalizes a floating point buffer by dividing by the sum of the buffer
 void CLibOI::Normalize()
 {
-	TotalFlux();
+	float sum = TotalFlux();
 
 	// Now normalize the image
-	mrNormalize->Normalize(mImage_cl, mImageWidth, mImageHeight, mFluxBuffer);
+	mrNormalize->Normalize(mImage_cl, mImageWidth, mImageHeight, 1.0/sum);
 }
 
 void CLibOI::PrintDeviceInfo()

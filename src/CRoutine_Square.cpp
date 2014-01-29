@@ -70,7 +70,7 @@ void CRoutine_Square::Square(cl_mem input, cl_mem output, unsigned int buffer_si
 	// Set the arguments to our compute kernel
 	status  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &input);
 	status |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &output);
-	status |= clSetKernelArg(mKernels[0], 2, sizeof(int), &data_size);
+	status |= clSetKernelArg(mKernels[0], 2, sizeof(unsigned int), &data_size);
 	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	// Execute the kernel over the entire range of the data set

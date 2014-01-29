@@ -48,22 +48,21 @@ TEST(CRoutine_Normalize, CL_Normalize)
 		cpu_val[i] = i;
 
 	// Calculate the divisor
-	cl_float divisor = CRoutine_Sum::Sum(cpu_val);
+	cl_float sum = CRoutine_Sum::Sum(cpu_val);
+	cl_float divisor = 1.0 / sum;
 
 	// Create buffers
 	int err = CL_SUCCESS;
 	cl_mem input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
-	cl_mem divisor_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, NULL);
 
 	// Fill the input buffer
     err = clEnqueueWriteBuffer(cl.GetQueue(), input_cl, CL_FALSE, 0, sizeof(cl_float) * test_size, &cpu_val[0], 0, NULL, NULL);
-    err = clEnqueueWriteBuffer(cl.GetQueue(), divisor_cl, CL_FALSE, 0, sizeof(cl_float), &divisor, 0, NULL, NULL);
 
 	// Wait for memory transfers to finish.
 	clFinish(cl.GetQueue());
 
 	// Normalize on the OpenCL device, do the same on the CPU:
-	r_norm.Normalize(input_cl, test_size, divisor_cl);
+	r_norm.Normalize(input_cl, test_size, divisor);
 	CRoutine_Normalize::Normalize(cpu_val, cpu_val.size());
 
 	// Read back the results.
@@ -71,7 +70,6 @@ TEST(CRoutine_Normalize, CL_Normalize)
 
 	// Free buffers
 	clReleaseMemObject(input_cl);
-	clReleaseMemObject(divisor_cl);
 
 	// Check the results.
 	for(int i = 0; i < test_size; i++)
