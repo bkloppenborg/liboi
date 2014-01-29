@@ -81,7 +81,7 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sig
 	status |= clSetKernelArg(mKernels[0], 3, sizeof(unsigned int), &offset);
 	status |= clSetKernelArg(mKernels[0], 4, sizeof(int), &n_t3);
 	status |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);      // Output is stored on the GPU.
-	CHECK_OPENCL_ERROR(status, "mKernels failed.");
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	// Execute the kernel over the entire range of the data set
 	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
