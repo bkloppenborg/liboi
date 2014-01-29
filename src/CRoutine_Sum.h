@@ -1,4 +1,4 @@
-/*
+ /*
  * CRoutine_Sum.h
  *
  *  Created on: Jan 28, 2014
@@ -52,7 +52,6 @@ public:
 
 	/// Computes the sum on the OpenCL device, returns a float to the CPU.
 	virtual float Sum(cl_mem input_buffer) = 0;
-	 // Computes the sum on the OpenCL device, stores the result in final_buffer and returns the result.
 	virtual float Sum(cl_mem input_buffer, cl_mem final_buffer);
 
 	virtual void Init(int n) = 0;
