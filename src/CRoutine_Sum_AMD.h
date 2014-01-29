@@ -46,10 +46,13 @@ protected:
 	const unsigned int MULTIPLY = 2;  // Require because of extra addition before loading to local memory
 
 protected:
-	cl_mem output_buffer;
 
-    size_t globalThreads[1];        /**< Global NDRange for the kernel */
-    size_t localThreads[1];         /**< Local WorkGroup for kernel */
+	cl_mem mInputBuffer;				/// Local buffer of size n*group_size to store a copy of the input data
+	cl_mem mOutputBuffer;				/// Local buffer of size n*group_size to store the output from the reduction process.
+	unsigned int mBufferSize;
+
+    size_t globalThreads[1] = {0};        /**< Global NDRange for the kernel */
+    size_t localThreads[1] = {0};         /**< Local WorkGroup for kernel */
 
 	struct
 	{

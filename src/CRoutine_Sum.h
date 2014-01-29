@@ -54,6 +54,10 @@ public:
 
 	virtual void Init(int n) = 0;
 
+	static bool isPow2(unsigned int x);
+
+	static unsigned int nextPow2( unsigned int x );
+
 	template <typename T>
 	static T Sum(valarray<T> & buffer)
 	{

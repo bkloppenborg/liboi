@@ -30,6 +30,8 @@
  */
 
 #include "CRoutine_Sum_AMD.h"
+#include "CRoutine_Zero.h"
+#include "CRoutine_Sum_NVidia.h"
 
 namespace liboi {
 
@@ -40,6 +42,15 @@ CRoutine_Sum_AMD::CRoutine_Sum_AMD(cl_device_id device, cl_context context, cl_c
 	mSource.push_back("reduce_sum_float_amd.cl");
 
 	mrZero = rZero;
+
+	// Set temporary buffer sizes and memory addresses to zero:
+	mBufferSize = 0;
+	mInputBuffer = NULL;
+	mOutputBuffer = NULL;
+
+    numBlocks = 0;
+    groupSize = GROUP_SIZE;
+
 
 	// Init the kernel and device info structs.
 	kernelInfo.localMemoryUsed = 0;
@@ -56,7 +67,8 @@ CRoutine_Sum_AMD::CRoutine_Sum_AMD(cl_device_id device, cl_context context, cl_c
 
 CRoutine_Sum_AMD::~CRoutine_Sum_AMD()
 {
-	if(output_buffer) clReleaseMemObject(output_buffer);
+	if(mInputBuffer) clReleaseMemObject(mInputBuffer);
+	if(mOutputBuffer) clReleaseMemObject(mOutputBuffer);
 }
 
 
@@ -64,18 +76,25 @@ CRoutine_Sum_AMD::~CRoutine_Sum_AMD()
 /// if return_value is true. Returns 0 otherwise.
 float CRoutine_Sum_AMD::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, bool return_value)
 {
-    globalThreads[0] = mInputSize / MULTIPLY;
-    localThreads[0] = groupSize;
-
 	int status = CL_SUCCESS;
 	cl_float output = 0;
     cl_event sumCompleteEvent;
 	cl_event outputMappedEvent;
 	cl_event outputUnmapEvent;
 
+	// First zero out the temporary sum buffer.
+	mrZero->Zero(mInputBuffer, mBufferSize);
+
+	int err = CL_SUCCESS;
+	// Copy the input buffer into mTempBuffer1
+	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
+	err = clEnqueueCopyBuffer(mQueue, input_buffer, mInputBuffer, 0, 0, mInputSize * sizeof(cl_float), 0, NULL, NULL);
+	COpenCL::CheckOCLError("Unable to copy summed value into final buffer. CRoutine_Sum::ComputeSum", err);
+	clFinish(mQueue);
+
 	// Set appropriate arguments to the kernel the input array
-	status  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), input_buffer);
-	status |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), output_buffer);
+	status  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), (void *) &mInputBuffer);
+	status |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), (void *) &mOutputBuffer);
 	status |= clSetKernelArg(mKernels[0], 2, groupSize * sizeof(cl_float), NULL);
 	COpenCL::CheckOCLError("Unable to set kernel arguments. CRoutine_Sum_AMD::ComputeSum", status);
 
@@ -90,7 +109,7 @@ float CRoutine_Sum_AMD::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, boo
 	COpenCL::CheckOCLError("Wait for event 'sum_complete' failed. CRoutine_Sum_AMD::ComputeSum", status);
 
 	// Map the output buffer:
-	cl_float * output_map = (cl_float*)clEnqueueMapBuffer(mQueue, output_buffer, CL_FALSE, CL_MAP_READ, 0,
+	cl_float * output_map = (cl_float*)clEnqueueMapBuffer(mQueue, mOutputBuffer, CL_FALSE, CL_MAP_READ, 0,
 			numBlocks * sizeof(cl_float), 0, NULL, &outputMappedEvent, &status);
 	COpenCL::CheckOCLError("Could not map output buffer. CRoutine_Sum_AMD::ComputeSum", status);
 
@@ -107,7 +126,7 @@ float CRoutine_Sum_AMD::ComputeSum(cl_mem input_buffer, cl_mem final_buffer, boo
 	}
 
 	// Release the mapped buffer:
-	status = clEnqueueUnmapMemObject(mQueue, output_buffer, (void*) output_map, 0, NULL, &outputUnmapEvent);
+	status = clEnqueueUnmapMemObject(mQueue, mOutputBuffer, (void*) output_map, 0, NULL, &outputUnmapEvent);
 	COpenCL::CheckOCLError("clEnqueueUnmapMemObject(output_buffer) failed. CRoutine_Sum_AMD::ComputeSum", status);
 
 	status = clFlush(mQueue);
@@ -142,19 +161,32 @@ void CRoutine_Sum_AMD::setKernelInfo()
 void CRoutine_Sum_AMD::Init(int n)
 {
 	int status = CL_SUCCESS;
-
 	mInputSize = n;
+	mBufferSize = n;
+
+	// Push the buffer up to the next greatest power of two. This ensures that
+	// the global work size is evenly divisible by the local work size in
+	// the call to clEnqueueNDKernel.
+	if(!isPow2(mBufferSize))
+		mBufferSize = nextPow2(mBufferSize);
 
 	// Read the kernel, compile it
 	string source = ReadSource(mSource[0]);
     BuildKernel(source, "reduce_sum_float_amd", mSource[0]);
 
-    // Determine and set work group sizes.
+    // Determine and set work group size, set the number of blocks apropriately.
 	setWorkGroupSize();
+    numBlocks = mBufferSize / ((cl_float)groupSize * MULTIPLY);
 
-	if(output_buffer == NULL)
+    if(mInputBuffer == NULL)
 	{
-		output_buffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mInputSize * sizeof(cl_float), NULL, &status);
+    	mInputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
+		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", status);
+	}
+
+	if(mOutputBuffer == NULL)
+	{
+		mOutputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
 		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", status);
 	}
 }
@@ -196,7 +228,7 @@ void CRoutine_Sum_AMD::setWorkGroupSize()
         std::cout << "Unsupported: Insufficient local memory on device." << std::endl;
     }
 
-    globalThreads[0] = mInputSize / MULTIPLY;
+    globalThreads[0] = mBufferSize / MULTIPLY;
     localThreads[0] = groupSize;
 }
 

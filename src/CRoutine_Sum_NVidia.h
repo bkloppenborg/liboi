@@ -64,10 +64,6 @@ public:
 	static void getNumBlocksAndThreads(int whichKernel, int n, int maxBlocks, int maxThreads, int &blocks, int &threads);
 
 	void Init(int n);
-
-	static bool isPow2(unsigned int x);
-
-	static unsigned int nextPow2( unsigned int x );
 };
 
 } /* namespace liboi */
