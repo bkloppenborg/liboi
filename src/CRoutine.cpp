@@ -78,33 +78,35 @@ int CRoutine::BuildKernel(string source, string kernel_name)
     const char * tmp = source.c_str();
     cl_program program;
     cl_kernel kernel;
-    int err;
+    int status = CL_SUCCESS;
     //    string tmp_err;
     //    tmp_err.reserve(2048);
 
-	// Create the program
-	program = clCreateProgramWithSource(mContext, 1, &tmp, NULL, &err);
-	if (!program || err != CL_SUCCESS)
+	// Create the program.
+	program = clCreateProgramWithSource(mContext, 1, &tmp, NULL, &status);
+	if (!program || status != CL_SUCCESS)
 	{
 		size_t length;
 		char build_log[2048];
 		//printf("%s\n", block_source);
 		cout<< "Error: Failed to create compute program from source: " << kernel_name << endl;
-		clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, sizeof(build_log), build_log, &length);
+		status = clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, sizeof(build_log), build_log, &length);
+		CHECK_OPENCL_ERROR(status, "clGetProgramBuildInfo failed.");
 		printf("%s\n", build_log);
 
 		throw "Could not build compute program " + kernel_name;
 	}
 
 	// Build the program executable
-	err = clBuildProgram(program, 1, &mDeviceID, NULL, NULL, NULL);
-	if (err != CL_SUCCESS)
+	status = clBuildProgram(program, 1, &mDeviceID, NULL, NULL, NULL);
+	if (status != CL_SUCCESS)
 	{
 		size_t length;
 		char build_log[2048];
 		//printf("%s\n", block_source);
-		cout<< "Error: Failed to build compute program: " << kernel_name << endl;
-		clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, sizeof(build_log), build_log, &length);
+		cout << "Error: Failed to build compute program: " << kernel_name << endl;
+		status = clGetProgramBuildInfo(program, mDeviceID, CL_PROGRAM_BUILD_LOG, sizeof(build_log), build_log, &length);
+		CHECK_OPENCL_ERROR(status, "clGetProgramBuildInfo failed.");
 		printf("%s\n", build_log);
 
 		throw "Could not compile compute program " + kernel_name;
@@ -114,8 +116,8 @@ int CRoutine::BuildKernel(string source, string kernel_name)
     mPrograms.push_back(program);
 
     // Create the compute kernel from within the program
-    kernel = clCreateKernel(program, kernel_name.c_str(), &err);
-	COpenCL::CheckOCLError("Failed to create kernel named " + kernel_name, err);
+    kernel = clCreateKernel(program, kernel_name.c_str(), &status);
+	CHECK_OPENCL_ERROR(status, "clCreateKernel failed.");
 
 	// All is well, push the kernel onto the vector
 	mKernels.push_back(kernel);
@@ -151,11 +153,11 @@ void CRoutine::SetSourcePath(string path_to_kernels)
 /// Data verification for OpenCL type cl_float
 bool CRoutine::Verify(valarray<cl_float> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	valarray<cl_float> tmp(num_elements);
 
-	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float), &tmp[0], 0, NULL, NULL);
-	COpenCL::CheckOCLError("Could not copy back cl_float values for verification!", err);
+	status  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float), &tmp[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	double error = 0;
 	double cpu_sum = 0;
@@ -188,11 +190,11 @@ bool CRoutine::Verify(valarray<cl_float> & cpu_buffer, cl_mem device_buffer, int
 /// Data verification for OpenCL type cl_float
 bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	valarray<cl_float2> tmp(num_elements);
 
-	err  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float2), &tmp[0], 0, NULL, NULL);
-	COpenCL::CheckOCLError("Could not copy back cl_float2 values for verification!", err);
+	status  = clEnqueueReadBuffer(mQueue, device_buffer, CL_TRUE, offset, num_elements * sizeof(cl_float2), &tmp[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	double error = 0;
 	double sum = 0;
@@ -241,11 +243,11 @@ int CRoutine::waitForEventAndRelease(cl_event *event)
     while(eventStatus != CL_COMPLETE)
     {
         status = clGetEventInfo(*event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &eventStatus, NULL);
-        COpenCL::CheckOCLError("clGetEventEventInfo Failed with Error Code:", status);
+    	CHECK_OPENCL_ERROR(status, "clGetEventInfo failed.");
     }
 
     status = clReleaseEvent(*event);
-    COpenCL::CheckOCLError("clReleaseEvent Failed with Error Code:", status);
+	CHECK_OPENCL_ERROR(status, "clReleaseEvent failed.");
 
     return 0;
 }

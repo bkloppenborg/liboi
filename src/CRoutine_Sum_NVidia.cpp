@@ -153,12 +153,14 @@ float CRoutine_Sum_NVidia::Sum(cl_mem input_buffer)
 	// First zero out the temporary sum buffer.
 	mrZero->Zero(mTempBuffer1, mBufferSize);
 
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	// Copy the input buffer into mTempBuffer1
 	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
-	err = clEnqueueCopyBuffer(mQueue, input_buffer, mTempBuffer1, 0, 0, mInputSize * sizeof(cl_float), 0, NULL, NULL);
-	COpenCL::CheckOCLError("Unable to copy summed value into final buffer. CRoutine_Sum::ComputeSum", err);
-	clFinish(mQueue);
+	status = clEnqueueCopyBuffer(mQueue, input_buffer, mTempBuffer1, 0, 0, mInputSize * sizeof(cl_float), 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueCopyBuffer failed.");
+
+	status = clFinish(mQueue);
+	CHECK_OPENCL_ERROR(status, "clFinish failed.");
 
 	// Init locals:
 	cl_float gpu_result = 0;
@@ -185,8 +187,8 @@ float CRoutine_Sum_NVidia::Sum(cl_mem input_buffer)
 		clSetKernelArg(reductionKernel, 1, sizeof(cl_mem), (void *) &buff2);
 		clSetKernelArg(reductionKernel, 2, sizeof(cl_int), &mBufferSize);
 		clSetKernelArg(reductionKernel, 3, sizeof(cl_float) * numThreads, NULL);
-		err = clEnqueueNDRangeKernel(mQueue, reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Unable to enqueue parallel reduction kernel. CRoutine_Sum_NVidia::ComputeSum", err);
+		status = clEnqueueNDRangeKernel(mQueue, reductionKernel, 1, 0, globalWorkSize, localWorkSize, 0, NULL, NULL);
+		CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 
 		buff1 = buff2;
 	}
@@ -198,8 +200,8 @@ float CRoutine_Sum_NVidia::Sum(cl_mem input_buffer)
     {
     	cl_float h_odata[mFinalS];
         // copy result from device to host
-        err = clEnqueueReadBuffer(mQueue, mTempBuffer2, CL_TRUE, 0, mFinalS * sizeof(cl_float), h_odata, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Unable to copy temporary sum buffer to host. CRoutine_Sum::ComputeSum", err);
+    	status = clEnqueueReadBuffer(mQueue, mTempBuffer2, CL_TRUE, 0, mFinalS * sizeof(cl_float), h_odata, 0, NULL, NULL);
+		CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
         for(int i=0; i < mFinalS; i++)
         {
@@ -210,8 +212,8 @@ float CRoutine_Sum_NVidia::Sum(cl_mem input_buffer)
     else
     {
     	// The work was all completed on the GPU.  Copy the summed value to the CPU:
-		err = clEnqueueReadBuffer(mQueue, mTempBuffer2, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Unable to copy summed value to host. CRoutine_Sum::ComputeSum", err);
+		status = clEnqueueReadBuffer(mQueue, mTempBuffer2, CL_TRUE, 0, sizeof(cl_float), &gpu_result, 0, NULL, NULL);
+		CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
     }
 
 	return float(gpu_result);
@@ -222,7 +224,7 @@ float CRoutine_Sum_NVidia::Sum(cl_mem input_buffer)
 /// allocate_temp_buffers: if true will automatically allocate/deallocate buffers. Otherwise you need to do this elsewhere
 void CRoutine_Sum_NVidia::Init(int n)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 
 	mInputSize = n;
 	mBufferSize = n;
@@ -242,14 +244,14 @@ void CRoutine_Sum_NVidia::Init(int n)
 
 	if(mTempBuffer1 == NULL)
 	{
-		mTempBuffer1 = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &err);
-		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
+		mTempBuffer1 = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateBuffer failed.");
 	}
 
 	if(mTempBuffer2 == NULL)
 	{
-		mTempBuffer2 = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &err);
-		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", err);
+		mTempBuffer2 = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateBuffer failed.");
 	}
 }
 

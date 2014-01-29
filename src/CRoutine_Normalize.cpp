@@ -59,23 +59,23 @@ void CRoutine_Normalize::Init()
 /// Calls a kernel to normalize an OpenCL buffer
 void CRoutine_Normalize::Normalize(cl_mem buffer, unsigned int buffer_size, cl_mem divisor)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	size_t global = size_t(buffer_size);
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine workgroup size for normalization kernel.", err);
+	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
 
 	// Enqueue the kernel.
-    err |= clSetKernelArg(mKernels[0],  0, sizeof(cl_mem), &buffer);
-    err |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), &divisor);
-    err |= clSetKernelArg(mKernels[0],  2, sizeof(unsigned int), &buffer_size);
-	COpenCL::CheckOCLError("Failed to set normalization kernel arguments.", err);
+    status |= clSetKernelArg(mKernels[0],  0, sizeof(cl_mem), &buffer);
+    status |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), &divisor);
+    status |= clSetKernelArg(mKernels[0],  2, sizeof(unsigned int), &buffer_size);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
-    err = CL_SUCCESS;
-    err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
-    COpenCL::CheckOCLError("Failed to enqueue normalization kernel.", err);
+	status = CL_SUCCESS;
+	status |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 /// Normalizes the specified image.

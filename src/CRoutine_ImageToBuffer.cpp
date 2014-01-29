@@ -67,16 +67,14 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int wi
 //	local[0] = local[1] = 16;
 
 	// Enqueue the kernel.
-	int err = CL_SUCCESS;
-    err |= clSetKernelArg(mKernels[0],  0, sizeof(cl_mem), &gl_image);
-    err |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), &cl_buffer);
-    err |= clSetKernelArg(mKernels[0],  2, sizeof(int), &width);
-	COpenCL::CheckOCLError("Failed to set gl_image to cl_buffer kernel arguments.", err);
+	int status = CL_SUCCESS;
+	status |= clSetKernelArg(mKernels[0],  0, sizeof(cl_mem), &gl_image);
+	status |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), &cl_buffer);
+	status |= clSetKernelArg(mKernels[0],  2, sizeof(int), &width);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
-
-    err = CL_SUCCESS;
-    err |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, NULL, 0, NULL, NULL);
-    COpenCL::CheckOCLError("Failed to enqueue image copying kernel.", err);
+    status |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 } /* namespace liboi */

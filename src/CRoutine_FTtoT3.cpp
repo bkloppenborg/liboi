@@ -64,28 +64,28 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sig
 	if(n_t3 == 0)
 		return;
 
-	int err = 0;
+	int status = 0;
 	size_t global = (size_t) n_t3;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine local size for ft_to_t3 kernel.", err);
+	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
 
 	unsigned int offset = COILibData::CalculateOffset_T3(n_vis, n_v2);
 
 	// Set kernel arguments:
-	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);
-	err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &t3_uv_ref);
-	err |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &t3_uv_sign);
-	err |= clSetKernelArg(mKernels[0], 3, sizeof(unsigned int), &offset);
-	err |= clSetKernelArg(mKernels[0], 4, sizeof(int), &n_t3);
-	err |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);      // Output is stored on the GPU.
-	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
+	status  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);
+	status |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &t3_uv_ref);
+	status |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &t3_uv_sign);
+	status |= clSetKernelArg(mKernels[0], 3, sizeof(unsigned int), &offset);
+	status |= clSetKernelArg(mKernels[0], 4, sizeof(int), &n_t3);
+	status |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);      // Output is stored on the GPU.
+	CHECK_OPENCL_ERROR(status, "mKernels failed.");
 
 	// Execute the kernel over the entire range of the data set
-	err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to set ft_to_t3 kernel arguments.", err);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 // Calculates the T3 from the Fourier transform input.

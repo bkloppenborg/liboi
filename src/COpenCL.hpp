@@ -37,6 +37,25 @@
 #ifndef COPENCL_H_
 #define COPENCL_H_
 
+#include <stdexcept>
+#include <iostream>
+#include <string>
+#include <memory>
+
+using namespace std;
+
+#define OPENCL_SUCCESS 0
+#define OPENCL_FAILURE 1
+
+class COpenCL;
+/// Macro which checks and marks the source of an OpenCL error.
+#define CHECK_OPENCL_ERROR(actual, msg) \
+    if(COpenCL::CheckError(actual, CL_SUCCESS, msg)) \
+    { \
+        std::cout << "Location : " << __FILE__ << ":" << __LINE__<< std::endl; \
+        throw runtime_error("OpenCL error detected."); \
+    }
+
 #pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
 #pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
 
@@ -67,12 +86,6 @@
 // Restore the GCC warning state
 #pragma GCC diagnostic pop
 
-
-#include <string>
-#include <memory>
-
-using namespace std;
-
 class COpenCL;
 typedef shared_ptr<COpenCL> COpenCLPtr;
 
@@ -96,8 +109,10 @@ public:
 	virtual ~COpenCL();
 
 public:
-	static void CheckOCLError(string user_message, int error_code);
+	//static void CheckOCLError(string user_message, int error_code);
 	bool CL_GLInteropEnabled() { return mCLGLInteropEnabled; };
+
+	static void error(std::string errorMsg);
 
 	cl_context		GetContext();
 	cl_device_id	GetDevice();
@@ -107,7 +122,7 @@ public:
 	cl_device_type  GetDeviceType(cl_device_id device);
 	void 			GetPlatformList(vector<cl_platform_id> * platforms);
 protected:
-	static string 	GetOCLErrorString(cl_int err);
+	static string 	getOpenCLErrorCodeStr(cl_int err);
 
 	void Init(cl_device_type type);
 	void Init(cl_platform_id platform, cl_device_id device, cl_device_type type);
@@ -117,6 +132,30 @@ public:
 
 	void PrintDeviceInfo(cl_device_id device_id);
 	void PrintPlatformInfo(cl_platform_id platform_id);
+
+	/// Checks for the status of an OpenCL error. Generates an informative error message if one is detected.
+	template<typename T>
+	static int CheckError(T input, T reference,  std::string message, bool isAPIerror = true)
+	{
+	    if(input==reference)
+	    {
+	        return OPENCL_SUCCESS;
+	    }
+	    else
+	    {
+	        if(isAPIerror)
+	        {
+	            std::cout << "Error: "<< message << " Error code : ";
+	            int error_code = (int) input;
+	            std::cout << getOpenCLErrorCodeStr(error_code) << std::endl;
+	        }
+	        else
+	        {
+	            error(message);
+	        }
+	        return OPENCL_FAILURE;
+	    }
+	}
 };
 
 #endif /* COPENCL_H_ */

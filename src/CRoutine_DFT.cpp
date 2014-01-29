@@ -63,30 +63,30 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	// allocate 4 * sizeof(cl_float) * local = 4 kB < 32 (or 48) kB of memory. If future OpenCL
 	// implementations support more local threads, this may become an issue.
 
-    int err = 0;
+    int status = 0;
     size_t global = (size_t) n_uv_points;
     size_t local = 256;                     // init to some value, not important anymore.
 
     // Get the maximum work-group size for executing the kernel on the device
-    err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine the kernel workgroup size for ft_dft2d kernel.", err);
+    status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
 
 	// Set the kernel arguments and enqueue the kernel
-	err = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &uv_points);
-	err |= clSetKernelArg(mKernels[0], 1, sizeof(int), &n_uv_points);
-	err |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &image);
-	err |= clSetKernelArg(mKernels[0], 3, sizeof(int), &image_width);
-	err |= clSetKernelArg(mKernels[0], 4, sizeof(int), &image_height);
-	err |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);
-	err |= clSetKernelArg(mKernels[0], 6, local * sizeof(cl_float), NULL);
-	err |= clSetKernelArg(mKernels[0], 7, local * sizeof(cl_float), NULL);
-	err |= clSetKernelArg(mKernels[0], 8, local * sizeof(cl_float2), NULL);
-	err |= clSetKernelArg(mKernels[0], 9, sizeof(cl_mem), &image_flux);
-	COpenCL::CheckOCLError("Failed to set ft_dft2d kernel arguments.", err);
+	status = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &uv_points);
+	status |= clSetKernelArg(mKernels[0], 1, sizeof(int), &n_uv_points);
+	status |= clSetKernelArg(mKernels[0], 2, sizeof(cl_mem), &image);
+	status |= clSetKernelArg(mKernels[0], 3, sizeof(int), &image_width);
+	status |= clSetKernelArg(mKernels[0], 4, sizeof(int), &image_height);
+	status |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);
+	status |= clSetKernelArg(mKernels[0], 6, local * sizeof(cl_float), NULL);
+	status |= clSetKernelArg(mKernels[0], 7, local * sizeof(cl_float), NULL);
+	status |= clSetKernelArg(mKernels[0], 8, local * sizeof(cl_float2), NULL);
+	status |= clSetKernelArg(mKernels[0], 9, sizeof(cl_mem), &image_flux);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
     // Execute the kernel over the entire range of the data set
-    err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to enqueue ft_dft2d kernel.", err);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 /// CPU implementation of the discrete Fourier transform algorithm.

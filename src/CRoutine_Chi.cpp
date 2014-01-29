@@ -145,9 +145,9 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data,
 
 	// Computations complete, copy back the chi values:
 	output_size = min(mChiBufferSize, output_size);
-	int err = CL_SUCCESS;
-	err = clEnqueueReadBuffer(mQueue, mChiOutput, CL_TRUE, 0, sizeof(cl_float) * output_size, output, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to copy back chi elements.", err);
+	int status = CL_SUCCESS;
+	status = clEnqueueReadBuffer(mQueue, mChiOutput, CL_TRUE, 0, sizeof(cl_float) * output_size, output, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 }
 
 /// Traditional chi computation under the convex approximation in cartesian coordinates
@@ -156,26 +156,26 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model, cl_mem output
 	if(n == 0)
 		return;
 
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	size_t global = (size_t) n;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(mKernels[mChiKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine workgroup size for chi kernel.", err);
+	status = clGetKernelWorkGroupInfo(mKernels[mChiKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	// Set the arguments to our compute kernel
-	err  = clSetKernelArg(mKernels[mChiKernelID], 0, sizeof(cl_mem), &data);
-	err |= clSetKernelArg(mKernels[mChiKernelID], 1, sizeof(cl_mem), &data_err);
-	err |= clSetKernelArg(mKernels[mChiKernelID], 2, sizeof(cl_mem), &model);
-	err |= clSetKernelArg(mKernels[mChiKernelID], 3, sizeof(cl_mem), &output);
-	err |= clSetKernelArg(mKernels[mChiKernelID], 4, sizeof(unsigned int), &start);
-	err |= clSetKernelArg(mKernels[mChiKernelID], 5, sizeof(unsigned int), &n);
-	COpenCL::CheckOCLError("Failed to set chi kernel arguments.", err);
+	status  = clSetKernelArg(mKernels[mChiKernelID], 0, sizeof(cl_mem), &data);
+	status |= clSetKernelArg(mKernels[mChiKernelID], 1, sizeof(cl_mem), &data_err);
+	status |= clSetKernelArg(mKernels[mChiKernelID], 2, sizeof(cl_mem), &model);
+	status |= clSetKernelArg(mKernels[mChiKernelID], 3, sizeof(cl_mem), &output);
+	status |= clSetKernelArg(mKernels[mChiKernelID], 4, sizeof(unsigned int), &start);
+	status |= clSetKernelArg(mKernels[mChiKernelID], 5, sizeof(unsigned int), &n);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	// Execute the kernel over the entire range of the data set
-	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChiKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to enqueue chi kernel.", err);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[mChiKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 /// Traditional chi implementation for polar coordinantes in the convex assumption.
@@ -186,26 +186,26 @@ void CRoutine_Chi::ChiComplexConvex(cl_mem data, cl_mem data_err, cl_mem model, 
 	if(n == 0)
 		return;
 
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	size_t global = (size_t) n;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(mKernels[mChiConvexKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine workgroup size for chi_complex_convex kernel.", err);
+	status = clGetKernelWorkGroupInfo(mKernels[mChiConvexKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
 
 	// Set the arguments to our compute kernel
-	err  = clSetKernelArg(mKernels[mChiConvexKernelID], 0, sizeof(cl_mem), &data);
-	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 1, sizeof(cl_mem), &data_err);
-	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 2, sizeof(cl_mem), &model);
-	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 3, sizeof(cl_mem), &output);
-	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 4, sizeof(unsigned int), &start);
-	err |= clSetKernelArg(mKernels[mChiConvexKernelID], 5, sizeof(unsigned int), &n);
-	COpenCL::CheckOCLError("Failed to set chi_complex_convex kernel arguments.", err);
+	status  = clSetKernelArg(mKernels[mChiConvexKernelID], 0, sizeof(cl_mem), &data);
+	status |= clSetKernelArg(mKernels[mChiConvexKernelID], 1, sizeof(cl_mem), &data_err);
+	status |= clSetKernelArg(mKernels[mChiConvexKernelID], 2, sizeof(cl_mem), &model);
+	status |= clSetKernelArg(mKernels[mChiConvexKernelID], 3, sizeof(cl_mem), &output);
+	status |= clSetKernelArg(mKernels[mChiConvexKernelID], 4, sizeof(unsigned int), &start);
+	status |= clSetKernelArg(mKernels[mChiConvexKernelID], 5, sizeof(unsigned int), &n);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	// Execute the kernel over the entire range of the data set
-	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChiConvexKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to enqueue chi_complex_convex kernel.", err);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[mChiConvexKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 /// Chi implementation for polar coordinantes under the non-convex assumption
@@ -216,26 +216,26 @@ void CRoutine_Chi::ChiComplexNonConvex(cl_mem data, cl_mem data_err, cl_mem mode
 	if(n == 0)
 		return;
 
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	size_t global = (size_t) n;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(mKernels[mChiNonConvexKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine workgroup size for chi_complex_nonconvex kernel.", err);
+	status = clGetKernelWorkGroupInfo(mKernels[mChiNonConvexKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
 
 	// Set the arguments to our compute kernel
-	err  = clSetKernelArg(mKernels[mChiNonConvexKernelID], 0, sizeof(cl_mem), &data);
-	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 1, sizeof(cl_mem), &data_err);
-	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 2, sizeof(cl_mem), &model);
-	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 3, sizeof(cl_mem), &output);
-	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 4, sizeof(unsigned int), &start);
-	err |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 5, sizeof(unsigned int), &n);
-	COpenCL::CheckOCLError("Failed to set chi_complex_nonconvex kernel arguments.", err);
+	status  = clSetKernelArg(mKernels[mChiNonConvexKernelID], 0, sizeof(cl_mem), &data);
+	status |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 1, sizeof(cl_mem), &data_err);
+	status |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 2, sizeof(cl_mem), &model);
+	status |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 3, sizeof(cl_mem), &output);
+	status |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 4, sizeof(unsigned int), &start);
+	status |= clSetKernelArg(mKernels[mChiNonConvexKernelID], 5, sizeof(unsigned int), &n);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	// Execute the kernel over the entire range of the data set
-	err = clEnqueueNDRangeKernel(mQueue, mKernels[mChiNonConvexKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to enqueue chi_complex_nonconvex kernel.", err);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[mChiNonConvexKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 /// Straight (traditional) chi computation under the convex approximation
@@ -367,15 +367,15 @@ void CRoutine_Chi::Chi2(cl_mem data, cl_mem data_err, cl_mem model_data,
 
 	// Computations complete, copy back the chi values:
 	output_size = min(mChiBufferSize, output_size);
-	int err = CL_SUCCESS;
-	err = clEnqueueReadBuffer(mQueue, mChiOutput, CL_TRUE, 0, sizeof(cl_float) * output_size, output, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to copy back chi elements.", err);
+	int status = CL_SUCCESS;
+	status = clEnqueueReadBuffer(mQueue, mChiOutput, CL_TRUE, 0, sizeof(cl_float) * output_size, output, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 }
 
 // Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
 void CRoutine_Chi::Init(unsigned int n)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	mChiBufferSize = n;
 
 	// First initialize the base-class constructor:
@@ -383,10 +383,12 @@ void CRoutine_Chi::Init(unsigned int n)
 
 	// Output buffer
 	if(mChiOutput) clReleaseMemObject(mChiOutput);
-	mChiOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float) * mChiBufferSize, NULL, &err);
+	mChiOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float) * mChiBufferSize, NULL, &status);
+	CHECK_OPENCL_ERROR(status, "clCreateBuffer(mChiOutput) failed.");
 
 	if(mChiSquaredOutput) clReleaseMemObject(mChiSquaredOutput);
-	mChiSquaredOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float) * mChiBufferSize, NULL, &err);
+	mChiSquaredOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, sizeof(cl_float) * mChiBufferSize, NULL, &status);
+	CHECK_OPENCL_ERROR(status, "clCreateBuffer(mChiSquaredOutput) failed.");
 
 	// Read the kernels, compile them
 	string source = ReadSource(mSource[mChiSourceID]);

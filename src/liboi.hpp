@@ -80,6 +80,18 @@ typedef shared_ptr<COpenCL> COpenCLPtr;
 namespace liboi
 {
 
+#define LIBOI_SUCCESS 0
+#define LIBOI_FAILURE 1
+
+class CLibOI;
+#define CHECK_ERROR(actual, reference, msg) \
+    if(actual != reference) \
+    { \
+        CLibOI::error(msg); \
+        std::cout << "Location : " << __FILE__ << ":" << __LINE__<< std::endl; \
+        return LIBOI_FAILURE; \
+    }
+
 class CRoutine_Sum;
 class CRoutine_ImageToBuffer;
 class CRoutine_Normalize;
@@ -174,6 +186,7 @@ public:
 	float DataToLogLike(COILibDataPtr data);
 
 public:
+	static void error(std::string errorMsg);
 	void ExportData(int data_num, string file_basename);
 	void ExportImage(string filename);
 	void ExportImage(float * image, unsigned int width, unsigned int height, unsigned int depth);

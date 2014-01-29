@@ -89,35 +89,35 @@ float CRoutine_Sum_AMD::Sum(cl_mem input_buffer)
 	// Copy the input buffer into mTempBuffer1
 	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
 	err = clEnqueueCopyBuffer(mQueue, input_buffer, mInputBuffer, 0, 0, mInputSize * sizeof(cl_float), 0, NULL, NULL);
-	COpenCL::CheckOCLError("Unable to copy summed value into final buffer. CRoutine_Sum::ComputeSum", err);
+	CHECK_OPENCL_ERROR(status, "clEnqueueCopyBuffer failed.");
 	clFinish(mQueue);
 
 	// Set appropriate arguments to the kernel the input array
 	status  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), (void *) &mInputBuffer);
 	status |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), (void *) &mOutputBuffer);
 	status |= clSetKernelArg(mKernels[0], 2, groupSize * sizeof(cl_float), NULL);
-	COpenCL::CheckOCLError("Unable to set kernel arguments. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	// Enqueue the kernel:
 	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, 0, globalThreads, localThreads, 0, NULL, &sumCompleteEvent);
-	COpenCL::CheckOCLError("Unable to enqueue parallel sum kernel. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 
 	status = clFlush(mQueue);
-	COpenCL::CheckOCLError("clFlush failed. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clFlush failed.");
 
 	status = waitForEventAndRelease(&sumCompleteEvent);
-	COpenCL::CheckOCLError("Wait for event 'sum_complete' failed. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "waitForEventAndRelease failed.");
 
 	// Map the output buffer:
 	cl_float * output_map = (cl_float*)clEnqueueMapBuffer(mQueue, mOutputBuffer, CL_FALSE, CL_MAP_READ, 0,
 			numBlocks * sizeof(cl_float), 0, NULL, &outputMappedEvent, &status);
-	COpenCL::CheckOCLError("Could not map output buffer. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clEnqueueMapBuffer failed.");
 
 	status = clFlush(mQueue);
-	COpenCL::CheckOCLError("clFlush failed. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clFlush failed.");
 
 	status = waitForEventAndRelease(&outputMappedEvent);
-	COpenCL::CheckOCLError("waitForEventAndRelease(&outputMappedEvent) failed. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_ERROR(status, OPENCL_SUCCESS, "waitForEventAndRelease failed.");
 
 	// Now that the buffer is mapped, sum it.
 	for(int i = 0; i < numBlocks * VECTOR_SIZE; i++)
@@ -127,13 +127,13 @@ float CRoutine_Sum_AMD::Sum(cl_mem input_buffer)
 
 	// Release the mapped buffer:
 	status = clEnqueueUnmapMemObject(mQueue, mOutputBuffer, (void*) output_map, 0, NULL, &outputUnmapEvent);
-	COpenCL::CheckOCLError("clEnqueueUnmapMemObject(output_buffer) failed. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clEnqueueUnmapMemObject failed.");
 
 	status = clFlush(mQueue);
-	COpenCL::CheckOCLError("clFlush failed. CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clFlush failed.");
 
 	status = waitForEventAndRelease(&outputUnmapEvent);
-	COpenCL::CheckOCLError("WaitForEventAndRelease(outUnMapEvt). CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_ERROR(status, OPENCL_SUCCESS, "waitForEventAndRelease failed.");
 
 	return output;
 }
@@ -145,15 +145,15 @@ void CRoutine_Sum_AMD::setKernelInfo()
 
 	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE,
 			sizeof(size_t), &kernelInfo.kernelWorkGroupSize, NULL);
-	COpenCL::CheckOCLError("clGetKernelWorkGroupInfo failed(CL_KERNEL_WORK_GROUP_SIZE). CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo(CL_KERNEL_WORK_GROUP_SIZE) failed.");
 
 	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_LOCAL_MEM_SIZE,
 			sizeof(cl_ulong), &kernelInfo.localMemoryUsed, NULL);
-	COpenCL::CheckOCLError("clGetKernelWorkGroupInfo failed(CL_KERNEL_LOCAL_MEM_SIZE). CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo(CL_KERNEL_LOCAL_MEM_SIZE) failed.");
 
 	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_COMPILE_WORK_GROUP_SIZE,
 			sizeof(size_t) * 3, kernelInfo.compileWorkGroupSize, NULL);
-	COpenCL::CheckOCLError("clGetKernelWorkGroupInfo failed(CL_KERNEL_COMPILE_WORK_GROUP_SIZE). CRoutine_Sum_AMD::ComputeSum", status);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo(CL_KERNEL_COMPILE_WORK_GROUP_SIZE) failed.");
 }
 
 /// Initializes the parallel sum object to sum num_element entries from a cl_mem buffer.
@@ -181,13 +181,13 @@ void CRoutine_Sum_AMD::Init(int n)
     if(mInputBuffer == NULL)
 	{
     	mInputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
-		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", status);
+    	CHECK_OPENCL_ERROR(status, "clCreateBuffer(mInputBuffer) failed.");
 	}
 
 	if(mOutputBuffer == NULL)
 	{
 		mOutputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
-		COpenCL::CheckOCLError("Could not create parallel sum temporary buffer.", status);
+    	CHECK_OPENCL_ERROR(status, "clCreateBuffer(mOutputBuffer) failed.");
 	}
 }
 
@@ -238,16 +238,16 @@ void CRoutine_Sum_AMD::setDeviceInfo()
 
     status = clGetDeviceInfo(mDeviceID, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t),
     		&deviceInfo.maxWorkGroupSize, NULL);
-	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_MAX_WORK_GROUP_SIZE) failed", status);
+	CHECK_OPENCL_ERROR(status, "clGetDeviceInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE) failed.");
 
     status = clGetDeviceInfo(mDeviceID, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong),
     		&deviceInfo.localMemSize, NULL);
-	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_LOCAL_MEM_SIZE) failed", status);
+	CHECK_OPENCL_ERROR(status, "clGetDeviceInfo(CL_DEVICE_LOCAL_MEM_SIZE) failed.");
 
     //Get max work item dimensions
     status = clGetDeviceInfo(mDeviceID, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(cl_uint),
     		&deviceInfo.maxWorkItemDims, NULL);
-	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS) failed", status);
+	CHECK_OPENCL_ERROR(status, "clGetDeviceInfo(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS) failed.");
 
     //Get max work item sizes
 	if(deviceInfo.maxWorkItemSizes != NULL)
@@ -257,7 +257,7 @@ void CRoutine_Sum_AMD::setDeviceInfo()
 
     status = clGetDeviceInfo(mDeviceID, CL_DEVICE_MAX_WORK_ITEM_SIZES, deviceInfo.maxWorkItemDims * sizeof(size_t),
     		deviceInfo.maxWorkItemSizes, NULL);
-	COpenCL::CheckOCLError("clGetDeviceIDs(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS) failed", status);
+	CHECK_OPENCL_ERROR(status, "clGetDeviceInfo(CL_DEVICE_MAX_WORK_ITEM_SIZES) failed.");
 }
 
 

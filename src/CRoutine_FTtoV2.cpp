@@ -67,25 +67,25 @@ void CRoutine_FTtoV2::FTtoV2(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, u
 	// data starts.
 	int offset = COILibData::CalculateOffset_V2(n_vis);
 
-    int err = 0;
+    int status = CL_SUCCESS;
     size_t global = (size_t) n_v2;
     size_t local;
 
     // Get the maximum work-group size for executing the kernel on the device
-    err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-    COpenCL::CheckOCLError("Failed to determine maximum group size for ft_to_vis2 kernel.", err);
+    status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
 
     // Set the kernel arguments
-    err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);
-    err  = clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &v2_uv_ref);
-    err  = clSetKernelArg(mKernels[0], 2, sizeof(unsigned int), &offset);
-    err  = clSetKernelArg(mKernels[0], 3, sizeof(unsigned int), &n_v2);
-    err |= clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), &output);
-    COpenCL::CheckOCLError("Failed to set ft_to_vis2 kernel arguments.", err);
+	status  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &ft_input);
+    status |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &v2_uv_ref);
+    status |= clSetKernelArg(mKernels[0], 2, sizeof(unsigned int), &offset);
+    status |= clSetKernelArg(mKernels[0], 3, sizeof(unsigned int), &n_v2);
+    status |= clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), &output);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
     // Execute the kernel over the entire range of the data set
-    err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
-    COpenCL::CheckOCLError("Failed to enqueue the ft_to_vis2 kernel.", err);
+    status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 /// CPU-bound implementation.  Computes the norm of the visibilities.

@@ -101,7 +101,7 @@ CLibOI::~CLibOI()
 /// If the image is already in an OpenCL buffer, this function need not be called.
 void CLibOI::CopyImageToBuffer(int layer)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 
 	// Decide where we need to copy from
 
@@ -109,17 +109,17 @@ void CLibOI::CopyImageToBuffer(int layer)
 	{
 		// Wait for the OpenGL queue to finish, lock resources.
 		glFinish();
-		err |= clEnqueueAcquireGLObjects(mOCL->GetQueue(), 1, &mImage_gl, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Could not acquire OpenGL Memory object.", err);
+		status = clEnqueueAcquireGLObjects(mOCL->GetQueue(), 1, &mImage_gl, 0, NULL, NULL);
+		CHECK_OPENCL_ERROR(status, "clEnqueueAcquireGLObjects failed.");
 
 		// TODO: Implement depth channel for 3D images
 		CopyImageToBuffer(mImage_gl, mImage_cl, mImageWidth, mImageHeight, layer);
-		COpenCL::CheckOCLError("Could not copy OpenGL image to the OpenCL Memory buffer", err);
-		clFinish(mOCL->GetQueue());
+		status = clFinish(mOCL->GetQueue());
+		CHECK_OPENCL_ERROR(status, "clFinish failed.");
 
 		// All done.  Unlock resources
-		err |= clEnqueueReleaseGLObjects (mOCL->GetQueue(), 1, &mImage_gl, 0, NULL, NULL);
-		COpenCL::CheckOCLError("Could not Release OpenGL Memory object.", err);
+		status = clEnqueueReleaseGLObjects(mOCL->GetQueue(), 1, &mImage_gl, 0, NULL, NULL);
+		CHECK_OPENCL_ERROR(status, "clEnqueueReleaseGLObjects failed.");
 	}
 	else if(mImageType == LibOIEnums::HOST_MEMORY)
 	{
@@ -145,7 +145,7 @@ void CLibOI::CopyImageToBuffer(cl_mem gl_image, cl_mem cl_buffer, int width, int
 /// Copies host memory to a cl_mem buffer
 void CLibOI::CopyImageToBuffer(float * host_mem, cl_mem cl_buffer, int width, int height, int layer)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	int size = width *  height;
 	int offset = size * layer;
 
@@ -154,8 +154,8 @@ void CLibOI::CopyImageToBuffer(float * host_mem, cl_mem cl_buffer, int width, in
 		tmp[i] = host_mem[i];
 
 	// Enqueue a blocking write
-    err  = clEnqueueWriteBuffer(mOCL->GetQueue(), mImage_cl, CL_TRUE, offset, sizeof(float) * size, tmp, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Could not copy host image to OpenCL device.", err);
+    status = clEnqueueWriteBuffer(mOCL->GetQueue(), mImage_cl, CL_TRUE, offset, sizeof(float) * size, tmp, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
 
 	delete[] tmp;
 }
@@ -258,17 +258,23 @@ void   CLibOI::ExportImage(string filename)
 	fits_report_error(stderr, *status);
 }
 
+/// Prints error message.
+void CLibOI::error(std::string errorMsg)
+{
+    std::cout<<"Error: "<<errorMsg<<std::endl;
+}
+
 /// Copies the current image in mCLImage to the floating point buffer, image, iff the sizes match exactly.
 void CLibOI::ExportImage(float * image, unsigned int width, unsigned int height, unsigned int depth)
 {
 	if(width != mImageWidth || height != mImageHeight || depth != mImageDepth)
 		return;
 
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	int num_elements = mImageWidth * mImageHeight * mImageDepth;
 	cl_float tmp[num_elements];
-	err |= clEnqueueReadBuffer(mOCL->GetQueue(), mImage_cl, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CLibOI::ExportImage() ", err);
+	status |= clEnqueueReadBuffer(mOCL->GetQueue(), mImage_cl, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	// Copy to the output buffer, converting as we go.
 	for(unsigned int i = 0; i < num_elements; i++)
@@ -581,13 +587,13 @@ void CLibOI::InitMembers()
 /// Initializes memory used for storing various things on the OpenCL context.
 void CLibOI::InitMemory()
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 
 	// Create a location to store the image if it comes from host or OpenGL memory locations
 	if(mImageType == LibOIEnums::HOST_MEMORY || mImageType == LibOIEnums::OPENGL_FRAMEBUFFER || mImageType == LibOIEnums::OPENGL_TEXTUREBUFFER)
 	{
-		mImage_cl = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, mImageWidth * mImageHeight * sizeof(cl_float), NULL, &err);
-		COpenCL::CheckOCLError("Could not create temporary OpenCL image buffer", err);
+		mImage_cl = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, mImageWidth * mImageHeight * sizeof(cl_float), NULL, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateBuffer(mImage_cl) failed.");
 	}
 
 	// Determine the maximum data size, cache it locally.
@@ -596,14 +602,18 @@ void CLibOI::InitMemory()
 
 	// Allocate some memory on the OpenCL device
 	if(mFluxBuffer == NULL)
-		mFluxBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &err);
+	{
+		mFluxBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateBuffer(mFluxBuffer) failed.");
+	}
 
 	if(mMaxData > 0)
 	{
-		mFTBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * mMaxUV, NULL, &err);
-		mSimDataBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * mMaxData, NULL, &err);
+		mFTBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * mMaxUV, NULL, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateBuffer(mFTBuffer) failed.");
+		mSimDataBuffer = clCreateBuffer(mOCL->GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * mMaxData, NULL, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateBuffer(mSimDataBuffer) failed.");
 	}
-	COpenCL::CheckOCLError("Could not initialize liboi required memory objects.", err);
 }
 
 void CLibOI::InitRoutines()
@@ -813,27 +823,27 @@ void CLibOI::SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type
 {
 	mImageType = type;
 
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 
 	switch(type)
 	{
 	case LibOIEnums::OPENGL_FRAMEBUFFER:
-		mImage_gl = clCreateFromGLBuffer(mOCL->GetContext(), CL_MEM_READ_ONLY, gl_device_memory, &err);
-		COpenCL::CheckOCLError("Could not create OpenCL image object from framebuffer", err);
+		mImage_gl = clCreateFromGLBuffer(mOCL->GetContext(), CL_MEM_READ_ONLY, gl_device_memory, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateFromGLBuffer failed.");
 
 		break;
 
 	case LibOIEnums::OPENGL_TEXTUREBUFFER:
 		// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.
-		mImage_gl = clCreateFromGLTexture2D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, gl_device_memory, &err);
-		COpenCL::CheckOCLError("Could not create OpenCL image object from GLTexture", err);
+		mImage_gl = clCreateFromGLTexture2D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, gl_device_memory, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateFromGLTexture failed.");
 
 		break;
 
 	case LibOIEnums::OPENGL_RENDERBUFFER:
 		// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.
-		mImage_gl = clCreateFromGLRenderbuffer(mOCL->GetContext(), CL_MEM_READ_ONLY, gl_device_memory, &err);
-		COpenCL::CheckOCLError("Could not create OpenCL image object from GLTexture", err);
+		mImage_gl = clCreateFromGLRenderbuffer(mOCL->GetContext(), CL_MEM_READ_ONLY, gl_device_memory, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateFromGLRenderbuffer failed.");
 
 		break;
 

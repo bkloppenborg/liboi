@@ -58,7 +58,7 @@ CRoutine_LogLike::~CRoutine_LogLike()
 // Computes the log likelihood of the individual elements in the chi_output buffer
 void CRoutine_LogLike::LogLike(cl_mem chi_output, cl_mem data_err, cl_mem output, unsigned int n)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	// The loglikelihood kernel executes on the entire output buffer
 	// because the reduce_sum_float kernel uses the entire buffer as input.
 	// Therefore we zero out the elements not directly involved in this computation.
@@ -66,19 +66,19 @@ void CRoutine_LogLike::LogLike(cl_mem chi_output, cl_mem data_err, cl_mem output
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(mKernels[mLogLikeKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine workgroup size for loglike kernel.", err);
+	status = clGetKernelWorkGroupInfo(mKernels[mLogLikeKernelID], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
 
 	// Set the arguments to our compute kernel
-	err  = clSetKernelArg(mKernels[mLogLikeKernelID], 0, sizeof(cl_mem), &chi_output);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 1, sizeof(cl_mem), &data_err);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 2, sizeof(cl_mem), &output);
-	err |= clSetKernelArg(mKernels[mLogLikeKernelID], 3, sizeof(unsigned int), &n);
-	COpenCL::CheckOCLError("Failed to set loglike kernel arguments.", err);
+	status  = clSetKernelArg(mKernels[mLogLikeKernelID], 0, sizeof(cl_mem), &chi_output);
+	status |= clSetKernelArg(mKernels[mLogLikeKernelID], 1, sizeof(cl_mem), &data_err);
+	status |= clSetKernelArg(mKernels[mLogLikeKernelID], 2, sizeof(cl_mem), &output);
+	status |= clSetKernelArg(mKernels[mLogLikeKernelID], 3, sizeof(unsigned int), &n);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	// Execute the kernel over the entire range of the data set
-	err = clEnqueueNDRangeKernel(mQueue, mKernels[mLogLikeKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to enqueue loglike kernel.", err);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[mLogLikeKernelID], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 /// Computes the log-likeihoods for the specified OpenCL buffers.
@@ -143,7 +143,7 @@ void CRoutine_LogLike::LogLike(valarray<cl_float> & chi_output, valarray<cl_floa
 /// Initialize the Chi2 routine.  Note, this internally allocates some memory for computing a parallel sum.
 void CRoutine_LogLike::Init(int num_max_elements)
 {
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 
 	// First initialize the base-class constructor:
 	CRoutine_Chi::Init(num_max_elements);
@@ -155,8 +155,8 @@ void CRoutine_LogLike::Init(int num_max_elements)
 
 	if(mLogLikeOutput == NULL)
 	{
-		mLogLikeOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mInputSize * sizeof(cl_float), NULL, &err);
-		COpenCL::CheckOCLError("Could not create loglike temporary buffer.", err);
+		mLogLikeOutput = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mInputSize * sizeof(cl_float), NULL, &status);
+		CHECK_OPENCL_ERROR(status, "clCreateBuffer failed.");
 	}
 }
 

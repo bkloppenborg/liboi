@@ -59,23 +59,23 @@ void CRoutine_Square::Init()
 
 void CRoutine_Square::Square(cl_mem input, cl_mem output, unsigned int buffer_size, unsigned int data_size)
 {
-	int err = 0;
+	int status = 0;
 	size_t global = (size_t) buffer_size;
 	size_t local = 0;
 
 	// Get the maximum work-group size for executing the kernel on the device
-	err = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
-	COpenCL::CheckOCLError("Failed to determine workgroup size for square kernel.", err);
+	status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
 
 	// Set the arguments to our compute kernel
-	err  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &input);
-	err |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &output);
-	err |= clSetKernelArg(mKernels[0], 2, sizeof(int), &data_size);
-	COpenCL::CheckOCLError("Failed to set square kernel arguments.", err);
+	status  = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &input);
+	status |= clSetKernelArg(mKernels[0], 1, sizeof(cl_mem), &output);
+	status |= clSetKernelArg(mKernels[0], 2, sizeof(int), &data_size);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
 	// Execute the kernel over the entire range of the data set
-	err = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
-	COpenCL::CheckOCLError("Failed to enqueue square kernel.", err);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
 } /* namespace liboi */
