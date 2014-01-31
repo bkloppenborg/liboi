@@ -9,12 +9,22 @@
 #define CROUTINE_FFT_CLFFT_H_
 
 #include "CRoutine_FT.h"
+#include <clFFT.h>
+
 
 namespace liboi
 {
 
 class CRoutine_FFT_clFFT : public CRoutine_FT
 {
+protected:
+	clfftPlanHandle mPlanHandle;
+	clfftDim mDimentions;
+	clfftSetupData mFFTSetup;
+
+	cl_mem mOutputBuffer;
+	cl_mem mTempBuffer;
+
 public:
 	CRoutine_FFT_clFFT(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_FFT_clFFT();
