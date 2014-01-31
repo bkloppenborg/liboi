@@ -120,7 +120,7 @@ float CRoutine_Sum_AMD::Sum(cl_mem input_buffer)
 	CHECK_ERROR(status, OPENCL_SUCCESS, "waitForEventAndRelease failed.");
 
 	// Now that the buffer is mapped, sum it.
-	for(int i = 0; i < numBlocks * VECTOR_SIZE; i++)
+	for(int i = 0; i < numBlocks; i++)
 	{
 		output += output_map[i];
 	}
@@ -182,12 +182,16 @@ void CRoutine_Sum_AMD::Init(int n)
 	{
     	mInputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
     	CHECK_OPENCL_ERROR(status, "clCreateBuffer(mInputBuffer) failed.");
+    	// fill the buffer with zeros
+    	mrZero->Zero(mInputBuffer, mBufferSize);
 	}
 
 	if(mOutputBuffer == NULL)
 	{
 		mOutputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
     	CHECK_OPENCL_ERROR(status, "clCreateBuffer(mOutputBuffer) failed.");
+    	// fill the buffer with zeros
+    	mrZero->Zero(mOutputBuffer, mBufferSize);
 	}
 }
 
