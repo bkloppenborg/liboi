@@ -60,7 +60,7 @@ public:
 
 	void BuildKernels();
 
-	virtual float Sum(cl_mem input_buffer);
+	float Sum(cl_mem input_buffer);
 
 	static void getNumBlocksAndThreads(int whichKernel, int n, int maxBlocks, int maxThreads, int &blocks, int &threads);
 
