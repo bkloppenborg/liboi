@@ -182,12 +182,16 @@ void CRoutine_Sum_AMD::Init(int n)
 	{
     	mInputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
     	CHECK_OPENCL_ERROR(status, "clCreateBuffer(mInputBuffer) failed.");
+    	// fill the buffer with zeros
+    	mrZero->Zero(mInputBuffer, mBufferSize);
 	}
 
 	if(mOutputBuffer == NULL)
 	{
 		mOutputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, mBufferSize * sizeof(cl_float), NULL, &status);
     	CHECK_OPENCL_ERROR(status, "clCreateBuffer(mOutputBuffer) failed.");
+    	// fill the buffer with zeros
+    	mrZero->Zero(mOutputBuffer, mBufferSize);
 	}
 }
 
