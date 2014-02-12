@@ -73,8 +73,8 @@ __kernel void chi_complex_convex(
     __private unsigned int start,
     __private unsigned int n)
 {
-    int i = get_global_id(0);
-    unsigned int index = start + i;
+    size_t i = get_global_id(0);
+    size_t index = start + i;
     
     // Lookup the phase and other data quantities
     float2 tmp_data;

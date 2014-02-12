@@ -38,7 +38,7 @@ __kernel void loglike(
     __global float * output,
     __private unsigned int n)
 {
-    int i = get_global_id(0);
+    size_t i = get_global_id(0);
     
     // Computes the log of the likelihood
     if(i < n)

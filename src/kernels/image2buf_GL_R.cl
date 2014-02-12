@@ -46,8 +46,8 @@ __kernel void image2buf_GL_R(__read_only image2d_t image,
     __global float * buffer,
     __private int image_width)
 {
-    int x = get_global_id(0);
-    int y = get_global_id(1);
+    size_t x = get_global_id(0);
+    size_t y = get_global_id(1);
     
     int2 coords;
     coords.x = x;

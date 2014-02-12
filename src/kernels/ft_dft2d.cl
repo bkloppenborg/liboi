@@ -69,13 +69,13 @@ __kernel void dft_2d(
 	__global float * flux
 )
 {     
-    unsigned int tid = get_global_id(0);
-    unsigned int lid = get_local_id(0);
-    unsigned int lsize_x;
-    unsigned int i = 0;
-    unsigned int j = 0;
-    unsigned int m = 0;    
-    float arg_C;
+    size_t tid = get_global_id(0);
+    size_t lid = get_local_id(0);
+    size_t lsize_x = 0;
+    size_t i = 0;
+    size_t j = 0;
+    size_t m = 0;    
+    float arg_C = 0;
     
     // zero out the (shared) temporary buffer
     sTemp[lid] = (float2)(0.0f, 0.0f);

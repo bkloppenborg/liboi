@@ -23,7 +23,7 @@
  * as published by the Free Software Foundation, either version 3 
  * of the License, or (at your option) any later version.
  * 
- * LIBOI is distributed in the hope that it will be useful,
+ * LIBOI is distributed in the hope that it will be usefulunsigned int,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
@@ -40,8 +40,8 @@ __kernel void chi(
     __private unsigned int start,
     __private unsigned int n)
 {
-    int i = get_global_id(0);
-    int index = start + i;
+    size_t i = get_global_id(0);
+    size_t index = start + i;
     
     float temp = 0;
 

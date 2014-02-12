@@ -42,7 +42,7 @@ __kernel void ft_to_vis2(
     __private unsigned int n_v2,
     __global float * output)
 {
-    int i = get_global_id(0);
+    size_t i = get_global_id(0);
     // Lookup the index of the UV point which corresponds to this data point.
     unsigned int uv_index = uv_ref[i];
     // Get the Complex values.

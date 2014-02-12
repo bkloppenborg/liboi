@@ -56,8 +56,8 @@ __kernel void chi_complex_nonconvex(
     __private unsigned int start,
     __private unsigned int n)
 {
-    int i = get_global_id(0);
-    unsigned int index = start + i;
+    size_t i = get_global_id(0);
+    size_t index = start + i;
     
     float data_amp = 0;
     float data_phi = 0;

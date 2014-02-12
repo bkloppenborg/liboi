@@ -67,7 +67,7 @@ __kernel void ft_to_t3(
     __private unsigned int n_t3,
     __global float * output)
 {   
-    int i = get_global_id(0);
+    size_t i = get_global_id(0);
     
     // Pull some data from global memory:
     uint4 uvpnt = uv_ref[i];

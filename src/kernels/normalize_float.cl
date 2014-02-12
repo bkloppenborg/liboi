@@ -39,7 +39,7 @@ __kernel void normalize_float(
     __private unsigned int buffer_size,
     __private float one_over_sum)
 {
-    int i = get_global_id(0);
+    size_t i = get_global_id(0);
     
     // TODO: We could possibly speed this up by having the first processor
     // compute 1/divisor and store that into local memory so we do a multiplication
