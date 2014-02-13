@@ -14,4 +14,4 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq libcfitsio3 libcfitsio3-dev
   - sudo apt-get install -qq libccfits0 libccfits-dev
-  - sudo apt-get install -qq opencl-headers
+  - sudo apt-get install -qq opencl-headers fglrx 
