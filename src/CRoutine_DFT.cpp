@@ -89,52 +89,51 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
-/// CPU implementation of the discrete Fourier transform algorithm.
+/// Compute the Fourier transform of the image for a specific UV point
+void CRoutine_DFT::FT(cl_float2 uv_point,
+		valarray<cl_float> & image, unsigned int image_width, unsigned int image_height, float image_scale,
+		cl_float2 & cpu_output)
+{
+	unsigned int x_center = image_width / 2;
+	unsigned int y_center = image_height / 2;
+
+	cl_float x_temp = 0;
+	complex<float> exp_x_vals;
+	cl_float y_temp = 0;
+	complex<float> exp_y_vals;
+	complex<float> dft_output = complex<float>(0,0);
+
+	float arg_u =  2.0 * PI * RPMAS * image_scale * uv_point.s0;	// note, positive due to U definition in interferometry.
+	float arg_v = -2.0 * PI * RPMAS * image_scale * uv_point.s1;
+
+	for(unsigned int y = 0; y < image_height; y++)
+	{
+		y_temp = arg_v * (float) (y - y_center);
+		exp_y_vals = complex<float>(cos(y_temp), sin(y_temp));
+
+		for(unsigned int x = 0; x < image_width; x++)
+		{
+			x_temp = arg_u * (float) (x - x_center);
+			exp_x_vals = complex<float>(cos(x_temp), sin(x_temp));
+
+			dft_output += image[x + image_width * y] * exp_x_vals * exp_y_vals;
+		}
+	}
+
+	// assign the output
+	cpu_output.s0 = real(dft_output);
+	cpu_output.s1 = imag(dft_output);
+}
+
+/// CPU implementation of the Fourier transform
 void CRoutine_DFT::FT(valarray<cl_float2> & uv_points, unsigned int n_uv_points,
 		valarray<cl_float> & image, unsigned int image_width, unsigned int image_height, float image_scale,
 		valarray<cl_float2> & cpu_output)
 {
-	int uu = 0;
-	int ii = 0;
-	int jj = 0;
-
-	// First create the DFT tables:
-	int dft_size = n_uv_points * image_width;
-	valarray<complex<float>> DFT_tablex(dft_size);
-	valarray<complex<float>> DFT_tabley(dft_size);
-	float tmp = 0;
-
-	// First pre-compute the DFT exponent values
-	for (uu = 0; uu < n_uv_points; uu++)
+	// compute the Fourier transform of the image for each Uv point
+	for(unsigned int i = 0; i < uv_points.size(); i++)
 	{
-		for (ii = 0; ii < image_width; ii++)
-		{
-			tmp = 2.0 * PI * RPMAS * image_scale * uv_points[uu].s0 * (float) ii;
-			DFT_tablex[image_width * uu + ii] = complex<float>(cos(tmp), sin(tmp));
-			tmp = -2.0 * PI * RPMAS * image_scale * uv_points[uu].s1 * (float) ii;
-			DFT_tabley[image_width * uu + ii] = complex<float>(cos(tmp), sin(tmp));
-		}
-	}
-
-	// Now generate the FT values.
-	complex<float> ctmp;
-	for(uu=0; uu < n_uv_points; uu++)
-	{
-		// Reset the value.
-		ctmp = complex<float>(0.0, 0.0);
-		for(ii=0; ii < image_width; ii++)
-		{
-			for(jj=0; jj < image_width; jj++)
-			{
-				ctmp += image[ ii + image_width * jj ]
-					* DFT_tablex[ image_width * uu + ii]
-					* DFT_tabley[ image_width * uu + jj];
-			}
-		}
-
-		// Write the value out to the buffer.
-		cpu_output[uu].s0 = real(ctmp);
-		cpu_output[uu].s1 = imag(ctmp);
+		FT(uv_points[i], image, image_width, image_height, image_scale, cpu_output[i]);
 	}
 }
 

@@ -125,7 +125,7 @@ int RunBenchmark(cl_device_type device_type, string exe_path,
 {
 	// Setup the model, make an image and copy it over to a float buffer.
 	CPointSource ps(image_width, image_height, image_scale);
-	valarray<double> temp = ps.GetImage(image_width, image_height, image_scale);
+	valarray<double> temp = ps.GetImage();
 	valarray<float> image(image_width * image_height * image_depth);
 	for(int i = 0; i < temp.size(); i++)
 		image[i] = float(temp[i]);

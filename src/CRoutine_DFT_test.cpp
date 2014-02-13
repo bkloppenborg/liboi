@@ -32,7 +32,7 @@ TEST(CRoutine_DFT, CPU_PointSource)
 
 	// Get UV points, the image, and init an output buffer:
 	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv);
-	valarray<cl_float> image = model.GetImage_CL(image_width, image_height, image_scale);
+	valarray<cl_float> image = model.GetImage_CL();
 	valarray<cl_float2> cpu_output(n_uv);
 
 	// Init an CRoutine_DFT object (we aren't using the OpenCL functionality, but we still init it)
@@ -53,42 +53,42 @@ TEST(CRoutine_DFT, CPU_PointSource)
 	}
 }
 
-//// Checks that the DFT routine replicates the DFT for a point source.
-//// Computations performed on the CPU
-//TEST(CRoutine_DFT, UniformDisk_CPU)
-//{
-//	// Create a (normalized) image with a point source at the center:
-//	unsigned int image_width = 128;
-//	unsigned int image_height = 128;
-//	unsigned int image_size = image_width * image_height;
-//	float image_scale = 0.025; // mas/pixel
-//	unsigned int n_uv = 1000;
-//
-//	// Create the model
-//	CUniformDisk model(image_scale);
-//
-//	// Get UV points, the image, and init an output buffer:
-//	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv);
-//	valarray<cl_float> image = model.GetImage_CL(image_width, image_height, image_scale);
-//	valarray<cl_float2> cpu_output(n_uv);
-//
-//	// Init an CRoutine_DFT object (we aren't using the OpenCL functionality, but we still init it)
-//	COpenCL cl(OPENCL_DEVICE_TYPE);
-//	CRoutine_DFT r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
-//	r.SetSourcePath(LIBOI_KERNEL_PATH);
-//	r.Init(image_scale);
-//
-//	r.FT(uv_points, n_uv, image, image_width, image_height, image_scale, cpu_output);
-//
-//	// Now run the checks
-//	cl_float2 theory_val;
-//	for(int i = 0; i < n_uv; i++)
-//	{
-//		theory_val = model.GetVis_CL(uv_points[i]);
-//		EXPECT_FLOAT_EQ(theory_val.s0, cpu_output[i].s0);
-//		EXPECT_FLOAT_EQ(theory_val.s1, cpu_output[i].s1);
-//	}
-//}
+// Checks that the DFT routine replicates the DFT for a point source.
+// Computations performed on the CPU
+TEST(CRoutine_DFT, UniformDisk_CPU)
+{
+	// Create a (normalized) image with a point source at the center:
+	unsigned int image_width = 128;
+	unsigned int image_height = 128;
+	unsigned int image_size = image_width * image_height;
+	float image_scale = 0.025; // mas/pixel
+	unsigned int n_uv = 10;
+
+	// Create the model
+	CUniformDisk model(image_width, image_height, image_scale);
+
+	// Get UV points, the image, and init an output buffer:
+	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv);
+	valarray<cl_float> image = model.GetImage_CL();
+	valarray<cl_float2> cpu_output(n_uv);
+
+	// Init an CRoutine_DFT object (we aren't using the OpenCL functionality, but we still init it)
+	COpenCL cl(OPENCL_DEVICE_TYPE);
+	CRoutine_DFT r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
+	r.SetSourcePath(LIBOI_KERNEL_PATH);
+	r.Init(image_scale);
+
+	r.FT(uv_points, n_uv, image, image_width, image_height, image_scale, cpu_output);
+
+	// Now run the checks
+	cl_float2 theory_val;
+	for(int i = 0; i < n_uv; i++)
+	{
+		theory_val = model.GetVis_CL(uv_points[i]);
+		EXPECT_FLOAT_EQ(theory_val.s0, cpu_output[i].s0);
+		EXPECT_FLOAT_EQ(theory_val.s1, cpu_output[i].s1);
+	}
+}
 
 /// Checks that the DFT routine replicates the DFT for a point source.
 /// Computations performed on an OpenCL device

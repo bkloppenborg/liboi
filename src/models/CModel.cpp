@@ -27,7 +27,7 @@ CModel::CModel(unsigned int image_width, unsigned int image_height, double image
 
 	mImageCenterX = mImageWidth / 2;
 	mImageCenterY = mImageHeight / 2;
-	mImageCenterID = mImageWidth * mImageHeight/2 + mImageWidth/2;
+	mImageCenterID = mImageWidth * mImageCenterY + mImageCenterX;
 
 	mShiftX = 0;
 	mShiftY = 0;
@@ -172,9 +172,9 @@ valarray<cl_float2> CModel::GenerateUVSpiral_CL(unsigned int n_uv)
 	return output;
 }
 
-valarray<cl_float> CModel::GetImage_CL(unsigned int image_width, unsigned int image_height, float image_scale)
+valarray<cl_float> CModel::GetImage_CL()
 {
-	valarray<double> input = GetImage(image_width, image_height, image_scale);
+	valarray<double> input = GetImage();
 	valarray<cl_float> output(input.size());
 	for(int i = 0; i < input.size(); i++)
 		output[i] = cl_float(input[i]);

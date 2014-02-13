@@ -13,15 +13,22 @@ using namespace std;
 namespace liboi
 {
 
-CUniformDisk::CUniformDisk(double image_scale)
-	:CModel(0, 0, image_scale)
+/// Creates a uniform disk of 1.0 [image_scale units] centered at the origin.
+CUniformDisk::CUniformDisk(unsigned int image_width, unsigned int image_height, double image_scale)
+	:CModel(image_width, image_height, image_scale)
 {
-
+	mAlpha = 0;
+	mDelta = 0;
+	mRadius = 1.0;
 }
 
-CUniformDisk::CUniformDisk(double alpha, double delta, double image_scale, double radius)
-: CModel(alpha, delta, image_scale)
+/// Creates a uniform disk of radius centered at (alpha, delta).
+CUniformDisk::CUniformDisk(unsigned int image_width, unsigned int image_height, double image_scale,
+		double radius, double alpha, double delta)
+:CModel(image_width, image_height, image_scale)
 {
+	mAlpha = alpha;
+	mDelta = delta;
 	mRadius = radius;
 }
 
@@ -39,33 +46,35 @@ complex<double> CUniformDisk::GetVis(pair<double,double> & uv)
 	double bess = PI * radius * baseline;
 
 	complex<double> phase(cos(phi), sin(phi));
-	double V = 2 * j0(bess)/bess;
+	double V = 2 * j1(bess)/bess;
 	return V * phase;
 }
 
-valarray<double> CUniformDisk::GetImage(unsigned int image_width, unsigned int image_height, float image_scale)
+valarray<double> CUniformDisk::GetImage()
 {
 	unsigned int radius = MasToPixel(mRadius);
 
 	// Create a (normalized) image with a point source at the center:
-	unsigned int image_size = image_width * image_height;
+	unsigned int image_size = mImageWidth * mImageHeight;
 	valarray<double> image(image_size);
 
-	unsigned int x_center = image_width/2;
-	unsigned int y_center = image_height/2;
+	unsigned int x_center = mImageWidth/2;
+	unsigned int y_center = mImageHeight/2;
 	double rad_sq = radius * radius;
-	int di = 0;
-	int dj = 0;
+	int dx = 0;
+	int dy = 0;
 
-	for(int i = 0; i < image_width; i++)
+	for(int x = 0; x < mImageWidth; x++)
 	{
-		di = abs(i - x_center);
-		for(int j = 0; j < image_height; j++)
+		dx = abs(x - x_center);
+		for(int y = 0; y < mImageHeight; y++)
 		{
-			dj = abs(j - y_center);
+			dy = abs(y - y_center);
 
-			if(di*di + dj*dj < rad_sq)
-				image[image_height * j + i] = 1;
+			if(dx*dx + dy*dy < rad_sq)
+				image[mImageHeight * y + x] = 1;
+			else
+				image[mImageHeight * y + x] = 0;
 		}
 	}
 

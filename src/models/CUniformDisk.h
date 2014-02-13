@@ -5,8 +5,8 @@
  *      Author: bkloppen
  */
 
-#ifndef CPOINTSOURCE_H_
-#define CPOINTSOURCE_H_
+#ifndef CUNIFORMDISK_H_
+#define CUNIFORMDISK_H_
 
 #include "CModel.h"
 
@@ -22,14 +22,15 @@ protected:
 	double mScale;	// in angular units per pixel
 
 public:
-	CUniformDisk(double image_scale);
-	CUniformDisk(double alpha, double delta, double image_scale, double radius);
+	CUniformDisk(unsigned int image_width, unsigned int image_height, double image_scale);
+	CUniformDisk(unsigned int image_width, unsigned int image_height, double image_scale,
+			double radius, double alpha, double delta);
 	virtual ~CUniformDisk();
 
 	virtual complex<double> GetVis(pair<double,double> & uv);
-	virtual valarray<double> GetImage(unsigned int image_width, unsigned int image_height, float image_scale);
+	virtual valarray<double> GetImage();
 };
 
 } // namespace liboi
 
-#endif /* CPOINTSOURCE_H_ */
+#endif /* CUNIFORMDISK_H_ */

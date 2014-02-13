@@ -66,8 +66,8 @@ public:
 	static valarray<pair<double,double>> GenerateUVSpiral(unsigned int n_uv);
 	static valarray<cl_float2> GenerateUVSpiral_CL(unsigned int n_uv);
 
-	virtual valarray<double> GetImage(unsigned int image_width, unsigned int image_height, float image_scale) = 0;
-	virtual valarray<cl_float> GetImage_CL(unsigned int image_width, unsigned int image_height, float image_scale);
+	virtual valarray<double> GetImage() = 0;
+	virtual valarray<cl_float> GetImage_CL();
 
 	unsigned int MasToPixel(double value);
 	double MasToRad(double value);

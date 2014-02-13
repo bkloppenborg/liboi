@@ -30,15 +30,14 @@ complex<double> CPointSource::GetVis(pair<double,double> & uv)
 	return complex<double>(cos(phi), sin(phi));
 }
 
-valarray<double> CPointSource::GetImage(unsigned int image_width, unsigned int image_height, float image_scale)
+valarray<double> CPointSource::GetImage()
 {
 	// Create a blank image:
-	unsigned int image_size = image_width * image_height;
+	unsigned int image_size = mImageWidth * mImageHeight;
 	valarray<double> output(image_size);
 
 	// Now activate the center most pixel:
-	//output[mImageCenterID] = 1;
-	output[0] = 1;
+	output[mImageCenterID] = 1;
 
 	return output;
 }

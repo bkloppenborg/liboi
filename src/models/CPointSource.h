@@ -21,7 +21,7 @@ public:
 	virtual ~CPointSource();
 
 	complex<double> GetVis(pair<double,double> & uv);
-	valarray<double> GetImage(unsigned int image_width, unsigned int image_height, float image_scale);
+	valarray<double> GetImage();
 };
 
 } // namespace liboi
