@@ -41,9 +41,9 @@ namespace liboi {
 class CRoutine_Sum_AMD: public liboi::CRoutine_Sum
 {
 protected:
-	const unsigned int GROUP_SIZE = 256;
-	const unsigned int VECTOR_SIZE = 4;
-	const unsigned int MULTIPLY = 2;  // Require because of extra addition before loading to local memory
+	const unsigned int GROUP_SIZE;
+	const unsigned int VECTOR_SIZE;
+	const unsigned int MULTIPLY;  // Require because of extra addition before loading to local memory
 
 protected:
 

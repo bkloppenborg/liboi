@@ -36,8 +36,10 @@
 namespace liboi {
 
 CRoutine_Sum_AMD::CRoutine_Sum_AMD(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
-	: CRoutine_Sum(device, context, queue, rZero)
+	: 	GROUP_SIZE(256), VECTOR_SIZE(4), MULTIPLY(2),
+	  	CRoutine_Sum(device, context, queue, rZero)
 {
+
 	// Specify the source location, set temporary buffers to null
 	mSource.push_back("reduce_sum_float_amd.cl");
 
