@@ -51,8 +51,8 @@ protected:
 	cl_mem mOutputBuffer;				/// Local buffer of size n*group_size to store the output from the reduction process.
 	unsigned int mBufferSize;
 
-    size_t globalThreads[1] = {0};        /**< Global NDRange for the kernel */
-    size_t localThreads[1] = {0};         /**< Local WorkGroup for kernel */
+    size_t * globalThreads;        /**< Global NDRange for the kernel */
+    size_t * localThreads;         /**< Local WorkGroup for kernel */
 
 	struct
 	{

@@ -43,6 +43,9 @@ CRoutine_Sum_AMD::CRoutine_Sum_AMD(cl_device_id device, cl_context context, cl_c
 	// Specify the source location, set temporary buffers to null
 	mSource.push_back("reduce_sum_float_amd.cl");
 
+    globalThreads = new size_t[1];
+    localThreads = new size_t[1];
+
 	mrZero = rZero;
 
 	// Set temporary buffer sizes and memory addresses to zero:
@@ -71,6 +74,9 @@ CRoutine_Sum_AMD::~CRoutine_Sum_AMD()
 {
 	if(mInputBuffer) clReleaseMemObject(mInputBuffer);
 	if(mOutputBuffer) clReleaseMemObject(mOutputBuffer);
+
+	delete globalThreads;
+	delete localThreads;
 }
 
 
