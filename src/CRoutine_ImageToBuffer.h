@@ -43,7 +43,7 @@ public:
 	CRoutine_ImageToBuffer(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CRoutine_ImageToBuffer();
 
-	void CopyImage(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int depth);
+	void CopyImage(cl_mem gl_input, cl_mem cl_output, unsigned int image_width, unsigned int image_height, unsigned int image_depth);
 	void Init();
 };
 

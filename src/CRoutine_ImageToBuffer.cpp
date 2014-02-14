@@ -57,24 +57,41 @@ void CRoutine_ImageToBuffer::Init()
 	BuildKernel(source, "image2buf_GL_R", mSource[0]);
 }
 
-void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_image, cl_mem cl_buffer, int width, int height, int depth)
+void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_input, cl_mem cl_output,
+		unsigned int image_width, unsigned int image_height, unsigned int image_depth)
 {
-	// TODO: We need to redo this for 3D data sets and for non-square images.
-	// TODO: Figure out how to determine these sizes dynamically.
-	size_t global[2];
-//	size_t local[2];
-	global[0] = global[1] = width;
-//	local[0] = local[1] = 16;
+	int status = CL_SUCCESS;
+
+	// Wait for the OpenGL queue to finish, lock resources.
+	glFinish();
+	status = clEnqueueAcquireGLObjects(mQueue, 1, &gl_input, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueAcquireGLObjects failed.");
+	status = clFinish(mQueue);
+	CHECK_OPENCL_ERROR(status, "clFinish failed.");
+
+	// Now that we have exclusive access to the OpenGL memory object, copy it to the OpenCL buffer
+	size_t global[2] = {image_width, image_height};
 
 	// Enqueue the kernel.
-	int status = CL_SUCCESS;
-	status |= clSetKernelArg(mKernels[0],  0, sizeof(cl_mem), &gl_image);
-	status |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), &cl_buffer);
-	status |= clSetKernelArg(mKernels[0],  2, sizeof(int), &width);
+//	status |= clSetKernelArg(mKernels[0],  0, sizeof(cl_uint), &image_width);
+//	status |= clSetKernelArg(mKernels[0],  1, sizeof(cl_uint), &image_height);
+	status  = clSetKernelArg(mKernels[0],  0, sizeof(cl_mem), (void *) &gl_input);
+	status |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), (void *) &cl_output);
 	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
+
+	cout << "Image buffer: " << gl_input << endl;
+	cout << "Kernel claims: ";	// text written by printf in kernel.
 
     status |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, NULL, 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
+
+	// Wait for the queue to finish, then release the OpenGL buffer
+	status = clFinish(mQueue);
+	CHECK_OPENCL_ERROR(status, "clFinish failed.");
+
+	// All done.  Unlock resources
+	status = clEnqueueReleaseGLObjects(mQueue, 1, &gl_input, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReleaseGLObjects failed.");
 }
 
 } /* namespace liboi */
