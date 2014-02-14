@@ -107,19 +107,7 @@ void CLibOI::CopyImageToBuffer(int layer)
 
 	if(mImageType == LibOIEnums::OPENGL_FRAMEBUFFER || mImageType == LibOIEnums::OPENGL_TEXTUREBUFFER)
 	{
-		// Wait for the OpenGL queue to finish, lock resources.
-		glFinish();
-		status = clEnqueueAcquireGLObjects(mOCL->GetQueue(), 1, &mImage_gl, 0, NULL, NULL);
-		CHECK_OPENCL_ERROR(status, "clEnqueueAcquireGLObjects failed.");
-
-		// TODO: Implement depth channel for 3D images
 		CopyImageToBuffer(mImage_gl, mImage_cl, mImageWidth, mImageHeight, layer);
-		status = clFinish(mOCL->GetQueue());
-		CHECK_OPENCL_ERROR(status, "clFinish failed.");
-
-		// All done.  Unlock resources
-		status = clEnqueueReleaseGLObjects(mOCL->GetQueue(), 1, &mImage_gl, 0, NULL, NULL);
-		CHECK_OPENCL_ERROR(status, "clEnqueueReleaseGLObjects failed.");
 	}
 	else if(mImageType == LibOIEnums::HOST_MEMORY)
 	{
@@ -835,7 +823,7 @@ void CLibOI::SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type
 
 	case LibOIEnums::OPENGL_TEXTUREBUFFER:
 		// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.
-		mImage_gl = clCreateFromGLTexture2D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, gl_device_memory, &status);
+		mImage_gl = clCreateFromGLTexture(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
 		CHECK_OPENCL_ERROR(status, "clCreateFromGLTexture failed.");
 
 		break;
