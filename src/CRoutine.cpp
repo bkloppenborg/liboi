@@ -201,7 +201,7 @@ bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffe
 	for(int i = 0; i < num_elements; i++)
 	{
 		sum += abs(cpu_buffer[i]);
-		error += fabs(cpu_buffer[i].real() - tmp[i].s0) + fabs(cpu_buffer[i].imag() - tmp[i].s1);
+		error += fabs(cpu_buffer[i].real() - tmp[i].s[0]) + fabs(cpu_buffer[i].imag() - tmp[i].s[1]);
 	}
 
 	printf("  Total Error [sum( |CPU - OpenCL| ) ]: %0.4e\n", error);
@@ -216,12 +216,12 @@ bool CRoutine::Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffe
 		cout << "  Format: cpu_buffer, cl_buffer, difference." << endl;
 		for(int i = 0; i < num_elements; i++)
 		{
-			tmp_real = cpu_buffer[i].real() - tmp[i].s0;
-			tmp_imag = cpu_buffer[i].imag() - tmp[i].s1;
+			tmp_real = cpu_buffer[i].real() - tmp[i].s[0];
+			tmp_imag = cpu_buffer[i].imag() - tmp[i].s[1];
 			diff = complex<float>(tmp_real, tmp_imag);
 			printf("    %i (%0.4e %0.4e) (%0.4e %0.4e) (%0.4e %0.4e)\n", i,
 					cpu_buffer[i].real(), cpu_buffer[i].imag(),
-					tmp[i].s0, tmp[i].s1,
+					tmp[i].s[0], tmp[i].s[1],
 					diff.real(), diff.imag());
 		}
 

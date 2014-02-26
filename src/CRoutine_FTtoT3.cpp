@@ -110,22 +110,22 @@ void CRoutine_FTtoT3::FTtoT3(valarray<cl_float2> & ft_input, valarray<cl_uint4> 
 	{
 		// Look up the UV points
 		uvpoint = uv_ref[i];
-	    t_ab = ft_input[uvpoint.s0];
-	    t_bc = ft_input[uvpoint.s1];
-	    t_ca = ft_input[uvpoint.s2];
+	    t_ab = ft_input[uvpoint.s[0]];
+	    t_bc = ft_input[uvpoint.s[1]];
+	    t_ca = ft_input[uvpoint.s[2]];
 
 	    // Look up the signs, conjugate when necessary.
 	    sign = signs[i];
-	    t_ab.s1 *= sign.s0;
-	    t_bc.s1 *= sign.s1;
-	    t_ca.s1 *= sign.s2;
+	    t_ab.s[1] *= sign.s[0];
+	    t_bc.s[1] *= sign.s[1];
+	    t_ca.s[1] *= sign.s[2];
 
 	    // Form complex numbers, carry out the multiplication.
-		V_ab = complex<float>(t_ab.s0, t_ab.s1);
-		V_bc = complex<float>(t_bc.s0, t_bc.s1);
+		V_ab = complex<float>(t_ab.s[0], t_ab.s[1]);
+		V_bc = complex<float>(t_bc.s[0], t_bc.s[1]);
 
 		// V_ca needs to be conjugated, per the bispectra definition:
-		V_ca = complex<float>(t_ca.s0, -1*t_ca.s1);
+		V_ca = complex<float>(t_ca.s[0], -1*t_ca.s[1]);
 		T3 = V_ab * V_bc * V_ca;
 
 		// Assign values to the output (following the specification in COILibData.h)

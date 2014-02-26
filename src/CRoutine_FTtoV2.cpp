@@ -103,7 +103,7 @@ void CRoutine_FTtoV2::FTtoV2(valarray<cl_float2> & ft_input, valarray<cl_uint> &
 	for(int i = 0; i < n_v2; i++)
 	{
 		uv_index = uv_ref[i];
-		cpu_output[i] = ft_input[uv_index].s0 * ft_input[uv_index].s0 + ft_input[uv_index].s1 * ft_input[uv_index].s1;
+		cpu_output[i] = ft_input[uv_index].s[0] * ft_input[uv_index].s[0] + ft_input[uv_index].s[1] * ft_input[uv_index].s[1];
 	}
 }
 

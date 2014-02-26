@@ -41,12 +41,12 @@ CModel::~CModel()
 /// Returns the visibility of the model at the UV point uv converted into a cl_float2
 cl_float2 CModel::GetVis_CL(cl_float2 & uv)
 {
-	pair<double,double> t_uv(uv.s0, uv.s1);
+	pair<double,double> t_uv(uv.s[0], uv.s[1]);
 	complex<double> t_val = GetVis(t_uv);
 
 	cl_float2 output;
-	output.s0 = real(t_val);
-	output.s1 = imag(t_val);
+	output.s[0] = real(t_val);
+	output.s[1] = imag(t_val);
 
 	return output;
 }
@@ -73,7 +73,7 @@ double CModel::GetV2(pair<double,double> & uv)
 /// Computes the V2, returns OpenCL data types
 cl_float CModel::GetV2_CL(cl_float2 & uv)
 {
-	pair<double,double> t_uv(uv.s0, uv.s1);
+	pair<double,double> t_uv(uv.s[0], uv.s[1]);
 
 	return cl_float(GetV2(t_uv));
 }
@@ -101,15 +101,15 @@ complex<double> CModel::GetT3(pair<double,double> & uv_ab, pair<double,double> &
 /// Computes T3 from OpenCL values
 cl_float2 CModel::GetT3_CL(cl_float2 & uv_ab, cl_float2 & uv_bc, cl_float2 & uv_ca)
 {
-	pair<double,double> t_uv_ab(uv_ab.s0, uv_ab.s1);
-	pair<double,double> t_uv_bc(uv_bc.s0, uv_bc.s1);
-	pair<double,double> t_uv_ca(uv_ca.s0, uv_ca.s1);
+	pair<double,double> t_uv_ab(uv_ab.s[0], uv_ab.s[1]);
+	pair<double,double> t_uv_bc(uv_bc.s[0], uv_bc.s[1]);
+	pair<double,double> t_uv_ca(uv_ca.s[0], uv_ca.s[1]);
 
 	complex<double> t_val = GetT3(t_uv_ab, t_uv_bc, t_uv_ca);
 
 	cl_float2 output;
-	output.s0 = real(t_val);
-	output.s1 = imag(t_val);
+	output.s[0] = real(t_val);
+	output.s[1] = imag(t_val);
 
 	return output;
 }
@@ -123,9 +123,9 @@ valarray<cl_float2> CModel::GetT3_CL(valarray<cl_float2> & uv_points, valarray<c
 
 	for(int i = 0; i < n_t3; i++)
 	{
-		cl_float2 uv_ab = uv_points[uv_ref[i].s0];
-		cl_float2 uv_bc = uv_points[uv_ref[i].s1];
-		cl_float2 uv_ca = uv_points[uv_ref[i].s2];
+		cl_float2 uv_ab = uv_points[uv_ref[i].s[0]];
+		cl_float2 uv_bc = uv_points[uv_ref[i].s[1]];
+		cl_float2 uv_ca = uv_points[uv_ref[i].s[2]];
 
 		output[i] = GetT3_CL(uv_ab, uv_bc, uv_ca);
 	}
@@ -165,8 +165,8 @@ valarray<cl_float2> CModel::GenerateUVSpiral_CL(unsigned int n_uv)
 	for(int i = 0; i < n_uv; i++)
 	{
 		output[i] = cl_float2();
-		output[i].s0 = cl_float(input[i].first);
-		output[i].s1 = cl_float(input[i].second);
+		output[i].s[0] = cl_float(input[i].first);
+		output[i].s[1] = cl_float(input[i].second);
 	}
 
 	return output;

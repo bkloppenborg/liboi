@@ -48,8 +48,8 @@ TEST(CRoutine_DFT, CPU_PointSource)
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_FLOAT_EQ(theory_val.s0, cpu_output[i].s0);	// real
-		EXPECT_FLOAT_EQ(theory_val.s1, cpu_output[i].s1);	// imaginary
+		EXPECT_FLOAT_EQ(theory_val.s[0], cpu_output[i].s[0]);	// real
+		EXPECT_FLOAT_EQ(theory_val.s[1], cpu_output[i].s[1]);	// imaginary
 	}
 }
 
@@ -85,8 +85,8 @@ TEST(CRoutine_DFT, UniformDisk_CPU)
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_FLOAT_EQ(theory_val.s0, cpu_output[i].s0);
-		EXPECT_FLOAT_EQ(theory_val.s1, cpu_output[i].s1);
+		EXPECT_FLOAT_EQ(theory_val.s[0], cpu_output[i].s[0]);
+		EXPECT_FLOAT_EQ(theory_val.s[1], cpu_output[i].s[1]);
 	}
 }
 

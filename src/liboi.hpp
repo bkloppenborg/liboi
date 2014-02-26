@@ -66,13 +66,13 @@ using namespace ccoifits;
 // TODO: Switch to native C++11 when Apple clang is based on 3.2svn
 // clang 3.1 does not (fully) support c++11 features so when compiled by clang
 // we switch to boost for threads, mutexes, and locks.
-#ifdef __clang__
-#include <boost/smart_ptr/shared_ptr.hpp>
-using namespace boost;
-namespace ns = boost;
-#else
-namespace ns = std;
-#endif
+//#ifdef __clang__
+//#include <boost/smart_ptr/shared_ptr.hpp>
+//using namespace boost;
+//namespace ns = boost;
+//#else
+//namespace ns = std;
+//#endif
 
 class COpenCL;
 typedef shared_ptr<COpenCL> COpenCLPtr;
@@ -106,7 +106,7 @@ class CRoutine_Zero;
 class COILibDataList;
 
 class COILibData;
-typedef ns::shared_ptr<COILibData> COILibDataPtr;
+typedef shared_ptr<COILibData> COILibDataPtr;
 
 namespace LibOIEnums
 {

@@ -33,35 +33,19 @@
 #define COILIBDATALIST_H_
 
 #include <string>
-
-#include "COILibData.h"
-
-// TODO: Switch to native C++11 when Apple clang is based on 3.2svn
-// clang 3.1 does not (fully) support c++11 features so when compiled by clang
-// we switch to boost for threads, mutexes, and locks.
-#ifdef __clang__
-#include <boost/thread.hpp>
-#include <boost/signals2/mutex.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/smart_ptr/shared_ptr.hpp>
-using namespace boost;
-namespace ns = boost;
-
-#else
 #include <memory>
 #include <mutex>
 #include <thread>
-namespace ns = std;
-
-#endif
 
 using namespace std;
+
+#include "COILibData.h"
 
 namespace liboi
 {
 
 class COILibData;
-typedef ns::shared_ptr<COILibData> COILibDataPtr;
+typedef shared_ptr<COILibData> COILibDataPtr;
 
 class COILibDataList
 {

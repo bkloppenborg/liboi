@@ -52,11 +52,11 @@ protected:
 		// Set data = model to produce a zero chi result.
 		for(int i = 0; i < test_size; i++)
 		{
-			data[i] = temp[i].s0;
-			data[test_size + i] = temp[i].s1;
+			data[i] = temp[i].s[0];
+			data[test_size + i] = temp[i].s[1];
 
-			model[i] = temp[i].s0;
-			model[test_size + i] = temp[i].s1;
+			model[i] = temp[i].s[0];
+			model[test_size + i] = temp[i].s[1];
 
 			// 1% error on amplitudes, 10% error on phases
 			data_err[i] = amp_err * data[i];
@@ -79,7 +79,7 @@ protected:
 		// Generate test data.
 		for(int i = 0; i < test_size; i++)
 		{
-			complex<float> c_data(t_data[i].s0, t_data[i].s1);
+			complex<float> c_data(t_data[i].s[0], t_data[i].s[1]);
 
 			// Data are stored as amplitude and phase.
 			data[i] = abs(c_data);

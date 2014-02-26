@@ -319,18 +319,18 @@ void CRoutine_Chi::Chi_complex_nonconvex(valarray<cl_float> & data, valarray<cl_
 	for(int i = start_index; i < n; i++)
 	{
 		// Form the complex quantities:
-		c_data.s0 = data[i];
-		c_data.s1 = data[n+i];
-		c_model.s0 = model[i];
-		c_model.s1 = model[n+i];
-		c_error.s0 = data_err[i];
-		c_error.s1 = data_err[n+i];
+		c_data.s[0] = data[i];
+		c_data.s[1] = data[n+i];
+		c_model.s[0] = model[i];
+		c_model.s[1] = model[n+i];
+		c_error.s[0] = data_err[i];
+		c_error.s[1] = data_err[n+i];
 
 		// Now compute the chi elements and store the result
-		output[i] =  (c_data.s0 - c_model.s0) / c_error.s0;
+		output[i] =  (c_data.s[0] - c_model.s[0]) / c_error.s[0];
 		// For the error in phase we need the remainder of the subtraction operation.
 		// We explicitly upcast these to doubles to make the compiler happy, then downcast back to a cl_float
-		output[n+i] = cl_float( fmod(double(c_data.s1) - double(c_model.s1), TWO_PI) / double(c_error.s1) );
+		output[n+i] = cl_float( fmod(double(c_data.s[1]) - double(c_model.s[1]), TWO_PI) / double(c_error.s[1]) );
 	}
 }
 

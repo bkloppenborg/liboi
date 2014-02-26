@@ -370,8 +370,8 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points, cl_mem
 	uv_points.resize(mNUV);
 	for(int i = 0; i < mNUV; i++)
 	{
-		uv_points[i].first = t_uv_points[i].s0;
-		uv_points[i].second = t_uv_points[i].s1;
+		uv_points[i].first = t_uv_points[i].s[0];
+		uv_points[i].second = t_uv_points[i].s[1];
 	}
 
 	// #####
@@ -415,8 +415,8 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points, cl_mem
 		t3_err[i].first = t_t3_err[i];
 		t3_err[i].second = t_t3_err[mNT3 + i];
 
-		t3_uv_ref[i] = make_tuple(t_t3_uvref[i].s0, t_t3_uvref[i].s1, t_t3_uvref[i].s2);
-		t3_uv_sign[i] = make_tuple(t_t3_sign[i].s0, t_t3_sign[i].s1, t_t3_sign[i].s2);
+		t3_uv_ref[i] = make_tuple(t_t3_uvref[i].s[0], t_t3_uvref[i].s[1], t_t3_uvref[i].s[2]);
+		t3_uv_sign[i] = make_tuple(t_t3_sign[i].s[0], t_t3_sign[i].s[1], t_t3_sign[i].s[2]);
 	}
 }
 
@@ -450,14 +450,14 @@ void COILibData::CopyToDevice(const vector<pair<double,double> > & uv_points,
 	valarray<cl_float2> t_uv_points(mNUV);
 	for(int i = 0; i < uv_points.size(); i++)
 	{
-		t_uv_points[i].s0 = uv_points[i].first;
-		t_uv_points[i].s1 = uv_points[i].second;
+		t_uv_points[i].s[0] = uv_points[i].first;
+		t_uv_points[i].s[1] = uv_points[i].second;
 	}
 	// Pad with infinities after this (results in UV points having value of (0 + 0i))
 	for(int i = uv_points.size(); i < mNUV; i++)
 	{
-		t_uv_points[i].s0 = numeric_limits<float>::infinity();
-		t_uv_points[i].s1 = numeric_limits<float>::infinity();
+		t_uv_points[i].s[0] = numeric_limits<float>::infinity();
+		t_uv_points[i].s[1] = numeric_limits<float>::infinity();
 	}
 
 	// Copy over the UV points.  We MUST always have at least one UV point (otherwise the data would be nonsense).
@@ -529,16 +529,16 @@ void COILibData::CopyToDevice(const vector<pair<double,double> > & uv_points,
 		t_t3_err[mNT3 + i] = t3_err[i].second;
 
 		// UV references
-		t_t3_uvref[i].s0 = get<0>(t3_uv_ref[i]);
-		t_t3_uvref[i].s1 = get<1>(t3_uv_ref[i]);
-		t_t3_uvref[i].s2 = get<2>(t3_uv_ref[i]);
-		t_t3_uvref[i].s3 = 0;
+		t_t3_uvref[i].s[0] = get<0>(t3_uv_ref[i]);
+		t_t3_uvref[i].s[1] = get<1>(t3_uv_ref[i]);
+		t_t3_uvref[i].s[2] = get<2>(t3_uv_ref[i]);
+		t_t3_uvref[i].s[3] = 0;
 
 		// T3 uv signs:
-		t_t3_sign[i].s0 = get<0>(t3_uv_sign[i]);
-		t_t3_sign[i].s1 = get<1>(t3_uv_sign[i]);
-		t_t3_sign[i].s2 = get<2>(t3_uv_sign[i]);
-		t_t3_sign[i].s3 = 0;
+		t_t3_sign[i].s[0] = get<0>(t3_uv_sign[i]);
+		t_t3_sign[i].s[1] = get<1>(t3_uv_sign[i]);
+		t_t3_sign[i].s[2] = get<2>(t3_uv_sign[i]);
+		t_t3_sign[i].s[3] = 0;
 	}
 
 	if(mNT3 > 0)

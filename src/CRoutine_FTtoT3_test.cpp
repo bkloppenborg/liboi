@@ -33,8 +33,8 @@ TEST(CRoutine_FTtoT3, CPU_PointSource)
 	// UV point with the closed arm of a triplet.
 	for(int i = 2; i < test_size; i += 3)
 	{
-		uv_points[i].s0 = -1*(uv_points[i-2].s0 + uv_points[i-1].s0);
-		uv_points[i].s1 = -1*(uv_points[i-2].s1 + uv_points[i-1].s1);
+		uv_points[i].s[0] = -1*(uv_points[i-2].s[0] + uv_points[i-1].s[0]);
+		uv_points[i].s[1] = -1*(uv_points[i-2].s[1] + uv_points[i-1].s[1]);
 	}
 
 	valarray<cl_float2> ft_input = pnt.GetVis_CL(uv_points);
@@ -45,16 +45,16 @@ TEST(CRoutine_FTtoT3, CPU_PointSource)
 	for(int i = 0; i < test_size; i++)
 	{
 		// Create the UV references
-		uv_ref[i].s0 = 3*i;
-		uv_ref[i].s1 = 3*i+1;
-		uv_ref[i].s2 = 3*i+2;
-		uv_ref[i].s3 = 0;
+		uv_ref[i].s[0] = 3*i;
+		uv_ref[i].s[1] = 3*i+1;
+		uv_ref[i].s[2] = 3*i+2;
+		uv_ref[i].s[3] = 0;
 
 		// Create the T3 signs
-		uv_sign[i].s0 = 1;
-		uv_sign[i].s1 = 1;
-		uv_sign[i].s2 = 1;	// The conjugation above ensures the triangle is closed.
-		uv_sign[i].s3 = 0;
+		uv_sign[i].s[0] = 1;
+		uv_sign[i].s[1] = 1;
+		uv_sign[i].s[2] = 1;	// The conjugation above ensures the triangle is closed.
+		uv_sign[i].s[3] = 0;
 	}
 
 	// Allocate place to store the output
@@ -70,8 +70,8 @@ TEST(CRoutine_FTtoT3, CPU_PointSource)
 	//  [t3_amp_0, ..., t3_amp_n, t3_phi_0, ..., t3_phi_n]
 	for(unsigned int i = 0; i < test_size; i++)
 	{
-		EXPECT_NEAR(output[i], model_out[i].s0, MAX_REL_ERROR * model_out[i].s0);
-		EXPECT_NEAR(output[test_size + i], model_out[i].s1, MAX_REL_ERROR * model_out[i].s1);
+		EXPECT_NEAR(output[i], model_out[i].s[0], MAX_REL_ERROR * model_out[i].s[0]);
+		EXPECT_NEAR(output[test_size + i], model_out[i].s[1], MAX_REL_ERROR * model_out[i].s[1]);
 	}
 }
 
@@ -89,8 +89,8 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	// UV point with the closed arm of a triplet.
 	for(int i = 2; i < test_size; i += 3)
 	{
-		uv_points[i].s0 = -1*(uv_points[i-2].s0 + uv_points[i-1].s0);
-		uv_points[i].s1 = -1*(uv_points[i-2].s1 + uv_points[i-1].s1);
+		uv_points[i].s[0] = -1*(uv_points[i-2].s[0] + uv_points[i-1].s[0]);
+		uv_points[i].s[1] = -1*(uv_points[i-2].s[1] + uv_points[i-1].s[1]);
 	}
 
 	valarray<cl_float2> ft_input = pnt.GetVis_CL(uv_points);
@@ -101,16 +101,16 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	for(int i = 0; i < test_size; i++)
 	{
 		// Create the UV references
-		uv_ref[i].s0 = 3*i;
-		uv_ref[i].s1 = 3*i+1;
-		uv_ref[i].s2 = 3*i+2;
-		uv_ref[i].s3 = 0;
+		uv_ref[i].s[0] = 3*i;
+		uv_ref[i].s[1] = 3*i+1;
+		uv_ref[i].s[2] = 3*i+2;
+		uv_ref[i].s[3] = 0;
 
 		// Create the T3 signs
-		uv_sign[i].s0 = 1;
-		uv_sign[i].s1 = 1;
-		uv_sign[i].s2 = 1;	// The conjugation above ensures the triangle is closed.
-		uv_sign[i].s3 = 0;
+		uv_sign[i].s[0] = 1;
+		uv_sign[i].s[1] = 1;
+		uv_sign[i].s[2] = 1;	// The conjugation above ensures the triangle is closed.
+		uv_sign[i].s[3] = 0;
 	}
 
 	// Init the OpenCL device and necessary routines:
@@ -155,7 +155,7 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	//  [t3_amp_0, ..., t3_amp_n, t3_phi_0, ..., t3_phi_n]
 	for(unsigned int i = 0; i < test_size; i++)
 	{
-		EXPECT_NEAR(output[i], model_out[i].s0, MAX_REL_ERROR * model_out[i].s0) << "Amplitude calculation error.";
-		EXPECT_NEAR(output[test_size + i], model_out[i].s1, MAX_REL_ERROR * model_out[i].s1) << "Phase calculation error.";
+		EXPECT_NEAR(output[i], model_out[i].s[0], MAX_REL_ERROR * model_out[i].s[0]) << "Amplitude calculation error.";
+		EXPECT_NEAR(output[test_size + i], model_out[i].s[1], MAX_REL_ERROR * model_out[i].s[1]) << "Phase calculation error.";
 	}
 }

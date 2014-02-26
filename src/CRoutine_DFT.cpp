@@ -103,8 +103,8 @@ void CRoutine_DFT::FT(cl_float2 uv_point,
 	complex<float> exp_y_vals;
 	complex<float> dft_output = complex<float>(0,0);
 
-	float arg_u =  2.0 * PI * RPMAS * image_scale * uv_point.s0;	// note, positive due to U definition in interferometry.
-	float arg_v = -2.0 * PI * RPMAS * image_scale * uv_point.s1;
+	float arg_u =  2.0 * PI * RPMAS * image_scale * uv_point.s[0];	// note, positive due to U definition in interferometry.
+	float arg_v = -2.0 * PI * RPMAS * image_scale * uv_point.s[1];
 
 	for(unsigned int y = 0; y < image_height; y++)
 	{
@@ -121,8 +121,8 @@ void CRoutine_DFT::FT(cl_float2 uv_point,
 	}
 
 	// assign the output
-	cpu_output.s0 = real(dft_output);
-	cpu_output.s1 = imag(dft_output);
+	cpu_output.s[0] = real(dft_output);
+	cpu_output.s[1] = imag(dft_output);
 }
 
 /// CPU implementation of the Fourier transform
