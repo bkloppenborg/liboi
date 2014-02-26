@@ -58,6 +58,7 @@ class COpenCL;
 
 #pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
 #pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
+//#pragma OPENCL EXTENSION cl_khr_image2D_buffer : enable
 
 // cl.hpp throws lot of warnings, but we have no control over these.  Tell GCC to ignore them.
 //#pragma GCC diagnostic push

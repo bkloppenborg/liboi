@@ -63,7 +63,7 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	// allocate 4 * sizeof(cl_float) * local = 4 kB < 32 (or 48) kB of memory. If future OpenCL
 	// implementations support more local threads, this may become an issue.
 
-    int status = 0;
+	int status = CL_SUCCESS;
     size_t global = (size_t) n_uv_points;
     size_t local = 256;                     // init to some value, not important anymore.
 
