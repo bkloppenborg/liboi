@@ -822,14 +822,9 @@ void CLibOI::SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type
 		break;
 
 	case LibOIEnums::OPENGL_TEXTUREBUFFER:
-		// In OpenCL 1.2 clCreateFromGLTexture3D was depreciated. The following workaround will only use
-		// clCreateFromGLTexture3D on older, OpenCL 1.0 - 1.1 devices. This compiler directive is defined
-		// by src/CMakeLists.txt and may fail if multiple OpenCL devices are present on a system.
-#ifdef OPENCL_VERSION_LESSTHAN_1_2
-		mImage_gl = clCreateFromGLTexture3D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
-#else
-		mImage_gl = clCreateFromGLTexture(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
-#endif // OPENCL_VERSION_LESSTHAN_1_2
+		mImage_gl = clCreateFromGLTexture3D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_3D, 0, gl_device_memory, &status);
+		// TODO When we drop support for old OpenCL 1.0 / 1.1 devices, the above line should be changed to this:
+		// mImage_gl = clCreateFromGLTexture(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
 		CHECK_OPENCL_ERROR(status, "clCreateFromGLTexture failed.");
 
 		break;

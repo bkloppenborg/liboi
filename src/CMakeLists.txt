@@ -28,13 +28,6 @@ project(oi)
 find_package(OpenGL REQUIRED)
 find_package(OpenCL REQUIRED)
 include_directories(${OPENCL_INCLUDE_DIRS})
-# Workaround for old OpenCL versions
-if(${OPENCL_VERSION} LESS 1.2)
-    add_definitions(-DOPENCL_VERSION_LESSTHAN_1_2)
-endif(${OPENCL_VERSION} LESS 1.2)
-
-
-
 
 if("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*clang")
 	MESSAGE(STATUS "NOTICE: clang detected, switching to boost for threads/mutexes/locks/shared_ptr.")
