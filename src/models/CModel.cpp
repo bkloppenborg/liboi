@@ -8,6 +8,7 @@
 #include "CModel.h"
 #include <cassert>
 #include <fitsio.h>
+#include <iostream>
 
 using namespace std;
 
@@ -193,12 +194,58 @@ double CModel::MasToRad(double value)
 	return value * RPMAS;
 }
 
+/// Reads in a TFLOAT FITS image
+/// TODO: This function is hard-coded to TFLOAT format and should not, in general, be used.
+valarray<double> CModel::ReadImage(string filename, unsigned int width, unsigned int height, double image_scale)
+{
+    valarray<double> image(width * height);
+    valarray<float> image_temp(width * height);
+
+	int status = 0;
+
+    char comment[200];          // should be enough for most comments
+
+    fitsfile *fptr;             // pointer to the FITS file, defined in
+                                // fitsio.h
+    int nfound, anynull;
+
+    long naxes[2], fpixel, npixels;
+
+    float nullval;
+
+    if (status == 0)
+        fits_open_file(&fptr, filename.c_str(), READONLY, &status);
+    if (status == 0)
+        fits_read_keys_lng(fptr, "NAXIS", 1, 2, naxes, &nfound, &status);
+
+    assert(width == naxes[0]);
+    assert(height = naxes[1]);      // number of pixels in the image
+
+
+    // Check the format for the image:
+    npixels = width * height;
+    fpixel = 1;
+    nullval = 0;                // do not check for null values
+
+    if (status == 0)
+        fits_read_img(fptr, TFLOAT, fpixel, npixels, &nullval, &image_temp[0], &anynull, &status);
+
+    if (status == 0)
+        fits_close_file(fptr, &status);
+
+    for(unsigned int i = 0; i < image.size(); i++)
+    {
+    	image[i] = image_temp[i];
+    }
+
+    return image;
+}
+
+
 /// Saves the current image in the OpenCL memory buffer to the specified FITS file
 /// If the OpenCL memory has not been initialzed, this function immediately returns
-void   CModel::SaveImage(string filename)
+void   CModel::WriteImage(valarray<double> & image, unsigned int image_width, unsigned int image_height, double image_scale, string filename)
 {
-	valarray<double> image = GetImage();
-
 	// write out the FITS file:
 	fitsfile *fptr;
 	int error = 0;
@@ -207,9 +254,9 @@ void   CModel::SaveImage(string filename)
 	long naxes[2];
 
 	/*Initialise storage*/
-	naxes[0] = (long) mImageWidth;
-	naxes[1] = (long) mImageHeight;
-	nelements = mImageWidth * mImageWidth;
+	naxes[0] = (long) image_width;
+	naxes[1] = (long) image_height;
+	nelements = image_width * image_height;
 
 	/*Create new file*/
 	if (*status == 0)
@@ -220,7 +267,7 @@ void   CModel::SaveImage(string filename)
 		fits_create_img(fptr, DOUBLE_IMG, naxis, naxes, status);
 
 	double RPMAS = (M_PI / 180.0) / 3600000.0;
-	double image_scale_rad = mImageScale;// * RPMAS;
+	double image_scale_rad = image_scale;// * RPMAS;
 
 	// Write keywords to get WCS to work //
 //	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Milli-arcsecs per pixel", status);

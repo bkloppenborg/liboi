@@ -72,7 +72,9 @@ public:
 	unsigned int MasToPixel(double value);
 	double MasToRad(double value);
 
-	void   SaveImage(string filename);
+	valarray<double> ReadImage(string filename, unsigned int width, unsigned int height, double image_scale);
+
+	void   WriteImage(valarray<double> & image, unsigned int image_width, unsigned int image_height, double image_scale, string filename);
 };
 
 } // namespace liboi
