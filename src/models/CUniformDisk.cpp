@@ -43,7 +43,7 @@ complex<double> CUniformDisk::GetVis(pair<double,double> & uv)
 	// Calculate the visibility and return
 	double baseline = sqrt(uv.first * uv.first + uv.second * uv.second);
 	double phi = -2 * PI * (mAlpha * uv.first + mDelta * uv.second);
-	double bess = PI * radius * baseline;
+	double bess = 2 * PI * radius * baseline;
 
 	complex<double> phase(cos(phi), sin(phi));
 	double V = 2 * j1(bess)/bess;
