@@ -52,29 +52,29 @@ complex<double> CUniformDisk::GetVis(pair<double,double> & uv)
 
 valarray<double> CUniformDisk::GetImage()
 {
-	unsigned int radius = MasToPixel(mRadius);
+	double radius = mRadius / mImageScale;
 
 	// Create a (normalized) image with a point source at the center:
 	unsigned int image_size = mImageWidth * mImageHeight;
 	valarray<double> image(image_size);
 
-	unsigned int x_center = mImageWidth/2;
-	unsigned int y_center = mImageHeight/2;
+	double center_col = double(mImageWidth) / 2;
+	double center_row = double(mImageHeight) / 2;
 	double rad_sq = radius * radius;
-	int dx = 0;
-	int dy = 0;
+	double dx = 0;
+	double dy = 0;
 
-	for(int x = 0; x < mImageWidth; x++)
+	for(unsigned int row = 0; row < mImageHeight; row++)
 	{
-		dx = abs(x - x_center);
-		for(int y = 0; y < mImageHeight; y++)
+		dy = row - center_row;
+		for(unsigned int col = 0; col < mImageWidth; col++)
 		{
-			dy = abs(y - y_center);
+			dx = col - center_col;
 
-			if(dx*dx + dy*dy < rad_sq)
-				image[mImageHeight * y + x] = 1;
+			if(dx*dx + dy*dy <= rad_sq)
+				image[mImageWidth * row + col] = 1;
 			else
-				image[mImageHeight * y + x] = 0;
+				image[mImageWidth * row + col] = 0;
 		}
 	}
 
