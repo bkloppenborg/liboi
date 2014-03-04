@@ -71,6 +71,8 @@ public:
 
 	unsigned int MasToPixel(double value);
 	double MasToRad(double value);
+
+	void   SaveImage(string filename);
 };
 
 } // namespace liboi

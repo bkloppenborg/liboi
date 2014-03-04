@@ -7,6 +7,7 @@
 
 #include "CModel.h"
 #include <cassert>
+#include <fitsio.h>
 
 using namespace std;
 
@@ -190,6 +191,68 @@ unsigned int CModel::MasToPixel(double value)
 double CModel::MasToRad(double value)
 {
 	return value * RPMAS;
+}
+
+/// Saves the current image in the OpenCL memory buffer to the specified FITS file
+/// If the OpenCL memory has not been initialzed, this function immediately returns
+void   CModel::SaveImage(string filename)
+{
+	valarray<double> image = GetImage();
+
+	// write out the FITS file:
+	fitsfile *fptr;
+	int error = 0;
+	int* status = &error;
+	long fpixel = 1, naxis = 2, nelements;
+	long naxes[2];
+
+	/*Initialise storage*/
+	naxes[0] = (long) mImageWidth;
+	naxes[1] = (long) mImageHeight;
+	nelements = mImageWidth * mImageWidth;
+
+	/*Create new file*/
+	if (*status == 0)
+		fits_create_file(&fptr, filename.c_str(), status);
+
+	/*Create primary array image*/
+	if (*status == 0)
+		fits_create_img(fptr, DOUBLE_IMG, naxis, naxes, status);
+
+	double RPMAS = (M_PI / 180.0) / 3600000.0;
+	double image_scale_rad = mImageScale;// * RPMAS;
+
+	// Write keywords to get WCS to work //
+//	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Milli-arcsecs per pixel", status);
+//	fits_write_key_dbl(fptr, "CDELT2", image_scale_rad, 3, "Milli-arcsecs per pixel", status);
+//	fits_write_key_dbl(fptr, "CRVAL1", 0.0, 3, "X-coordinate of ref pixel", status);
+//	fits_write_key_dbl(fptr, "CRVAL2", 0.0, 3, "Y-coordinate of ref pixel", status);
+//	fits_write_key_lng(fptr, "CRPIX1", naxes[0]/2, "Ref pixel in X", status);
+//	fits_write_key_lng(fptr, "CRPIX2", naxes[1]/2, "Ref pixel in Y", status);
+//	fits_write_key_str(fptr, "CTYPE1", "RA",  "Name of X-coordinate", status);
+//	fits_write_key_str(fptr, "CTYPE2", "DEC", "Name of Y-coordinate", status);
+//	fits_write_key_str(fptr, "CUNIT1", "mas", "Unit of X-coordinate", status);
+//	fits_write_key_str(fptr, "CUNIT2", "mas", "Unit of Y-coordinate", status);
+
+	/*Write a keywords (datafile, target, image scale) */
+//	if (*status == 0)
+//		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);
+//	if (*status == 0)
+//		fits_update_key(fptr, TSTRING, "TARGET", "FakeImage", "Target Name", status);
+//	if (*status == 0)
+//		fits_update_key(fptr, TFLOAT, "SCALE", &scale, "Scale (mas/pixel)", status);
+
+
+	/*Write image*/
+	if (*status == 0)
+		fits_write_img(fptr, TDOUBLE, fpixel, nelements, &image[0], status);
+
+	/*Close file*/
+	if (*status == 0)
+		fits_close_file(fptr, status);
+
+	/*Report any errors*/
+	fits_report_error(stderr, *status);
 }
 
 } // namespace liboi
