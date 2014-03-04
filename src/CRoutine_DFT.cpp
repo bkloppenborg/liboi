@@ -94,29 +94,29 @@ void CRoutine_DFT::FT(cl_float2 uv_point,
 		valarray<cl_float> & image, unsigned int image_width, unsigned int image_height, float image_scale,
 		cl_float2 & cpu_output)
 {
-	unsigned int x_center = image_width / 2;
-	unsigned int y_center = image_height / 2;
+	double x_center = double(image_width) / 2;
+	double y_center = double(image_height) / 2;
 
-	cl_float x_temp = 0;
-	complex<float> exp_x_vals;
-	cl_float y_temp = 0;
-	complex<float> exp_y_vals;
-	complex<float> dft_output = complex<float>(0,0);
+	double x_temp = 0;
+	complex<double> exp_x_vals;
+	double y_temp = 0;
+	complex<double> exp_y_vals;
+	complex<double> dft_output = complex<float>(0,0);
 
-	float arg_u =  2.0 * PI * RPMAS * image_scale * uv_point.s[0];	// note, positive due to U definition in interferometry.
-	float arg_v = -2.0 * PI * RPMAS * image_scale * uv_point.s[1];
+	double arg_u =  2.0 * PI * RPMAS * image_scale * uv_point.s[0];	// note, positive due to U definition in interferometry.
+	double arg_v = -2.0 * PI * RPMAS * image_scale * uv_point.s[1];
 
 	for(unsigned int y = 0; y < image_height; y++)
 	{
-		y_temp = arg_v * (float) (y - y_center);
-		exp_y_vals = complex<float>(cos(y_temp), sin(y_temp));
+		y_temp = arg_v * (y - y_center);
+		exp_y_vals = complex<double>(cos(y_temp), sin(y_temp));
 
 		for(unsigned int x = 0; x < image_width; x++)
 		{
-			x_temp = arg_u * (float) (x - x_center);
-			exp_x_vals = complex<float>(cos(x_temp), sin(x_temp));
+			x_temp = arg_u * (x - x_center);
+			exp_x_vals = complex<double>(cos(x_temp), sin(x_temp));
 
-			dft_output += image[x + image_width * y] * exp_x_vals * exp_y_vals;
+			dft_output += double(image[x + image_width * y]) * exp_x_vals * exp_y_vals;
 		}
 	}
 
