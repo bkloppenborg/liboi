@@ -61,12 +61,12 @@ float2 ft_pixel(float flux, float arg_x, float arg_y)
 }
 
 __kernel void dft_2d(
-	__global float2 * uv_points,
+	__global float2 * restrict uv_points,
 	__private unsigned int nuv,
-	__global float * image,
+	__global float * restrict image,
 	__private unsigned image_width,
 	__private unsigned image_height,
-	__global float2 * output
+	__global float2 * restrict output
 )
 {     
     size_t tid = get_global_id(0);
@@ -79,8 +79,9 @@ __kernel void dft_2d(
     float col_temp = 0;
     float2 dft_output = (float2) (0.0f, 0.0f);
 
-    float arg_u =  ARG * uv_points[tid].s0; // note, positive due to U definition in interferometrrow.
-    float arg_v = -ARG * uv_points[tid].s1;
+    float2 uv_point = uv_points[tid];
+    float arg_u =  ARG * uv_point.s0; // note, positive due to U definition in interferometrrow.
+    float arg_v = -ARG * uv_point.s1;
 
     for(unsigned int row = 0; row < image_height; row++)
     {
