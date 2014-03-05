@@ -275,7 +275,7 @@ void CLibOI::ExportImage(float * image, unsigned int width, unsigned int height,
 void CLibOI::FTToData(COILibDataPtr data)
 {
 	// First compute the Fourier transform
-	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mImage_cl, mImageWidth, mImageHeight, mFluxBuffer, mFTBuffer);
+	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mImage_cl, mImageWidth, mImageHeight, mFTBuffer);
 
 	// Now create the V2 and T3's
 	int n_vis = data->GetNumVis();

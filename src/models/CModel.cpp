@@ -140,14 +140,17 @@ valarray<pair<double,double>> CModel::GenerateUVSpiral(unsigned int n_uv)
 	// Init a buffer to store the UV points in:
 	valarray<pair<double,double>> uv_points(n_uv);
 
+	// always test something near zero
+	uv_points[0] = pair<float,float>(1, 1);
+
 	// Here we make an Archimedean spiral that covers a wide range of UV points
 	// We should get 4 full revolutions and end up with r ~ 400 mega-lambda.
 	double a = 1;	// 1 mega-lambda
 	double b = 20;
-	double dt = 4*2*PI / n_uv;	// We want to have four full circles
+	double dt = 4 * 2 * PI / n_uv;	// We want to have four full circles
 	double r = 0;
 	double theta = 0;
-	for(int i = 0; i < n_uv; i++)
+	for(int i = 1; i < n_uv; i++)
 	{
 		r = (a + b * theta) * 1E6;
 		uv_points[i] = pair<float,float>(r*cos(theta), r*sin(theta));

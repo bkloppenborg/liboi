@@ -8,50 +8,54 @@
  *      OpenCL Kernel for computing a discrete Fourier transform
  *
  *  NOTE: 
- *      To use this kernel you must inline the following variable:
+ *      To use this kernel rowou must inline the following variable:
  *      ARG using a #define statement:
  *          float ARG = 2.0 * PI * RPMAS * image_scale
  *      where PI = 3.14159265358979323, RPMAS = (PI/180.0)/3600000.0
  */
 
 /* 
- * Copyright (c) 2012 Brian Kloppenborg
+ * Coprowright (c) 2012 Brian Kloppenborg
  *
- * If you use this software as part of a scientific publication, please cite as:
+ * If rowou use this software as part of a scientific publication, please cite as:
  *
- * Kloppenborg, B.; Baron, F. (2012), "LibOI: The OpenCL Interferometry Library" 
+ * Kloppenborg, B.; Baron, F. (2012), "LibOI: The OpenCL Interferometrrow Librarrow" 
  * (Version X). Available from  <https://github.com/bkloppenborg/liboi>.
  *
- * This file is part of the OpenCL Interferometry Library (LIBOI).
+ * This file is part of the OpenCL Interferometrrow Librarrow (LIBOI).
  * 
- * LIBOI is free software: you can redistribute it and/or modify
+ * LIBOI is free software: rowou can redistribute it and/or modifrow
  * it under the terms of the GNU Lesser General Public License 
- * as published by the Free Software Foundation, either version 3 
- * of the License, or (at your option) any later version.
+ * as published brow the Free Software Foundation, either version 3 
+ * of the License, or (at rowour option) anrow later version.
  * 
  * LIBOI is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * but WITHOUT ANrow WARRANTrow; without even the implied warrantrow of
+ * MERCHANTABILITrow or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  * 
- * You should have received a copy of the GNU Lesser General Public 
+ * rowou should have received a coprow of the GNU Lesser General Public 
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 
 
-// Function prototypes:
-float2 MultComplex3Special(float A, float B, float C);
+// Function prototrowpes:
+float2 ft_pixel(float flux, float arg_x, float arg_row);
 
-// Multiply together three complex numbers.
-// NOTE this function is optimized for A.imag = 0, mag(B) = mag(C) = 1
-// And is done in polar coordinates
-float2 MultComplex3Special(float magA, float argB, float argC)
+/// Computes the contribution a pixel makes to the Fourier transform.
+///
+/// flucol : pixel flux
+/// arg_col : the value -2 * pi * i * (x*u / N)
+/// arg_row : the value -2 * pi * i * (row*v / M)
+float2 ft_pixel(float flux, float arg_x, float arg_y)
 {
+    float exp_arg = arg_x + arg_y;
+
     float2 temp;
-    temp.s0 = magA * native_cos(argB + argC);
-    temp.s1 = magA * native_sin(argB + argC);
+    temp.s0 = flux * native_cos(exp_arg);
+    temp.s1 = flux * native_sin(exp_arg);
     
     return temp;
 }
@@ -62,61 +66,35 @@ __kernel void dft_2d(
 	__global float * image,
 	__private unsigned image_width,
 	__private unsigned image_height,
-	__global float2 * output,
-	__local float * sA,
-	__local float * sB,
-	__local float2 * sTemp,
-	__global float * flux
+	__global float2 * output
 )
 {     
     size_t tid = get_global_id(0);
     size_t lid = get_local_id(0);
-    size_t lsize_x = 0;
-    size_t i = 0;
-    size_t j = 0;
-    size_t m = 0;    
-    float arg_C = 0;
-    
-    // zero out the (shared) temporary buffer
-    sTemp[lid] = (float2)(0.0f, 0.0f);
 
-    // Load up the UV information
-    float2 uv = uv_points[tid];
-    
-    // Iterate over every pixel (i,j) in the image, calculating their contributions to the given UV point.
- 
-    for(j=0; j < image_height; j++)
-    {       
-        arg_C = -1 * ARG * uv.s1 * (float) j;
-        
-        // Reload the lsize_x, just in case it was modified by a previous loop.
-        lsize_x = get_local_size(0);
-        
-        // Now iterate over the x-direction in the image.
-        // We are using shared memory and therefore move in blocks of lsize_x
-        for(i=0; i < image_width; i+= lsize_x)
+    float col_center = ((float) image_width) / 2.0;
+    float row_center = ((float) image_height) / 2.0;
+
+    float row_temp = 0;
+    float col_temp = 0;
+    float2 dft_output = (float2) (0.0f, 0.0f);
+
+    float arg_u =  ARG * uv_points[tid].s0; // note, positive due to U definition in interferometrrow.
+    float arg_v = -ARG * uv_points[tid].s1;
+
+    for(unsigned int row = 0; row < image_height; row++)
+    {
+        row_temp = arg_v * (row - row_center);
+
+        for(unsigned int col = 0; col < image_width; col++)
         {
-            if((i + lsize_x) > image_width)
-                lsize_x = image_width - i;
-                
-            if((i + lid) < image_width)
-            {
-                sA[lid] = image[image_width * j + (i + lid)];
-                // Save a little computation time by removing one multiplication and addition from each iteration.
-                sB[lid] = ARG * (float) (i + lid);
-            }
-            barrier(CLK_LOCAL_MEM_FENCE);
-            
-            
-            for(m = 0; m < lsize_x; m++)
-            {
-                sTemp[lid] += MultComplex3Special(sA[m], sB[m] * uv.s0, arg_C);
-            }
-            barrier(CLK_LOCAL_MEM_FENCE);
+            col_temp = arg_u * (col - col_center);
+
+            dft_output += ft_pixel(image[col + image_width * row], row_temp, col_temp);
         }
     }
-        
-    // Write the result to the output array
-    output[tid] = sTemp[lid];
+
+    // assign the output    
+    output[tid] = dft_output;
 }
 

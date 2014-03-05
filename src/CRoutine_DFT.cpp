@@ -56,7 +56,7 @@ CRoutine_DFT::~CRoutine_DFT()
 
 /// Computes the discrete Fourier transform of a (real) image for the specified (cl_float2) UV points and stores
 /// the result in output.
-void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output)
+void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output)
 {
 	// NOTE: Below we use the clGetKernelWorkGroupInfo to determine the local execution size of the
 	// kernel.  On present-generation GPUs, the maximum work items per work group is 1024, so we
@@ -78,10 +78,9 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	status |= clSetKernelArg(mKernels[0], 3, sizeof(int), &image_width);
 	status |= clSetKernelArg(mKernels[0], 4, sizeof(int), &image_height);
 	status |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);
-	status |= clSetKernelArg(mKernels[0], 6, local * sizeof(cl_float), NULL);
-	status |= clSetKernelArg(mKernels[0], 7, local * sizeof(cl_float), NULL);
-	status |= clSetKernelArg(mKernels[0], 8, local * sizeof(cl_float2), NULL);
-	status |= clSetKernelArg(mKernels[0], 9, sizeof(cl_mem), &image_flux);
+//	status |= clSetKernelArg(mKernels[0], 6, local * sizeof(cl_float), NULL);
+//	status |= clSetKernelArg(mKernels[0], 7, local * sizeof(cl_float), NULL);
+//	status |= clSetKernelArg(mKernels[0], 8, local * sizeof(cl_float2), NULL);
 	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
     // Execute the kernel over the entire range of the data set

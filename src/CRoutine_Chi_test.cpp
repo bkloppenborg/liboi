@@ -47,16 +47,20 @@ protected:
 		model.resize(n);
 		output.resize(n);
 
-		valarray<cl_float2> temp = CModel::GenerateUVSpiral_CL(test_size);
+		// Note, we generate one more value than requested because GenerateUVSpiral_CL
+		// Creates the first element with a value near zero.
+		valarray<cl_float2> temp = CModel::GenerateUVSpiral_CL(test_size + 1);
 
 		// Set data = model to produce a zero chi result.
+		// The temp[i + 1] indexing is due to GenerateUVSpiral_CL creating a value
+		// near zero in the first element.
 		for(int i = 0; i < test_size; i++)
 		{
-			data[i] = temp[i].s[0];
-			data[test_size + i] = temp[i].s[1];
+			data[i] = temp[i + 1].s[0];
+			data[test_size + i] = temp[i + 1].s[1];
 
-			model[i] = temp[i].s[0];
-			model[test_size + i] = temp[i].s[1];
+			model[i] = temp[i + 1].s[0];
+			model[test_size + i] = temp[i + 1].s[1];
 
 			// 1% error on amplitudes, 10% error on phases
 			data_err[i] = amp_err * data[i];
@@ -74,12 +78,16 @@ protected:
 		model.resize(n);
 		output.resize(n);
 
-		valarray<cl_float2> t_data = CModel::GenerateUVSpiral_CL(test_size);
+		// Note, we generate one more value than requested because GenerateUVSpiral_CL
+		// Creates the first element with a value near zero.
+		valarray<cl_float2> t_data = CModel::GenerateUVSpiral_CL(test_size + 1);
 
-		// Generate test data.
+		// Set data = model to produce a zero chi result.
+		// The temp[i + 1] indexing is due to GenerateUVSpiral_CL creating a value
+		// near zero in the first element.
 		for(int i = 0; i < test_size; i++)
 		{
-			complex<float> c_data(t_data[i].s[0], t_data[i].s[1]);
+			complex<float> c_data(t_data[i + 1].s[0], t_data[i + 1].s[1]);
 
 			// Data are stored as amplitude and phase.
 			data[i] = abs(c_data);

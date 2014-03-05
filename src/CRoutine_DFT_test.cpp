@@ -48,14 +48,14 @@ TEST(CRoutine_DFT, CPU_PointSource)
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_FLOAT_EQ(theory_val.s[0], cpu_output[i].s[0]);	// real
-		EXPECT_FLOAT_EQ(theory_val.s[1], cpu_output[i].s[1]);	// imaginary
+		EXPECT_NEAR(theory_val.s[0], cpu_output[i].s[0], 1E-4);	// real
+		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], 1E-4);	// imaginary
 	}
 }
 
 // Checks that the DFT routine replicates the DFT for a point source.
 // Computations performed on the CPU
-TEST(CRoutine_DFT, UniformDisk_CPU)
+TEST(CRoutine_DFT, CPU_UniformDisk)
 {
 	// Create a (normalized) image with a point source at the center:
 	unsigned int image_width = 1024;
@@ -87,55 +87,114 @@ TEST(CRoutine_DFT, UniformDisk_CPU)
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_NEAR(theory_val.s[0], cpu_output[i].s[0], 1E-4);
-		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], 1E-4);
+		EXPECT_NEAR(theory_val.s[0], cpu_output[i].s[0], 1E-4); // real
+		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], 1E-4); // imaginary
 	}
 }
 
-/// Checks that the DFT routine replicates the DFT for a point source.
-/// Computations performed on an OpenCL device
-//TEST(CRoutine_DFT, CL_PointSource)
-//{
-//	// First
-//
-//
-//	unsigned int test_size = 10000;
-//
-//	// Init the OpenCL device and necessary routines:
-//	COpenCL cl(OPENCL_DEVICE_TYPE);
-//	CRoutine_Normalize r_norm(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
-//	r_norm.SetSourcePath(LIBOI_KERNEL_PATH);
-//	r_norm.Init();
-//
-//	valarray<cl_float> cpu_val(test_size);
-//	valarray<cl_float> cl_val(test_size);
-//	for(int i = 0; i < cpu_val.size(); i++)
-//		cpu_val[i] = i;
-//
-//	// Calculate the divisor
-//	cl_float divisor = CRoutine_Sum::Sum(cpu_val);
-//
-//	// Create buffers
-//	int err = CL_SUCCESS;
-//	cl_mem input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
-//	cl_mem divisor_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float), NULL, NULL);
-//
-//	// Fill the input buffer
-//    err = clEnqueueWriteBuffer(cl.GetQueue(), input_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &cpu_val[0], 0, NULL, NULL);
-//    err = clEnqueueWriteBuffer(cl.GetQueue(), divisor_cl, CL_TRUE, 0, sizeof(cl_float), &divisor, 0, NULL, NULL);
-//
-//    // Normalize on the OpenCL device, do the same on the CPU:
-//	r_norm.Normalize(input_cl, test_size, divisor_cl);
-//	CRoutine_Normalize::Normalize(cpu_val, cpu_val.size());
-//
-//	// Read back the results.
-//	err = clEnqueueReadBuffer(cl.GetQueue(), input_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &cl_val[0], 0, NULL, NULL);
-//
-//	// Free buffers
-//	clReleaseMemObject(input_cl);
-//	clReleaseMemObject(divisor_cl);
-//
-//	// Check the results.
-//	for(int i = 0; i < test_size; i++)
-//		EXPECT_NEAR(float(cpu_val[i]), float(cl_val[i]), MAX_REL_ERROR) << " at index " << i;
-//}
+/// Checks that the OpenCL algorithm can replicate a point source DFT
+TEST(CRoutine_DFT, CL_PointSource)
+{
+	int status = CL_SUCCESS;
+	// Create a (normalized) image with a point source at the center:
+	unsigned int image_width = 128;
+	unsigned int image_height = 128;
+	unsigned int image_size = image_width * image_height;
+	float image_scale = 0.025; // mas/pixel
+	unsigned int n_uv_points = 10;
+
+	// Create the model
+	CPointSource model(image_width, image_height, image_scale);
+
+	// Get UV points, the image, and init an output buffer:
+	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv_points);
+	valarray<cl_float> image = model.GetImage_CL();
+	valarray<cl_float2> output(n_uv_points);
+
+	// Init an CRoutine_DFT object (we aren't using the OpenCL functionality, but we still init it)
+	COpenCL cl(OPENCL_DEVICE_TYPE);
+	CRoutine_DFT r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
+	r.SetSourcePath(LIBOI_KERNEL_PATH);
+	r.Init(image_scale);
+
+	// Create the OpenCL memory locations
+	cl_mem uv_points_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * n_uv_points, NULL, &status);
+	cl_mem image_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * image_size, NULL, &status);
+	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * n_uv_points, NULL, &status);
+	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
+
+	// Copy the data to the buffer:
+	status |= clEnqueueWriteBuffer(cl.GetQueue(), uv_points_cl, CL_TRUE, 0, sizeof(cl_float2) * uv_points.size(), &uv_points[0], 0, NULL, NULL);
+	status |= clEnqueueWriteBuffer(cl.GetQueue(), image_cl, CL_TRUE, 0, sizeof(cl_float) * image.size(), &image[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
+
+	// Run the DFT:
+	r.FT(uv_points_cl, n_uv_points, image_cl, image_width, image_height, output_cl);
+
+	// Copy back the results
+	status = clEnqueueReadBuffer(cl.GetQueue(), output_cl, CL_TRUE, 0, sizeof(cl_float2) * n_uv_points, &output[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
+
+	// Now run the checks
+	cl_float2 theory_val;
+	for(unsigned int i = 0; i < n_uv_points; i++)
+	{
+		theory_val = model.GetVis_CL(uv_points[i]);
+		EXPECT_NEAR(theory_val.s[0], output[i].s[0], 1E-4);	// real
+		EXPECT_NEAR(theory_val.s[1], output[i].s[1], 1E-4);	// imaginary
+	}
+}
+
+/// Checks that the OpenCL algorithm can replicate a point source DFT
+TEST(CRoutine_DFT, CL_UniformDisk)
+{
+	int status = CL_SUCCESS;
+	// Create a (normalized) image with a point source at the center:
+	unsigned int image_width = 1024;
+	unsigned int image_height = 1024;
+	unsigned int image_size = image_width * image_height;
+	float image_scale = 0.025; // mas/pixel
+	unsigned int n_uv_points = 50;
+
+	// Create the model
+	CUniformDisk model(image_width, image_height, image_scale, 10, 0, 0);
+
+	// Get UV points, the image, and init an output buffer:
+	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv_points);
+	valarray<cl_float> image = model.GetImage_CL();
+	valarray<cl_float2> output(n_uv_points);
+
+	// Init an CRoutine_DFT object (we aren't using the OpenCL functionality, but we still init it)
+	COpenCL cl(OPENCL_DEVICE_TYPE);
+	CRoutine_DFT r(cl.GetDevice(), cl.GetContext(), cl.GetQueue());
+	r.SetSourcePath(LIBOI_KERNEL_PATH);
+	r.Init(image_scale);
+
+	// Create the OpenCL memory locations
+	cl_mem uv_points_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * n_uv_points, NULL, &status);
+	cl_mem image_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * image_size, NULL, &status);
+	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * n_uv_points, NULL, &status);
+	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
+
+	// Copy the data to the buffer:
+	status |= clEnqueueWriteBuffer(cl.GetQueue(), uv_points_cl, CL_TRUE, 0, sizeof(cl_float2) * uv_points.size(), &uv_points[0], 0, NULL, NULL);
+	status |= clEnqueueWriteBuffer(cl.GetQueue(), image_cl, CL_TRUE, 0, sizeof(cl_float) * image.size(), &image[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
+
+	// Run the DFT:
+	r.FT(uv_points_cl, n_uv_points, image_cl, image_width, image_height, output_cl);
+
+	// Copy back the results
+	status = clEnqueueReadBuffer(cl.GetQueue(), output_cl, CL_TRUE, 0, sizeof(cl_float2) * n_uv_points, &output[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
+
+	// Now run the checks
+	cl_float2 theory_val;
+	for(unsigned int i = 0; i < n_uv_points; i++)
+	{
+		cout << i << endl;
+		theory_val = model.GetVis_CL(uv_points[i]);
+		EXPECT_NEAR(theory_val.s[0], output[i].s[0], 1E-4);	// real
+		EXPECT_NEAR(theory_val.s[1], output[i].s[1], 1E-4);	// imaginary
+	}
+}

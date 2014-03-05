@@ -51,7 +51,7 @@ public:
 	virtual ~CRoutine_FT();
 
 	virtual void Init(float image_scale) = 0;
-	virtual void FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem image_flux, cl_mem output) = 0;
+	virtual void FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output) = 0;
 	virtual void FT(valarray<cl_float2> & uv_points, unsigned int n_uv_points,
 			valarray<cl_float> & image, unsigned int image_width, unsigned int image_height, float image_scale,
 			valarray<cl_float2> & cpu_output) = 0;
