@@ -58,14 +58,16 @@ TEST(CRoutine_DFT, CPU_PointSource)
 TEST(CRoutine_DFT, UniformDisk_CPU)
 {
 	// Create a (normalized) image with a point source at the center:
-	unsigned int image_width = 128;
-	unsigned int image_height = 128;
+	unsigned int image_width = 1024;
+	unsigned int image_height = 1024;
 	unsigned int image_size = image_width * image_height;
 	float image_scale = 0.025; // mas/pixel
 	unsigned int n_uv = 10;
 
 	// Create the model
-	CUniformDisk model(image_width, image_height, image_scale);
+	CUniformDisk model(image_width, image_height, image_scale, 10, 0, 0);
+	valarray<double> image_temp = model.GetImage();
+	model.WriteImage(image_temp, image_width, image_height, image_scale, "!model_uniform_disk.fits");
 
 	// Get UV points, the image, and init an output buffer:
 	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv);
@@ -85,8 +87,8 @@ TEST(CRoutine_DFT, UniformDisk_CPU)
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_FLOAT_EQ(theory_val.s[0], cpu_output[i].s[0]);
-		EXPECT_FLOAT_EQ(theory_val.s[1], cpu_output[i].s[1]);
+		EXPECT_NEAR(theory_val.s[0], cpu_output[i].s[0], 1E-4);
+		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], 1E-4);
 	}
 }
 
