@@ -45,11 +45,15 @@ TEST(CRoutine_DFT, CPU_PointSource)
 
 	// Now run the checks
 	cl_float2 theory_val;
+	float difference_over_sum = 0;
+	float one_degree = 1.0 / 360 * PI;
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_NEAR(theory_val.s[0], cpu_output[i].s[0], 1E-4);	// real
-		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], 1E-4);	// imaginary
+		difference_over_sum = abs((theory_val.s[0] - cpu_output[i].s[0]) / (theory_val.s[0] + cpu_output[i].s[0]));
+
+		EXPECT_NEAR(difference_over_sum, 0.0, 0.02);
+		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], one_degree);	// imaginary
 	}
 }
 
@@ -63,11 +67,12 @@ TEST(CRoutine_DFT, CPU_UniformDisk)
 	unsigned int image_size = image_width * image_height;
 	float image_scale = 0.025; // mas/pixel
 	unsigned int n_uv = 10;
+	float radius = float(image_width) / 2 * image_scale;
 
 	// Create the model
-	CUniformDisk model(image_width, image_height, image_scale, 10, 0, 0);
+	CUniformDisk model(image_width, image_height, image_scale, radius, 0, 0);
 	valarray<double> image_temp = model.GetImage();
-	model.WriteImage(image_temp, image_width, image_height, image_scale, "!model_uniform_disk.fits");
+	model.WriteImage(image_temp, image_width, image_height, image_scale, "!model_cpu_uniform_disk.fits");
 
 	// Get UV points, the image, and init an output buffer:
 	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv);
@@ -84,11 +89,15 @@ TEST(CRoutine_DFT, CPU_UniformDisk)
 
 	// Now run the checks
 	cl_float2 theory_val;
+	float difference_over_sum = 0;
+	float one_degree = 1.0 / 360 * PI;
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_NEAR(theory_val.s[0], cpu_output[i].s[0], 1E-4); // real
-		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], 1E-4); // imaginary
+		difference_over_sum = abs((theory_val.s[0] - cpu_output[i].s[0]) / (theory_val.s[0] + cpu_output[i].s[0]));
+
+		EXPECT_NEAR(difference_over_sum, 0.0, 0.02);
+		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], one_degree); // imaginary
 	}
 }
 
@@ -137,11 +146,15 @@ TEST(CRoutine_DFT, CL_PointSource)
 
 	// Now run the checks
 	cl_float2 theory_val;
+	float difference_over_sum = 0;
+	float one_degree = 1.0 / 360 * PI;
 	for(unsigned int i = 0; i < n_uv_points; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_NEAR(theory_val.s[0], output[i].s[0], 1E-4);	// real
-		EXPECT_NEAR(theory_val.s[1], output[i].s[1], 1E-4);	// imaginary
+		difference_over_sum = abs((theory_val.s[0] - output[i].s[0]) / (theory_val.s[0] + output[i].s[0]));
+
+		EXPECT_NEAR(difference_over_sum, 0.0, 0.02); // real
+		EXPECT_NEAR(theory_val.s[1], output[i].s[1], one_degree);	// imaginary
 	}
 }
 
@@ -154,10 +167,13 @@ TEST(CRoutine_DFT, CL_UniformDisk)
 	unsigned int image_height = 1024;
 	unsigned int image_size = image_width * image_height;
 	float image_scale = 0.025; // mas/pixel
-	unsigned int n_uv_points = 50;
+	unsigned int n_uv_points = 10;
+	float radius = float(image_width) / 2 * image_scale;
 
 	// Create the model
-	CUniformDisk model(image_width, image_height, image_scale, 10, 0, 0);
+	CUniformDisk model(image_width, image_height, image_scale, radius, 0, 0);
+	valarray<double> image_temp = model.GetImage();
+	model.WriteImage(image_temp, image_width, image_height, image_scale, "!model_cl_uniform_disk.fits");
 
 	// Get UV points, the image, and init an output buffer:
 	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv_points);
@@ -190,11 +206,15 @@ TEST(CRoutine_DFT, CL_UniformDisk)
 
 	// Now run the checks
 	cl_float2 theory_val;
+	float difference_over_sum = 0;
+	float one_degree = 1.0 / 360 * PI;
 	for(unsigned int i = 0; i < n_uv_points; i++)
 	{
-		cout << i << endl;
 		theory_val = model.GetVis_CL(uv_points[i]);
-		EXPECT_NEAR(theory_val.s[0], output[i].s[0], 1E-4);	// real
-		EXPECT_NEAR(theory_val.s[1], output[i].s[1], 1E-4);	// imaginary
+
+		difference_over_sum = abs((theory_val.s[0] - output[i].s[0]) / (theory_val.s[0] + output[i].s[0]));
+
+		EXPECT_NEAR(difference_over_sum, 0.0, 0.02);	// real
+		EXPECT_NEAR(theory_val.s[1], output[i].s[1], one_degree);	// imaginary
 	}
 }

@@ -141,7 +141,7 @@ valarray<pair<double,double>> CModel::GenerateUVSpiral(unsigned int n_uv)
 	valarray<pair<double,double>> uv_points(n_uv);
 
 	// always test something near zero
-	uv_points[0] = pair<float,float>(1, 1);
+	uv_points[0] = pair<float,float>(0, 0);
 
 	// Here we make an Archimedean spiral that covers a wide range of UV points
 	// We should get 4 full revolutions and end up with r ~ 400 mega-lambda.

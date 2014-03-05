@@ -45,6 +45,10 @@ complex<double> CUniformDisk::GetVis(pair<double,double> & uv)
 	double phi = -2 * PI * (mAlpha * uv.first + mDelta * uv.second);
 	double bess = 2 * PI * radius * baseline;
 
+	// Handle divide by zero special case:
+	if(bess < 1E-8)
+		return 1;
+
 	complex<double> phase(cos(phi), sin(phi));
 	double V = 2 * j1(bess)/bess;
 	return V * phase;
@@ -58,8 +62,9 @@ valarray<double> CUniformDisk::GetImage()
 	unsigned int image_size = mImageWidth * mImageHeight;
 	valarray<double> image(image_size);
 
-	double center_col = double(mImageWidth) / 2;
-	double center_row = double(mImageHeight) / 2;
+	// Account for the image indexing by shifting by one pixel:
+	double center_col = double(mImageWidth - 1) / 2;
+	double center_row = double(mImageHeight - 1) / 2;
 	double rad_sq = radius * radius;
 	double dx = 0;
 	double dy = 0;
@@ -71,7 +76,7 @@ valarray<double> CUniformDisk::GetImage()
 		{
 			dx = col - center_col;
 
-			if(dx*dx + dy*dy <= rad_sq)
+			if(dx*dx + dy*dy < rad_sq)
 				image[mImageWidth * row + col] = 1;
 			else
 				image[mImageWidth * row + col] = 0;
