@@ -45,14 +45,15 @@ TEST(CRoutine_DFT, CPU_PointSource)
 
 	// Now run the checks
 	cl_float2 theory_val;
-	float difference_over_sum = 0;
+	float max_vis_error = 1E-5;
+	float max_percent_error = 0;
 	float one_degree = 1.0 / 360 * PI;
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		difference_over_sum = abs((theory_val.s[0] - cpu_output[i].s[0]) / (theory_val.s[0] + cpu_output[i].s[0]));
+		max_percent_error = abs(max_vis_error * theory_val.s[0]);
 
-		EXPECT_NEAR(difference_over_sum, 0.0, 0.02);
+		EXPECT_NEAR(theory_val.s[0], cpu_output[i].s[0], max_percent_error);
 		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], one_degree);	// imaginary
 	}
 }
@@ -89,14 +90,15 @@ TEST(CRoutine_DFT, CPU_UniformDisk)
 
 	// Now run the checks
 	cl_float2 theory_val;
-	float difference_over_sum = 0;
+	float max_vis_error = 0.03;
+	float three_percent_error = 0;
 	float one_degree = 1.0 / 360 * PI;
 	for(int i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		difference_over_sum = abs((theory_val.s[0] - cpu_output[i].s[0]) / (theory_val.s[0] + cpu_output[i].s[0]));
+		three_percent_error = abs(max_vis_error * theory_val.s[0]);
 
-		EXPECT_NEAR(difference_over_sum, 0.0, 0.02);
+		EXPECT_NEAR(theory_val.s[0], cpu_output[i].s[0], three_percent_error);
 		EXPECT_NEAR(theory_val.s[1], cpu_output[i].s[1], one_degree); // imaginary
 	}
 }
@@ -146,17 +148,22 @@ TEST(CRoutine_DFT, CL_PointSource)
 
 	// Now run the checks
 	cl_float2 theory_val;
-	float difference_over_sum = 0;
+	float max_vis_error = 0.03;
+	float three_percent_error = 0;
+	// Permit up to 1% error between the DFT and theoretical phases.
 	float one_degree = 1.0 / 360 * PI;
 	for(unsigned int i = 0; i < n_uv_points; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
-		difference_over_sum = abs((theory_val.s[0] - output[i].s[0]) / (theory_val.s[0] + output[i].s[0]));
 
-		EXPECT_NEAR(difference_over_sum, 0.0, 0.02); // real
+		// Permit up to 3% error between the DFT and theoretical visibility amplitudes
+		three_percent_error = abs(max_vis_error * theory_val.s[0]);
+
+		EXPECT_NEAR(theory_val.s[0], output[i].s[0], three_percent_error);	// real
 		EXPECT_NEAR(theory_val.s[1], output[i].s[1], one_degree);	// imaginary
 	}
 }
+
 
 /// Checks that the OpenCL algorithm can replicate a point source DFT
 TEST(CRoutine_DFT, CL_UniformDisk)
@@ -206,15 +213,18 @@ TEST(CRoutine_DFT, CL_UniformDisk)
 
 	// Now run the checks
 	cl_float2 theory_val;
-	float difference_over_sum = 0;
+	float max_vis_error = 0.03;
+	float three_percent_error = 0;
+	// Permit up to 1% error between the DFT and theoretical phases.
 	float one_degree = 1.0 / 360 * PI;
 	for(unsigned int i = 0; i < n_uv_points; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
 
-		difference_over_sum = abs((theory_val.s[0] - output[i].s[0]) / (theory_val.s[0] + output[i].s[0]));
+		// Permit up to 3% error between the DFT and theoretical visibility amplitudes
+		three_percent_error = abs(max_vis_error * theory_val.s[0]);
 
-		EXPECT_NEAR(difference_over_sum, 0.0, 0.02);	// real
+		EXPECT_NEAR(theory_val.s[0], output[i].s[0], three_percent_error);	// real
 		EXPECT_NEAR(theory_val.s[1], output[i].s[1], one_degree);	// imaginary
 	}
 }
