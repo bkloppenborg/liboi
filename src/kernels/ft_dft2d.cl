@@ -41,8 +41,14 @@
 
 
 
-// Function prototrowpes:
+// Function prototypes:
 float2 ft_pixel(float flux, float arg_x, float arg_row);
+void load_pixels(__global float * image, unsigned int image_size, unsigned int start,
+    __local float * shared_image, unsigned int max_copy_size);
+
+void compute_indicies(unsigned int start, unsigned int image_width, unsigned int image_height,
+    __local uint2 * shared_coords, unsigned int shared_coords_size);
+
 
 /// Computes the contribution a pixel makes to the Fourier transform.
 ///
@@ -60,17 +66,54 @@ float2 ft_pixel(float flux, float arg_x, float arg_y)
     return temp;
 }
 
+void load_pixels(__global float * image, unsigned int image_size, 
+    unsigned int start,
+    __local float * shared_image, unsigned int max_copy_size)
+{
+    unsigned int lid = get_local_id(0);
+    
+    // check bounds
+    if(lid > max_copy_size)
+        return;
+
+    // Ensure we are accessing pixel elements within the image. Outside of this region pad with zeros.
+    if(start + lid < image_size)
+        shared_image[lid] = image[start + lid];
+    else
+        shared_image[lid] = 0.0;
+}
+
+void compute_indicies(unsigned int start, unsigned int image_width, unsigned int image_height,
+    __local uint2 * shared_coords, unsigned int shared_coords_size)
+{
+    unsigned int lid = get_local_id(0);
+
+    // check bounds
+    if(lid > shared_coords_size)
+        return;
+
+    unsigned int x = (start + lid) % image_width;
+    unsigned int y = (start + lid) / image_width;
+    
+    shared_coords[lid] = (uint2){x, y};
+}
+
 __kernel void dft_2d(
 	__global float2 * restrict uv_points,
 	__private unsigned int nuv,
 	__global float * restrict image,
 	__private unsigned image_width,
 	__private unsigned image_height,
-	__global float2 * restrict output
+	__global float2 * restrict output,
+	__local float * shared_image,
+	__local uint2 * shared_coords
 )
 {     
     size_t tid = get_global_id(0);
     size_t lid = get_local_id(0);
+    size_t local_size = get_local_size(0);
+    
+    unsigned int image_size = image_width * image_height;
 
     float col_center = ((float) image_width) / 2.0;
     float row_center = ((float) image_height) / 2.0;
@@ -80,22 +123,38 @@ __kernel void dft_2d(
     float2 dft_output = (float2) (0.0f, 0.0f);
 
     float2 uv_point = uv_points[tid];
-    float arg_u =  ARG * uv_point.s0; // note, positive due to U definition in interferometrrow.
+    float arg_u =  ARG * uv_point.s0; // note, positive due to U definition in interferometry.
     float arg_v = -ARG * uv_point.s1;
-
-    for(unsigned int row = 0; row < image_height; row++)
+    
+    for(unsigned int start = 0; start < image_size; start += local_size)
     {
-        row_temp = arg_v * (row - row_center);
-
-        for(unsigned int col = 0; col < image_width; col++)
+        load_pixels(image, image_size, start, shared_image, local_size);
+        compute_indicies(start, image_width, image_height, shared_coords, local_size);
+        
+        for(unsigned int pixel = 0; pixel < local_size; pixel++)
         {
-            col_temp = arg_u * (col - col_center);
-
-            dft_output += ft_pixel(image[col + image_width * row], row_temp, col_temp);
+            col_temp = arg_u * (shared_coords[pixel].x - col_center);
+            row_temp = arg_v * (shared_coords[pixel].y - row_center);
+            
+            dft_output += ft_pixel(shared_image[pixel], row_temp, col_temp);
         }
     }
+    
 
-    // assign the output    
-    output[tid] = dft_output;
+//    for(unsigned int row = 0; row < image_height; row++)
+//    {
+//        row_temp = arg_v * (row - row_center);
+
+//        for(unsigned int col = 0; col < image_width; col++)
+//        {
+//            col_temp = arg_u * (col - col_center);
+
+//            dft_output += ft_pixel(image[col + image_width * row], row_temp, col_temp);
+//        }
+//    }
+
+    // assign the output 
+    if(tid < nuv)  
+        output[tid] = dft_output;
 }
 

@@ -174,7 +174,7 @@ TEST(CRoutine_DFT, CL_UniformDisk)
 	unsigned int image_height = 1024;
 	unsigned int image_size = image_width * image_height;
 	float image_scale = 0.025; // mas/pixel
-	unsigned int n_uv_points = 10;
+	unsigned int n_uv_points = 258;
 	float radius = float(image_width) / 2 * image_scale;
 
 	// Create the model

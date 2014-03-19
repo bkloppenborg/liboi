@@ -70,6 +70,8 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
     // Get the maximum work-group size for executing the kernel on the device
     status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
 	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
+	// Round up the work size to be an integer multiple of the local work size.
+	global = next_multiple(global, local);
 
 	// Set the kernel arguments and enqueue the kernel
 	status = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &uv_points);
@@ -78,9 +80,8 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	status |= clSetKernelArg(mKernels[0], 3, sizeof(int), &image_width);
 	status |= clSetKernelArg(mKernels[0], 4, sizeof(int), &image_height);
 	status |= clSetKernelArg(mKernels[0], 5, sizeof(cl_mem), &output);
-//	status |= clSetKernelArg(mKernels[0], 6, local * sizeof(cl_float), NULL);
-//	status |= clSetKernelArg(mKernels[0], 7, local * sizeof(cl_float), NULL);
-//	status |= clSetKernelArg(mKernels[0], 8, local * sizeof(cl_float2), NULL);
+	status |= clSetKernelArg(mKernels[0], 6, local * sizeof(cl_float), NULL);
+	status |= clSetKernelArg(mKernels[0], 7, local * sizeof(cl_uint2), NULL);
 	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
     // Execute the kernel over the entire range of the data set

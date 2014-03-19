@@ -129,6 +129,11 @@ public:
 	bool Verify(valarray<complex<float>> & cpu_buffer, cl_mem device_buffer, int num_elements, size_t offset);
 
 	static int waitForEventAndRelease(cl_event *event);
+
+	static unsigned int next_multiple(unsigned int value, unsigned int base)
+	{
+		return (value / base + 1) * base;
+	}
 };
 
 } /* namespace liboi */
