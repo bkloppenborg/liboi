@@ -65,12 +65,18 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 
 	int status = CL_SUCCESS;
     size_t global = (size_t) n_uv_points;
-    size_t local = 256;                     // init to some value, not important anymore.
 
-    // Get the maximum work-group size for executing the kernel on the device
+    // Determine the best workgroup size for this kernel.
+    // Init the local threads to something large
+    size_t local = 2048;
+    // Inform the kernel of the memory size requirements for shared/local memory:
+	status |= clSetKernelArg(mKernels[0], 6, local * sizeof(cl_float), NULL);
+	status |= clSetKernelArg(mKernels[0], 7, local * sizeof(cl_uint2), NULL);
+	// Now query to find the best workgroup size for the kernel.
     status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
 	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
-	// Round up the work size to be an integer multiple of the local work size.
+
+	// Round the global workgroup size to the next greatest multiple of the local workgroup size
 	global = next_multiple(global, local);
 
 	// Set the kernel arguments and enqueue the kernel
@@ -85,7 +91,7 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
 	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
     // Execute the kernel over the entire range of the data set
-	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, NULL, 0, NULL, NULL);
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, &local, 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 

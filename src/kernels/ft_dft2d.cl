@@ -142,7 +142,9 @@ __kernel void dft_2d(
         // Load the pixel fluxes and compute the pixel indicies
         load_pixels(image, image_size, start, shared_image, local_size);
         compute_indicies(start, image_width, image_height, shared_coords, local_size);
-        
+        // Ensure all threads have loaded/computed values.        
+        barrier(CLK_LOCAL_MEM_FENCE);
+
         // Now iterate over each pixel, computing their contribution to the DFT.
         for(unsigned int pixel = 0; pixel < local_size; pixel++)
         {
