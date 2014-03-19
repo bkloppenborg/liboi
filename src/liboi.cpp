@@ -824,7 +824,7 @@ void CLibOI::SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type
 	case LibOIEnums::OPENGL_TEXTUREBUFFER:
 		// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.
 #if defined(DETECTED_OPENCL_1_0) || defined(DETECTED_OPENCL_1_1)
-		mImage_gl = clCreateFromGLTexture3D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
+		mImage_gl = clCreateFromGLTexture3D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_3D, 0, gl_device_memory, &status);
 #else
 		mImage_gl = clCreateFromGLTexture(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
 #endif // defined(DETECTED_OPENCL_1_0) || defined(DETECTED_OPENCL_1_1)
