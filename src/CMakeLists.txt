@@ -26,8 +26,17 @@ cmake_minimum_required(VERSION 2.8)
 project(oi)
 
 find_package(OpenGL REQUIRED)
+
+# Find OpenCL. Set compiler flags if we find an old (1.0, 1.1) version
+# to use clCreateFromGLTexture3D on these old devices.
 find_package(OpenCL REQUIRED)
 include_directories(${OPENCL_INCLUDE_DIRS})
+message(STATUS "Found OpenCL Version: ${OPENCL_VERSION}")
+if(${OPENCL_VERSION} VERSION_EQUAL 1.0)
+    add_definitions(-DDETECTED_OPENCL_1_0)
+elseif(${OPENCL_VERSION} VERSION_EQUAL 1.1)
+    add_definitions(-DDETECTED_OPENCL_1_1)
+endif(${OPENCL_VERSION} VERSION_EQUAL 1.0)
 
 set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTERNAL "")
 

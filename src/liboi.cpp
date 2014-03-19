@@ -275,7 +275,7 @@ void CLibOI::ExportImage(float * image, unsigned int width, unsigned int height,
 void CLibOI::FTToData(COILibDataPtr data)
 {
 	// First compute the Fourier transform
-	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mImage_cl, mImageWidth, mImageHeight, mFTBuffer);
+	mrFT->FT(data->GetLoc_DataUVPoints(), data->GetNumUV(), mImage_cl, mImageWidth, mImageHeight, mFluxBuffer, mFTBuffer);
 
 	// Now create the V2 and T3's
 	int n_vis = data->GetNumVis();
@@ -822,9 +822,12 @@ void CLibOI::SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type
 		break;
 
 	case LibOIEnums::OPENGL_TEXTUREBUFFER:
-		mImage_gl = clCreateFromGLTexture3D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_3D, 0, gl_device_memory, &status);
-		// TODO When we drop support for old OpenCL 1.0 / 1.1 devices, the above line should be changed to this:
-		// mImage_gl = clCreateFromGLTexture(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
+		// TODO: note that the clCreateFromGLTexture2D was depreciated in the OpenCL 1.2 specifications.
+#if defined(DETECTED_OPENCL_1_0) || defined(DETECTED_OPENCL_1_1)
+		mImage_gl = clCreateFromGLTexture3D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
+#else
+		mImage_gl = clCreateFromGLTexture(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D_ARRAY, 0, gl_device_memory, &status);
+#endif // defined(DETECTED_OPENCL_1_0) || defined(DETECTED_OPENCL_1_1)
 		CHECK_OPENCL_ERROR(status, "clCreateFromGLTexture failed.");
 
 		break;
