@@ -44,6 +44,7 @@
 #include "CRoutine_ImageToBuffer.h"
 #include "CRoutine_FT.h"
 #include "CRoutine_DFT.h"
+#include "CRoutine_FFT_clFFT.h"
 #include "CRoutine_FTtoV2.h"
 #include "CRoutine_FTtoT3.h"
 #include "CRoutine_Chi.h"
@@ -652,9 +653,15 @@ void CLibOI::InitRoutines()
 		if(mrFT == NULL)
 		{
 			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
-			mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+//			mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+//			mrFT->SetSourcePath(mKernelSourcePath);
+//			mrFT->Init(mImageScale);
+
+			mrFT = new CRoutine_FFT_clFFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 			mrFT->SetSourcePath(mKernelSourcePath);
-			mrFT->Init(mImageScale);
+
+			CRoutine_FFT_clFFT * fft = reinterpret_cast<CRoutine_FFT_clFFT*>(mrFT);
+			fft->Init(mImageWidth, mImageHeight, 10);
 		}
 
 		if(mrV2 == NULL)
