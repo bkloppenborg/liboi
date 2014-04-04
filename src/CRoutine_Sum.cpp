@@ -48,24 +48,6 @@ CRoutine_Sum::~CRoutine_Sum()
 	// TODO Auto-generated destructor stub
 }
 
-/// Determines if the value x is a power of two.
-bool CRoutine_Sum::isPow2(unsigned int x)
-{
-    return ((x&(x-1))==0);
-}
-
-/// Rounds x up to the next greatest power of two.
-unsigned int CRoutine_Sum::nextPow2( unsigned int x )
-{
-    --x;
-    x |= x >> 1;
-    x |= x >> 2;
-    x |= x >> 4;
-    x |= x >> 8;
-    x |= x >> 16;
-    return ++x;
-}
-
 /// Computes the sum on the OpenCL device, stores the result in final_buffer and returns the result.
 float CRoutine_Sum::Sum(cl_mem input_buffer, cl_mem final_buffer)
 {

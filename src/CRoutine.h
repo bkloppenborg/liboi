@@ -130,6 +130,10 @@ public:
 
 	static int waitForEventAndRelease(cl_event *event);
 
+	static bool isPow2(unsigned int x);
+
+	static unsigned int nextPow2( unsigned int x );
+
 	static unsigned int next_multiple(unsigned int value, unsigned int base)
 	{
 		return (value / base + 1) * base;

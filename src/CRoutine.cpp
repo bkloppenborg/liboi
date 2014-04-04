@@ -140,6 +140,25 @@ void CRoutine::DumpFloatBuffer(cl_mem buffer, unsigned int size)
 	}
 }
 
+
+/// Determines if the value x is a power of two.
+bool CRoutine::isPow2(unsigned int x)
+{
+    return ((x&(x-1))==0);
+}
+
+/// Rounds x up to the next greatest power of two.
+unsigned int CRoutine::nextPow2( unsigned int x )
+{
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return ++x;
+}
+
 string CRoutine::ReadSource(string filename)
 {
 	return ReadFile(mKernelPath + '/' +  filename, "Could not read OpenCL kernel source " + mKernelPath + '/' +  filename);
