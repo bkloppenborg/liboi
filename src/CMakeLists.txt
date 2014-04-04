@@ -73,12 +73,12 @@ target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES
 
 # Build tests:
 add_executable(liboi_tests ${TESTS})
-target_link_libraries(liboi_tests gtest oi_static)
+target_link_libraries(liboi_tests gtest oi_static ${OPTIONAL_LIBS})
 add_test(liboi_tests liboi_tests)
 
 # Build benchmark
 add_executable(liboi_benchmark ${BENCHMARK})
-target_link_libraries(liboi_benchmark oi_static)
+target_link_libraries(liboi_benchmark oi_static ${OPTIONAL_LIBS})
 
 install(TARGETS oi_static DESTINATION lib)
 install(FILES liboi.hpp DESTINATION include)
