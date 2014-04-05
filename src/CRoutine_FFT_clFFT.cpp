@@ -102,27 +102,27 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 
 	// Copy everything from the source image:
     vector<size_t> src_origin(3, 0);
-	cout << "Source origin" << src_origin[0] << " " << src_origin[1] << " " << src_origin[2] << endl;
+//	cout << "Source origin" << src_origin[0] << " " << src_origin[1] << " " << src_origin[2] << endl;
 
     vector<size_t> copy_region(3, 0);
 	copy_region[0] = image_width * sizeof(cl_float);
 	copy_region[1] = image_height * sizeof(cl_float);
 	copy_region[2] = 1;
 
-	cout << "Copy region" << copy_region[0] << " " << copy_region[1] << " " << copy_region[2] << endl;
+//	cout << "Copy region" << copy_region[0] << " " << copy_region[1] << " " << copy_region[2] << endl;
 
-	cout << "Destination region" << mOversampledImageLengths[0] << " " << mOversampledImageLengths[1] << " " << mOversampledImageLengths[2] << endl;
+//	cout << "Destination region" << mOversampledImageLengths[0] << " " << mOversampledImageLengths[1] << " " << mOversampledImageLengths[2] << endl;
 
 	// Copy the data into center of the destination image:
     vector<size_t> dst_origin(3, 0);
 	dst_origin[0] = mOversampledImageLengths[0] / 2 - image_width / 2;
 	dst_origin[1] = mOversampledImageLengths[1] / 2 - image_height / 2;
 
-	cout << "Destination origin" << dst_origin[0] << " " << dst_origin[1] << " " << dst_origin[2] << endl;
+//	cout << "Destination origin" << dst_origin[0] << " " << dst_origin[1] << " " << dst_origin[2] << endl;
 
 	// Execute the copy
 	status = clEnqueueCopyBufferRect(mQueue, image, mOversampledImageBuffer, &src_origin[0], &dst_origin[0], &copy_region[0],
-				image_width * sizeof(cl_float), image_height * sizeof(cl_float),
+				0, 0,	// use the size of region, rather than any explicit image size.
 				mOversampledImageLengths[0] * sizeof(cl_float), mOversampledImageLengths[1] * sizeof(cl_float),
 				0, NULL, &copyCompleteEvent);
 	CHECK_OPENCL_ERROR(status, "clEnqueueCopyBufferRect failed.");
