@@ -47,8 +47,11 @@ void CRoutine_FFT_clFFT::Init(float image_scale)
 }
 
 
-void CRoutine_FFT_clFFT::Init(unsigned int image_width, unsigned int image_height, unsigned int oversampling_factor)
+void CRoutine_FFT_clFFT::Init(unsigned int image_width, unsigned int image_height, unsigned int oversampling_factor,
+		CRoutine_Zero * zero_routine)
 {
+	mrZero = zero_routine;
+
 	int status = CL_SUCCESS;
 
 	mOversamplingFactor = oversampling_factor;
@@ -71,6 +74,10 @@ void CRoutine_FFT_clFFT::Init(unsigned int image_width, unsigned int image_heigh
 	mOutputBuffer = clCreateBuffer(mContext, CL_MEM_READ_WRITE, oversampled_image_size * sizeof(cl_float2), NULL, &status);
 	CHECK_OPENCL_ERROR(status, "clCreateBuffer failed.");
 
+	// zero out the buffers:
+	mrZero->Zero(mOversampledImageBuffer, oversampled_image_size);
+	mrZero->Zero(mTempBuffer, 2 * oversampled_image_size);
+	mrZero->Zero(mOutputBuffer, 2 * oversampled_image_size);
 
 	// Init the clFFT library.
 	status = clfftInitSetupData(&mFFTSetup);
@@ -78,7 +85,12 @@ void CRoutine_FFT_clFFT::Init(unsigned int image_width, unsigned int image_heigh
 	status = clfftSetup(&mFFTSetup);
 	CHECK_OPENCL_ERROR(status, "clfftSetup failed.");
 
-	status = clfftCreateDefaultPlan(&mPlanHandle, mContext, mDimentions, &mOversampledImageLengths[0]);
+	vector<size_t> clLengths(3, 0);
+	clLengths[0] = mOversampledImageLengths[0];
+	clLengths[1] = mOversampledImageLengths[1];
+	clLengths[2] = mOversampledImageLengths[2];
+
+	status = clfftCreateDefaultPlan(&mPlanHandle, mContext, mDimentions, &clLengths[0]);
 
     // Set plan parameters.
     status = clfftSetPlanPrecision(mPlanHandle, CLFFT_SINGLE);
@@ -98,45 +110,35 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 	int status = CL_SUCCESS;
     cl_event copyCompleteEvent;
 
-	// Copy the image into the center of the (potentially oversampled) image buffer
-
-    cout << "Source size: " << image_width << " " << image_height << endl;
-	// Copy everything from the source image:
+    // First copy the image into the center of the oversampled buffer
+    // Source image origin. Start at (0, 0, 0)
     vector<size_t> src_origin(3, 0);
-	cout << "Source origin: " << src_origin[0] << " " << src_origin[1] << " " << src_origin[2] << endl;
 
-	size_t src_row_pitch = image_width * sizeof(cl_float);
-	size_t src_slice_pitch = (image_width * image_height) * sizeof(cl_float);
+    // Define the size of a row and 2D slice of the source image.
+    size_t src_row_pitch = image_width * sizeof(cl_float);
+    size_t src_slice_pitch = (image_width * image_height) * sizeof(cl_float);
 
-    vector<size_t> copy_region(3, 0);
-	copy_region[0] = image_width * sizeof(cl_float);
-	copy_region[1] = image_height * sizeof(cl_float);
-	copy_region[2] = 1;
-
-	cout << "Copy region size: " << copy_region[0] << " " << copy_region[1] << " " << copy_region[2] << endl;
-	cout << "Copy buffer size: " << copy_region[0] * copy_region[1] << endl;
-
-	cout << "Destination size: " << mOversampledImageLengths[0] << " " << mOversampledImageLengths[1] << " " << mOversampledImageLengths[2] << endl;
-	cout << "Destination buffer size " << mOversampledImageLengths[0] * mOversampledImageLengths[1] * sizeof(cl_float) << endl;
-
-	// Copy the data into center of the destination image:
+    // Destination image origin. Center the source image into the destination image:
     vector<size_t> dst_origin(3, 0);
-	dst_origin[0] = mOversampledImageLengths[0] / 2 - image_width / 2;
-	dst_origin[1] = mOversampledImageLengths[1] / 2 - image_height / 2;
+    dst_origin[0] = mOversampledImageLengths[0] / 2 - image_width / 2;
+    dst_origin[0] = mOversampledImageLengths[1] / 2 - image_height / 2;
 
-	cout << "Destination origin: " << dst_origin[0] << " " << dst_origin[1] << " " << dst_origin[2] << endl;
+    // Define the size of a row and 2D slice of the destination image.
+    size_t dst_row_pitch = mOversampledImageLengths[0] * sizeof(cl_float);
+    size_t dst_slice_pitch =  (mOversampledImageLengths[0] * mOversampledImageLengths[1]) * sizeof(cl_float);
 
-	size_t dst_row_pitch = mOversampledImageLengths[0] * sizeof(cl_float);
-	size_t dst_slice_pitch = (mOversampledImageLengths[0] * mOversampledImageLengths[1]) * sizeof(cl_float);
+    // The size of the region to be copied, expressed in bytes.
+    vector<size_t> region(3, 0);
+    region[0] = image_width * sizeof(cl_float);
+    region[1] = image_height;
+    region[2] = 1;
 
-	cout << "Condition6: " << dst_slice_pitch << " <? " << copy_region[1] * dst_row_pitch << endl;
-
-	// Execute the copy
-	status = clEnqueueCopyBufferRect(mQueue, image, mOversampledImageBuffer,
-				&src_origin[0], &dst_origin[0], &copy_region[0],
-				0, 0,	// use the size of region, rather than any explicit image size.
-				dst_row_pitch, dst_slice_pitch,
-				0, NULL, &copyCompleteEvent);
+    // Execute the copy
+    status = clEnqueueCopyBufferRect(mQueue, image, mOversampledImageBuffer,
+    		&src_origin[0], &dst_origin[0], &region[0],
+    		src_row_pitch,src_slice_pitch,
+    		dst_row_pitch, dst_slice_pitch,
+    		0, NULL, &copyCompleteEvent);
 	CHECK_OPENCL_ERROR(status, "clEnqueueCopyBufferRect failed.");
 
 	// Wait for the copy to complete before continuing.
