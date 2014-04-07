@@ -44,7 +44,9 @@
 #include "CRoutine_ImageToBuffer.h"
 #include "CRoutine_FT.h"
 #include "CRoutine_DFT.h"
+#ifdef _ADD_CLFFT
 #include "CRoutine_FFT_clFFT.h"
+#endif
 #include "CRoutine_FTtoV2.h"
 #include "CRoutine_FTtoT3.h"
 #include "CRoutine_Chi.h"
@@ -652,16 +654,20 @@ void CLibOI::InitRoutines()
 		mDataRoutinesInitialized = true;
 		if(mrFT == NULL)
 		{
-			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
-//			mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
-//			mrFT->SetSourcePath(mKernelSourcePath);
-//			mrFT->Init(mImageScale);
-
+			// Automatically switch to clFFT instead of the DFT if the library is installed.
+#ifdef _ADD_CLFFT
 			mrFT = new CRoutine_FFT_clFFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 			mrFT->SetSourcePath(mKernelSourcePath);
 
 			CRoutine_FFT_clFFT * fft = reinterpret_cast<CRoutine_FFT_clFFT*>(mrFT);
-			fft->Init(mImageWidth, mImageHeight, 10);
+			fft->Init(mImageWidth, mImageHeight, 4);
+#else
+			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
+			mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
+			mrFT->SetSourcePath(mKernelSourcePath);
+			mrFT->Init(mImageScale);
+
+#endif // _ADD_CLFFT
 		}
 
 		if(mrV2 == NULL)
