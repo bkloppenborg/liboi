@@ -40,6 +40,7 @@
 #include "COILibDataList.h"
 #include "CRoutine_Sum.h"
 #include "CRoutine_Sum_NVidia.h"
+#include "CRoutine_Sum_AMD.h"
 #include "CRoutine_Normalize.h"
 #include "CRoutine_ImageToBuffer.h"
 #include "CRoutine_FT.h"
@@ -627,7 +628,7 @@ void CLibOI::InitRoutines()
 
 	if(mrTotalFlux == NULL)
 	{
-		mrTotalFlux = new CRoutine_Sum_NVidia(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue(), mrZeroBuffer);
+		mrTotalFlux = new CRoutine_Sum_AMD(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue(), mrZeroBuffer);
 		mrTotalFlux->SetSourcePath(mKernelSourcePath);
 		mrTotalFlux->Init(mImageWidth * mImageHeight);
 	}
@@ -660,7 +661,7 @@ void CLibOI::InitRoutines()
 			mrFT->SetSourcePath(mKernelSourcePath);
 
 			CRoutine_FFT_clFFT * fft = reinterpret_cast<CRoutine_FFT_clFFT*>(mrFT);
-			fft->Init(mImageWidth, mImageHeight, 4);
+			fft->Init(mImageWidth, mImageHeight, 4, mrZeroBuffer);
 #else
 			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
 			mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());

@@ -14,6 +14,7 @@ using namespace std;
 
 #include "PathFind.hpp"
 #include "models/CPointSource.h"
+#include "models/CUniformDisk.h"
 
 using namespace liboi;
 
@@ -123,12 +124,18 @@ int RunBenchmark(cl_device_type device_type, string exe_path,
 		unsigned int image_width, unsigned int image_height, unsigned int image_depth, float image_scale,
 		unsigned int n_iterations, unsigned int n_uv)
 {
-	// Setup the model, make an image and copy it over to a float buffer.
+
 	CPointSource ps(image_width, image_height, image_scale);
+	// Setup the model, make an image and copy it over to a float buffer.
+	//CPointSource ps(image_width, image_height, image_scale);
 	valarray<double> temp = ps.GetImage();
 	valarray<float> image(image_width * image_height * image_depth);
+//	for(int i = 0; i < temp.size(); i++)
+//		image[i] = float(temp[i]);
+
 	for(int i = 0; i < temp.size(); i++)
-		image[i] = float(temp[i]);
+		image[i] = 0;
+	image[5] = 1;
 
 	// Get and OpenCL device:
 	CLibOI liboi(device_type);
