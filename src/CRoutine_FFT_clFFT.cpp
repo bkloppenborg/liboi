@@ -6,6 +6,8 @@
  */
 
 #include "CRoutine_FFT_clFFT.h"
+#include <fstream>
+
 
 namespace liboi
 {
@@ -152,8 +154,37 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 	status = clFinish(mQueue);
 
 	// Fetch results of calculations.
-	//status = clEnqueueReadBuffer( queue, bufX, CL_TRUE, 0, N * 2 * sizeof( *X ), X, 0, NULL, NULL );
+    unsigned int oversampled_image_size = mOversampledImageLengths[0] * mOversampledImageLengths[1];
+	vector<cl_float2> temp(oversampled_image_size);
+	status = clEnqueueReadBuffer(mQueue, mOutputBuffer, CL_TRUE, 0, oversampled_image_size * sizeof(cl_float2), &temp[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
+
+
+//	ofstream temp_file;
+//	temp_file.open("/tmp/fft_output.txt");
+//	float x;
+//	float y;
+//	unsigned int k, j;
+//
+//	float RPMAS = (PI/180.0)/3600000.0; // rad/mas
+//	float scale = 0.025; // mas/pixel
+//	float u, v;
+//
+//	for(unsigned int i = 0; i < temp.size(); i++)
+//	{
+//		// Convert the i-th entry into an equivalent k/j frequency
+//		k = i / mOversampledImageLengths[0];
+//		j = i % mOversampledImageLengths[0];
+//
+//		// now convert to UV coordinates
+//		u = k / (mOversampledImageLengths[0] * RPMAS * scale) / 1E6;
+//		v = j / (mOversampledImageLengths[1] * RPMAS * scale) / 1E6;
+//
+//		temp_file << k << " " << j << " " << u << " " << v << " " << temp[i].s[0] << " " << temp[i].s[1] << endl;
+//	}
+//
+//	temp_file.close();
 }
 
 void CRoutine_FFT_clFFT::FT(valarray<cl_float2> & uv_points, unsigned int n_uv_points,
