@@ -35,6 +35,7 @@
 
 #include "CRoutine_DFT.h"
 #include <complex>
+#include <fstream>
 
 using namespace std;
 
@@ -93,6 +94,22 @@ void CRoutine_DFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image
     // Execute the kernel over the entire range of the data set
 	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, &local, 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
+
+	ofstream temp_file;
+	vector<cl_float2> temp_output(n_uv_points);
+	status = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_uv_points * sizeof(cl_float2), &temp_output[0], 0, NULL, NULL);
+	vector<cl_float2> temp_uv_points(n_uv_points);
+	status = clEnqueueReadBuffer(mQueue, uv_points, CL_TRUE, 0, n_uv_points * sizeof(cl_float2), &temp_uv_points[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
+
+	temp_file.open("/tmp/dft_output.txt");
+
+	for(unsigned int i = 0; i < temp_output.size(); i++)
+	{
+		temp_file << i << " " << temp_uv_points[i].s[0]/1E6 << " " << temp_uv_points[i].s[1]/1E6 << " " << temp_output[i].s[0] << " " << temp_output[i].s[1] << endl;
+	}
+
+	temp_file.close();
 }
 
 /// Compute the Fourier transform of the image for a specific UV point

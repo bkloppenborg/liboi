@@ -15,6 +15,9 @@ namespace liboi
 CRoutine_FFT_clFFT::CRoutine_FFT_clFFT(cl_device_id device, cl_context context, cl_command_queue queue)
 	:CRoutine_FT(device, context, queue)
 {
+	// Specify the source location for the kernel.
+	mSource.push_back("ft_clfft_nearest.cl");
+
 	mDimentions = CLFFT_2D;
 
 	mTempBuffer = NULL;
@@ -26,6 +29,7 @@ CRoutine_FFT_clFFT::CRoutine_FFT_clFFT(cl_device_id device, cl_context context, 
 	mOversampledImageLengths[0] = 0;
 	mOversampledImageLengths[1] = 0;
 	mOversampledImageLengths[2] = 0;
+	mImageScale = 1;
 }
 
 CRoutine_FFT_clFFT::~CRoutine_FFT_clFFT()
@@ -49,9 +53,12 @@ void CRoutine_FFT_clFFT::Init(float image_scale)
 }
 
 
-void CRoutine_FFT_clFFT::Init(unsigned int image_width, unsigned int image_height, unsigned int oversampling_factor,
+void CRoutine_FFT_clFFT::Init(float image_scale, unsigned int image_width, unsigned int image_height, unsigned int oversampling_factor,
 		CRoutine_Zero * zero_routine)
 {
+	assert(image_scale > 0);
+	mImageScale = image_scale;
+
 	mrZero = zero_routine;
 
 	int status = CL_SUCCESS;
@@ -105,8 +112,14 @@ void CRoutine_FFT_clFFT::Init(unsigned int image_width, unsigned int image_heigh
     // Bake the plan.
     status = clfftBakePlan(mPlanHandle, 1, &mQueue, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clfftBakePlan failed.");
+
+	// Build the fft_nearest kernel
+	string source = ReadSource(mSource[0]);
+    BuildKernel(source, "ft_clfft_nearest", mSource[0]);
 }
 
+/// Computes an (oversampled) FFT of the image and copies the nearest UV points
+/// from the FFT into output.
 void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output)
 {
 	int status = CL_SUCCESS;
@@ -147,44 +160,94 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 	status = waitForEventAndRelease(&copyCompleteEvent);
 	CHECK_OPENCL_ERROR(status, "waitForEventAndRelease failed.");
 
-	// Execute the plan.
+	// Execute the FFT and wait for it to complete.
 	status = clfftEnqueueTransform(mPlanHandle, CLFFT_FORWARD, 1, &mQueue, 0, NULL, NULL, &mOversampledImageBuffer, &mOutputBuffer, mTempBuffer);
-
-	// Wait for calculations to be finished.
 	status = clFinish(mQueue);
 
-	// Fetch results of calculations.
+	// Next, find the closest matching FFT coordinates to the true UV pair.
+	// Copy the FFT value into output.
+    size_t global = (size_t) n_uv_points;
+
+    // Determine the best workgroup size for this kernel.
+    // Init the local threads to something large
+    size_t local = 2048;
+    status = clGetKernelWorkGroupInfo(mKernels[0], mDeviceID, CL_KERNEL_WORK_GROUP_SIZE , sizeof(size_t), &local, NULL);
+	CHECK_OPENCL_ERROR(status, "clGetKernelWorkGroupInfo failed.");
+
+	// Round the global workgroup size to the next greatest multiple of the local workgroup size
+	global = next_multiple(global, local);
+
+	// Set the kernel arguments and enqueue the kernel
+	status = clSetKernelArg(mKernels[0], 0, sizeof(cl_mem), &mOutputBuffer);
+	status |= clSetKernelArg(mKernels[0], 1, sizeof(uint), &mOversampledImageLengths[0]);
+	status |= clSetKernelArg(mKernels[0], 2, sizeof(uint), &mOversampledImageLengths[1]);
+	status |= clSetKernelArg(mKernels[0], 3, sizeof(cl_float), &mImageScale);
+	status |= clSetKernelArg(mKernels[0], 4, sizeof(cl_mem), &uv_points);
+	status |= clSetKernelArg(mKernels[0], 5, sizeof(int), &n_uv_points);
+	status |= clSetKernelArg(mKernels[0], 6, sizeof(cl_mem), &output);
+	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
+
+    // Execute the kernel over the entire range of the data set
+	status = clEnqueueNDRangeKernel(mQueue, mKernels[0], 1, NULL, &global, &local, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
+
+	// wait for the operation to finish
+	status = clFinish(mQueue);
+
     unsigned int oversampled_image_size = mOversampledImageLengths[0] * mOversampledImageLengths[1];
 	vector<cl_float2> temp(oversampled_image_size);
 	status = clEnqueueReadBuffer(mQueue, mOutputBuffer, CL_TRUE, 0, oversampled_image_size * sizeof(cl_float2), &temp[0], 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
+	ofstream temp_file;
+	temp_file.open("/tmp/fft_output.txt");
+	float x;
+	float y;
+	int k, j;
+
+	float RPMAS = (PI/180.0)/3600000.0; // rad/mas
+	float scale = 0.025; // mas/pixel
+	float u, v;
+
+	cout << mOversampledImageLengths[0] / 2 << endl;
+
+	for(unsigned int i = 0; i < temp.size(); i++)
+	{
+		// Convert the i-th entry into an equivalent k/j frequency
+		k = i % mOversampledImageLengths[0];
+		j = i / mOversampledImageLengths[0];
+
+		if(j > mOversampledImageLengths[0] / 2)
+		{
+			j -= mOversampledImageLengths[0];
+			j *= -1;
+			k *= -1;
+		}
+
+		// now convert to UV coordinates
+		u = k / (mOversampledImageLengths[0] * RPMAS * scale) / 1E6;
+		v = j / (mOversampledImageLengths[1] * RPMAS * scale) / 1E6;
+
+		temp_file << k << " " << j << " " << u << " " << v << " " << temp[i].s[0] << " " << temp[i].s[1] << endl;
+	}
+
+	temp_file.close();
 
 
-//	ofstream temp_file;
-//	temp_file.open("/tmp/fft_output.txt");
-//	float x;
-//	float y;
-//	unsigned int k, j;
-//
-//	float RPMAS = (PI/180.0)/3600000.0; // rad/mas
-//	float scale = 0.025; // mas/pixel
-//	float u, v;
-//
-//	for(unsigned int i = 0; i < temp.size(); i++)
-//	{
-//		// Convert the i-th entry into an equivalent k/j frequency
-//		k = i / mOversampledImageLengths[0];
-//		j = i % mOversampledImageLengths[0];
-//
-//		// now convert to UV coordinates
-//		u = k / (mOversampledImageLengths[0] * RPMAS * scale) / 1E6;
-//		v = j / (mOversampledImageLengths[1] * RPMAS * scale) / 1E6;
-//
-//		temp_file << k << " " << j << " " << u << " " << v << " " << temp[i].s[0] << " " << temp[i].s[1] << endl;
-//	}
-//
-//	temp_file.close();
+	vector<cl_float2> temp_output(n_uv_points);
+	status = clEnqueueReadBuffer(mQueue, output, CL_TRUE, 0, n_uv_points * sizeof(cl_float2), &temp_output[0], 0, NULL, NULL);
+	vector<cl_float2> temp_uv_points(n_uv_points);
+	status = clEnqueueReadBuffer(mQueue, uv_points, CL_TRUE, 0, n_uv_points * sizeof(cl_float2), &temp_uv_points[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
+
+	temp_file.open("/tmp/temp_output.txt");
+
+	for(unsigned int i = 0; i < temp_output.size(); i++)
+	{
+		temp_file << i << " " << temp_uv_points[i].s[0]/1E6 << " " << temp_uv_points[i].s[1]/1E6 << " " << temp_output[i].s[0] << " " << temp_output[i].s[1] << endl;
+	}
+
+	temp_file.close();
 }
 
 void CRoutine_FFT_clFFT::FT(valarray<cl_float2> & uv_points, unsigned int n_uv_points,

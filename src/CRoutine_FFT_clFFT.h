@@ -29,6 +29,7 @@ protected:
 	cl_mem mOversampledImageBuffer;
 	vector<unsigned int> mOversampledImageLengths;
 	unsigned int mOversamplingFactor;
+	float mImageScale;
 
 	// External routines, deleted elsewhere
 	CRoutine_Zero * mrZero;
@@ -38,7 +39,7 @@ public:
 	virtual ~CRoutine_FFT_clFFT();
 
 	void Init(float image_scale);
-	void Init(unsigned int image_width, unsigned int image_height, unsigned int oversampling_factor, CRoutine_Zero * zero_routine);
+	void Init(float image_scale, unsigned int image_width, unsigned int image_height, unsigned int oversampling_factor, CRoutine_Zero * zero_routine);
 	void FT(cl_mem uv_points, int n_uv_points, cl_mem image, int image_width, int image_height, cl_mem output);
 	void FT(valarray<cl_float2> & uv_points, unsigned int n_uv_points,
 		valarray<cl_float> & image, unsigned int image_width, unsigned int image_height, float image_scale,
