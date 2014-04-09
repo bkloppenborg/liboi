@@ -200,7 +200,7 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	ofstream temp_file;
-	temp_file.open("/tmp/fft_output.txt");
+	temp_file.open("/tmp/fft_full.txt");
 	float x;
 	float y;
 	int k, j;
@@ -240,7 +240,7 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 	status = clEnqueueReadBuffer(mQueue, uv_points, CL_TRUE, 0, n_uv_points * sizeof(cl_float2), &temp_uv_points[0], 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
-	temp_file.open("/tmp/temp_output.txt");
+	temp_file.open("/tmp/fft_oversampled.txt");
 
 	for(unsigned int i = 0; i < temp_output.size(); i++)
 	{

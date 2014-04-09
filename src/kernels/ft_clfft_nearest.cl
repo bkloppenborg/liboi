@@ -54,8 +54,8 @@
     int j = round(uv_point.s0 * fft_width * RPMAS * image_scale);
     int k = round(uv_point.s1 * fft_width * RPMAS * image_scale);
     
-    float u = k / (fft_width * RPMAS * image_scale);
-    float v = j / (fft_width * RPMAS * image_scale);
+//    float u = k / (fft_width * RPMAS * image_scale);
+//    float v = j / (fft_width * RPMAS * image_scale);
     
     if(j < 0)
         j += fft_width;

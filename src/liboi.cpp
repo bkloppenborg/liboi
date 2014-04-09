@@ -663,7 +663,7 @@ void CLibOI::InitRoutines()
 //			CRoutine_FFT_clFFT * fft = reinterpret_cast<CRoutine_FFT_clFFT*>(mrFT);
 //			fft->Init(mImageScale, mImageWidth, mImageHeight, 10, mrZeroBuffer);
 //#else
-			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
+//			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
 			mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 			mrFT->SetSourcePath(mKernelSourcePath);
 			mrFT->Init(mImageScale);
