@@ -136,7 +136,7 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
     // Destination image origin. Center the source image into the destination image:
     vector<size_t> dst_origin(3, 0);
     dst_origin[0] = mOversampledImageLengths[0] / 2 - image_width / 2;
-    dst_origin[0] = mOversampledImageLengths[1] / 2 - image_height / 2;
+    dst_origin[1] = mOversampledImageLengths[1] / 2 - image_height / 2;
 
     // Define the size of a row and 2D slice of the destination image.
     size_t dst_row_pitch = mOversampledImageLengths[0] * sizeof(cl_float);

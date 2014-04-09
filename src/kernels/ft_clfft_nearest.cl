@@ -33,6 +33,37 @@
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
  
+ inline float cmod(float2 a)
+ {
+    return (sqrt(a.x*a.x + a.y*a.y));
+}
+
+/*
+ * Get the argument of a complex number (its angle):
+ * http://en.wikipedia.org/wiki/Complex_number#Absolute_value_and_argument
+ */
+inline float carg(float2 a)
+{
+    if(a.x > 0){
+        return atan(a.y / a.x);
+
+    }else if(a.x < 0 && a.y >= 0){
+        return atan(a.y / a.x) + M_PI;
+
+    }else if(a.x < 0 && a.y < 0){
+        return atan(a.y / a.x) - M_PI;
+
+    }else if(a.x == 0 && a.y > 0){
+        return M_PI/2;
+
+    }else if(a.x == 0 && a.y < 0){
+        return -M_PI/2;
+
+    }else{
+        return 0;
+    }
+}
+ 
  __constant float RPMAS = (3.14159265358979323 / 180.0)/3600000.0;
  
  // Finds the closest point in the (regularly spaced) FFT grid to the specified
@@ -59,9 +90,7 @@
     
     if(j < 0)
         j += fft_width;
-    
-    
-    // do bounds checking
-    if(tid < n_uv) // && k <= fft_width && j <= fft_height)
-        output[tid] = clfft_output[j * fft_width + k];
+        
+    //float2 temp = clfft_output[j * fft_width + k];
+    output[tid] = clfft_output[j * fft_width + k]; //(float2) (cmod(temp), carg(temp));
 }
