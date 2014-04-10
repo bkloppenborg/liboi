@@ -124,8 +124,8 @@ int RunBenchmark(cl_device_type device_type, string exe_path,
 		unsigned int image_width, unsigned int image_height, unsigned int image_depth, float image_scale,
 		unsigned int n_iterations, unsigned int n_uv)
 {
-//	CUniformDisk ps(image_width, image_height, image_scale, 1, 0, 0);
-	CPointSource ps(image_width, image_height, image_scale);
+	CUniformDisk ps(image_width, image_height, image_scale, 1, 0, 0);
+//	CPointSource ps(image_width, image_height, image_scale);
 	// Setup the model, make an image and copy it over to a float buffer.
 	//CPointSource ps(image_width, image_height, image_scale);
 	valarray<double> temp = ps.GetImage();
