@@ -68,8 +68,13 @@ void CRoutine_FFT_clFFT::Init(float image_scale, unsigned int image_width, unsig
 	if(mOversamplingFactor < 1)
 		mOversamplingFactor = 1;
 
+	cout << "Initial image size: " << image_width << " " << image_height << endl;
+	cout << "Oversampling factor: " << oversampling_factor << endl;
+
 	mOversampledImageLengths[0] = nextPow2(image_width * mOversamplingFactor);
 	mOversampledImageLengths[1] = nextPow2(image_height * mOversamplingFactor);
+
+	cout << "Oversampled image size: " << mOversampledImageLengths[0] << " " << mOversampledImageLengths[1] << endl;
 
     // init the oversampled image buffer and temporary data buffers:
     unsigned int oversampled_image_size = mOversampledImageLengths[0] * mOversampledImageLengths[1];
@@ -135,8 +140,9 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 
     // Destination image origin. Center the source image into the destination image:
     vector<size_t> dst_origin(3, 0);
-    dst_origin[0] = mOversampledImageLengths[0] / 2 - image_width / 2;
+    dst_origin[0] = (mOversampledImageLengths[0] / 2 - image_width / 2) * sizeof(cl_float);
     dst_origin[1] = mOversampledImageLengths[1] / 2 - image_height / 2;
+    dst_origin[2] = 0;
 
     // Define the size of a row and 2D slice of the destination image.
     size_t dst_row_pitch = mOversampledImageLengths[0] * sizeof(cl_float);
@@ -156,9 +162,17 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
     		0, NULL, &copyCompleteEvent);
 	CHECK_OPENCL_ERROR(status, "clEnqueueCopyBufferRect failed.");
 
+	status = clFinish(mQueue);
 	// Wait for the copy to complete before continuing.
-	status = waitForEventAndRelease(&copyCompleteEvent);
-	CHECK_OPENCL_ERROR(status, "waitForEventAndRelease failed.");
+//	status = waitForEventAndRelease(&copyCompleteEvent);
+//	CHECK_OPENCL_ERROR(status, "waitForEventAndRelease failed.");
+
+	// verify the image copy went correctly
+	unsigned int oversampled_image_size = mOversampledImageLengths[0] * mOversampledImageLengths[1];
+	valarray<float> temp_image(oversampled_image_size);
+	status = clEnqueueReadBuffer(mQueue, mOversampledImageBuffer, CL_TRUE, 0, oversampled_image_size * sizeof(float), &temp_image[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
+	CLibOI::SaveImage(temp_image, mOversampledImageLengths[0], mOversampledImageLengths[1], 1, 0.025, "!/tmp/oversampled_image.fits");
 
 	// Execute the FFT and wait for it to complete.
 	status = clfftEnqueueTransform(mPlanHandle, CLFFT_FORWARD, 1, &mQueue, 0, NULL, NULL, &mOversampledImageBuffer, &mOutputBuffer, mTempBuffer);
@@ -194,7 +208,6 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 	// wait for the operation to finish
 	status = clFinish(mQueue);
 
-    unsigned int oversampled_image_size = mOversampledImageLengths[0] * mOversampledImageLengths[1];
 	vector<cl_float2> temp(oversampled_image_size);
 	status = clEnqueueReadBuffer(mQueue, mOutputBuffer, CL_TRUE, 0, oversampled_image_size * sizeof(cl_float2), &temp[0], 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
@@ -208,8 +221,6 @@ void CRoutine_FFT_clFFT::FT(cl_mem uv_points, int n_uv_points, cl_mem image, int
 	float RPMAS = (PI/180.0)/3600000.0; // rad/mas
 	float scale = 0.025; // mas/pixel
 	float u, v;
-
-	cout << mOversampledImageLengths[0] / 2 << endl;
 
 	for(unsigned int i = 0; i < temp.size(); i++)
 	{

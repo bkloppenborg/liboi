@@ -194,60 +194,7 @@ void   CLibOI::ExportImage(string filename)
 	valarray<float> image(mImageWidth * mImageHeight * mImageDepth);
 	ExportImage(&image[0], mImageWidth, mImageHeight, mImageDepth);
 
-	// write out the FITS file:
-	fitsfile *fptr;
-	int error = 0;
-	int* status = &error;
-	long fpixel = 1, naxis = 2, nelements;
-	long naxes[2];
-
-	/*Initialise storage*/
-	naxes[0] = (long) mImageWidth;
-	naxes[1] = (long) mImageHeight;
-	nelements = mImageWidth * mImageWidth;
-
-	/*Create new file*/
-	if (*status == 0)
-		fits_create_file(&fptr, filename.c_str(), status);
-
-	/*Create primary array image*/
-	if (*status == 0)
-		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, status);
-
-	double RPMAS = (M_PI / 180.0) / 3600000.0;
-	double image_scale_rad = mImageScale;// * RPMAS;
-
-	// Write keywords to get WCS to work //
-//	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Milli-arcsecs per pixel", status);
-//	fits_write_key_dbl(fptr, "CDELT2", image_scale_rad, 3, "Milli-arcsecs per pixel", status);
-//	fits_write_key_dbl(fptr, "CRVAL1", 0.0, 3, "X-coordinate of ref pixel", status);
-//	fits_write_key_dbl(fptr, "CRVAL2", 0.0, 3, "Y-coordinate of ref pixel", status);
-//	fits_write_key_lng(fptr, "CRPIX1", naxes[0]/2, "Ref pixel in X", status);
-//	fits_write_key_lng(fptr, "CRPIX2", naxes[1]/2, "Ref pixel in Y", status);
-//	fits_write_key_str(fptr, "CTYPE1", "RA",  "Name of X-coordinate", status);
-//	fits_write_key_str(fptr, "CTYPE2", "DEC", "Name of Y-coordinate", status);
-//	fits_write_key_str(fptr, "CUNIT1", "mas", "Unit of X-coordinate", status);
-//	fits_write_key_str(fptr, "CUNIT2", "mas", "Unit of Y-coordinate", status);
-
-	/*Write a keywords (datafile, target, image scale) */
-//	if (*status == 0)
-//		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);
-//	if (*status == 0)
-//		fits_update_key(fptr, TSTRING, "TARGET", "FakeImage", "Target Name", status);
-//	if (*status == 0)
-//		fits_update_key(fptr, TFLOAT, "SCALE", &scale, "Scale (mas/pixel)", status);
-
-
-	/*Write image*/
-	if (*status == 0)
-		fits_write_img(fptr, TFLOAT, fpixel, nelements, &image[0], status);
-
-	/*Close file*/
-	if (*status == 0)
-		fits_close_file(fptr, status);
-
-	/*Report any errors*/
-	fits_report_error(stderr, *status);
+	SaveImage(image, mImageWidth, mImageHeight, mImageDepth, mImageScale, filename);
 }
 
 /// Prints error message.
@@ -661,13 +608,12 @@ void CLibOI::InitRoutines()
 			mrFT->SetSourcePath(mKernelSourcePath);
 
 			CRoutine_FFT_clFFT * fft = reinterpret_cast<CRoutine_FFT_clFFT*>(mrFT);
-			fft->Init(mImageScale, mImageWidth, mImageHeight, 10, mrZeroBuffer);
+			fft->Init(mImageScale, mImageWidth, mImageHeight, 8, mrZeroBuffer);
 //#else
 //			// TODO: Permit the Fourier Transform routine to be switched from DFT to something else, like NFFT
 //			mrFT = new CRoutine_DFT(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 //			mrFT->SetSourcePath(mKernelSourcePath);
 //			mrFT->Init(mImageScale);
-
 //#endif // _ADD_CLFFT
 		}
 
@@ -783,6 +729,67 @@ void CLibOI::RunVerification(int data_num)
 //	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
 //	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, true);
 //	mrLogLike->LogLike_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
+}
+
+void CLibOI::SaveImage(valarray<float> & image,
+		unsigned int image_width, unsigned int image_height, unsigned int image_depth,
+		float image_scale,
+		string filename)
+{
+	// write out the FITS file:
+	fitsfile *fptr;
+	int error = 0;
+	int* status = &error;
+	long fpixel = 1, naxis = 2, nelements;
+	long naxes[2];
+
+	/*Initialise storage*/
+	naxes[0] = (long) image_width;
+	naxes[1] = (long) image_height;
+	nelements = image_width * image_height;
+
+	/*Create new file*/
+	if (*status == 0)
+		fits_create_file(&fptr, filename.c_str(), status);
+
+	/*Create primary array image*/
+	if (*status == 0)
+		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, status);
+
+	double RPMAS = (M_PI / 180.0) / 3600000.0;
+	double image_scale_rad = image_scale;// * RPMAS;
+
+	// Write keywords to get WCS to work //
+//	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Milli-arcsecs per pixel", status);
+//	fits_write_key_dbl(fptr, "CDELT2", image_scale_rad, 3, "Milli-arcsecs per pixel", status);
+//	fits_write_key_dbl(fptr, "CRVAL1", 0.0, 3, "X-coordinate of ref pixel", status);
+//	fits_write_key_dbl(fptr, "CRVAL2", 0.0, 3, "Y-coordinate of ref pixel", status);
+//	fits_write_key_lng(fptr, "CRPIX1", naxes[0]/2, "Ref pixel in X", status);
+//	fits_write_key_lng(fptr, "CRPIX2", naxes[1]/2, "Ref pixel in Y", status);
+//	fits_write_key_str(fptr, "CTYPE1", "RA",  "Name of X-coordinate", status);
+//	fits_write_key_str(fptr, "CTYPE2", "DEC", "Name of Y-coordinate", status);
+//	fits_write_key_str(fptr, "CUNIT1", "mas", "Unit of X-coordinate", status);
+//	fits_write_key_str(fptr, "CUNIT2", "mas", "Unit of Y-coordinate", status);
+
+	/*Write a keywords (datafile, target, image scale) */
+//	if (*status == 0)
+//		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);
+//	if (*status == 0)
+//		fits_update_key(fptr, TSTRING, "TARGET", "FakeImage", "Target Name", status);
+//	if (*status == 0)
+//		fits_update_key(fptr, TFLOAT, "SCALE", &scale, "Scale (mas/pixel)", status);
+
+
+	/*Write image*/
+	if (*status == 0)
+		fits_write_img(fptr, TFLOAT, fpixel, nelements, &image[0], status);
+
+	/*Close file*/
+	if (*status == 0)
+		fits_close_file(fptr, status);
+
+	/*Report any errors*/
+	fits_report_error(stderr, *status);
 }
 
 /// Tells OpenCL about the size of the image.

@@ -237,6 +237,9 @@ public:
 	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data);
 	void RunVerification(int data_num);
 
+	static void SaveImage(valarray<float> & image,
+			unsigned int image_width, unsigned int image_height, unsigned int image_depth,
+			float image_scale, string filename);
 	void SetImageInfo(unsigned int width, unsigned int height, unsigned int depth, float scale);
 	void SetImageSource(float * host_memory);
 	void SetImageSource(cl_mem cl_device_memory);
