@@ -66,38 +66,54 @@ valarray<double> CUniformDisk::GetImage()
 	double center_col = double(mImageWidth - 1) / 2;
 	double center_row = double(mImageHeight - 1) / 2;
 	double rad_sq = radius * radius;
-//	double dx = 0;
-//	double dy = 0;
+	double dx = 0;
+	double dy = 0;
 
-		for(unsigned int row = 0; row < mImageHeight; row++)
-		{
-			//dy = row - center_row;
-			for(unsigned int col = 0; col < mImageWidth; col++)
-			{
-				//dx = col - center_col;
-
-				if(col > (center_col - radius) && col < (center_col + radius) &&
-						row > (center_row - radius) && row < (center_row + radius))
-					image[mImageWidth * row + col] = 1;
-				else
-					image[mImageWidth * row + col] = 0;
-			}
-		}
-
-
+	// draws a square in the image origin corner
 //	for(unsigned int row = 0; row < mImageHeight; row++)
 //	{
-//		dy = row - center_row;
+//		//dy = row - center_row;
 //		for(unsigned int col = 0; col < mImageWidth; col++)
 //		{
-//			dx = col - center_col;
+//			//dx = col - center_col;
 //
-//			if(dx*dx + dy*dy <= rad_sq)
+//			if(col < radius && row < radius)
 //				image[mImageWidth * row + col] = 1;
 //			else
 //				image[mImageWidth * row + col] = 0;
 //		}
 //	}
+
+	// draws a square, centered
+//		for(unsigned int row = 0; row < mImageHeight; row++)
+//		{
+//			//dy = row - center_row;
+//			for(unsigned int col = 0; col < mImageWidth; col++)
+//			{
+//				//dx = col - center_col;
+//
+//				if(col > (center_col - radius) && col < (center_col + radius) &&
+//						row > (center_row - radius) && row < (center_row + radius))
+//					image[mImageWidth * row + col] = 1;
+//				else
+//					image[mImageWidth * row + col] = 0;
+//			}
+//		}
+
+
+	for(unsigned int row = 0; row < mImageHeight; row++)
+	{
+		dy = row - center_row;
+		for(unsigned int col = 0; col < mImageWidth; col++)
+		{
+			dx = col - center_col;
+
+			if(dx*dx + dy*dy <= rad_sq)
+				image[mImageWidth * row + col] = 1;
+			else
+				image[mImageWidth * row + col] = 0;
+		}
+	}
 
 	// Now normalize the image
 	CRoutine_Normalize::Normalize(image, image_size);
