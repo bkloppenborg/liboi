@@ -39,6 +39,25 @@
 #define PI 3.141592653589793
 #endif
 
+/// Circular distance function. See
+/// http://www.codeproject.com/Articles/190833/Circular-Values-Math-and-Statistics-with-Cplusplus
+/// for the derivation
+float sdist(float value1, float value2, float high, float low);
+float sdist(float value1, float value2, float high, float low)
+{
+    float d_values = value2 - value1;
+    float range = high - low;
+    float half_range = range / 2.0;
+    
+    if(d_values < -1 * half_range)
+        return d_values + range;
+    else if((-1 * half_range < d_values) && (d_values < half_range))
+        return d_values;
+    else
+        return d_values - range; 
+}
+
+
 void complex_to_oi(float real, float imag, float * amp, float * phase);
 void complex_to_oi(float real, float imag, float * amp, float * phase)
 {
@@ -74,6 +93,8 @@ __kernel void chi_complex_nonconvex(
     if(i < n)
     {
         output[index] = (data_amp - model_amp) / data_amp_err;
-        output[n+index] = fmod(data_phi - model_phi, (float)PI) / data_phi_err;   
+        output[n+index] = sdist(data_phi, model_phi, PI, 0.0) / data_phi_err;
+        
+        //output[n+index] = fmod(data_phi - model_phi, (float)PI) / data_phi_err;   
     }   
 }
