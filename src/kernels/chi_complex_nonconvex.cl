@@ -51,13 +51,15 @@ float sdist(float value1, float value2, float high, float low)
     
     if(d_values < -1 * half_range)
         return d_values + range;
-    else if((-1 * half_range < d_values) && (d_values < half_range))
-        return d_values;
-    else
-        return d_values - range; 
+    
+    if(d_values >= half_range)
+        return d_values - range;
+        
+    return d_values; 
 }
 
-
+/// Extracts the amplitude and phase from a complex value
+/// The phase will be in the range [-pi, pi]
 void complex_to_oi(float real, float imag, float * amp, float * phase);
 void complex_to_oi(float real, float imag, float * amp, float * phase)
 {
@@ -93,8 +95,6 @@ __kernel void chi_complex_nonconvex(
     if(i < n)
     {
         output[index] = (data_amp - model_amp) / data_amp_err;
-        output[n+index] = sdist(data_phi, model_phi, PI, 0.0) / data_phi_err;
-        
-        //output[n+index] = fmod(data_phi - model_phi, (float)PI) / data_phi_err;   
+        output[n+index] = sdist(data_phi, model_phi, PI, -1*PI) / data_phi_err;
     }   
 }
