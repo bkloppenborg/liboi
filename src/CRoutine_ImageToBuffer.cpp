@@ -79,10 +79,7 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_input, cl_mem cl_output,
 	status |= clSetKernelArg(mKernels[0],  1, sizeof(cl_mem), (void *) &cl_output);
 	CHECK_OPENCL_ERROR(status, "clSetKernelArg failed.");
 
-	cout << "Image buffer: " << gl_input << endl;
-	cout << "Kernel claims: ";	// text written by printf in kernel.
-
-    status |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, NULL, 0, NULL, NULL);
+        status |= clEnqueueNDRangeKernel(mQueue, mKernels[0], 2, NULL, global, NULL, 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 
 	// Wait for the queue to finish, then release the OpenGL buffer

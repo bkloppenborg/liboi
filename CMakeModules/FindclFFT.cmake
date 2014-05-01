@@ -1,16 +1,18 @@
-# - Find clFFT
+# - Find clFFT, AMD's OpenCL FFT library
 
-# Defines the following variables:
+# This script defines the following variables:
 # CLFFT_INCLUDE_DIRS    - Location of clFFT's include directory.
 # CLFFT_LIBRARIES       - Location of clFFT's libraries
 # CLFFT_FOUND           - True if clFFT has been located
 #
-# You may provide a hint to where clFFT's root directory may be located
-# by setting CLFFT_ROOT_HINT before calling this script. This should point to
-# the directory which contains 'include/clFFT.h'
+# If your clFFT installation is not in a standard installation directory, you
+# may provide a hint to where it may be found. Simply set the value CLFFT_ROOT
+# to the directory containing 'include/clFFT.h" prior to calling this script.
 #
-# Variables used by this module, they can change the default behaviour and
-# need to be set before calling find_package:
+# By default this script will attempt to find the 32-bit version of clFFT.
+# If you desire to use the 64-bit version instead, set
+#   set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+# prior to calling this script.
 #
 #=============================================================================
 # Copyright 2014 Brian Kloppenborg
@@ -26,7 +28,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ########################################################################
+#=============================================================================
 
 IF(CLFFT_INCLUDE_DIRS)
   # Already in cache, be silent
@@ -35,7 +37,7 @@ ENDIF (CLFFT_INCLUDE_DIRS)
 
 FIND_PATH(CLFFT_ROOT_DIR
     NAMES include/clFFT.h
-    HINTS /usr/local/ ${CLFFT_ROOT_HINT} 
+    HINTS /usr/local/ ${CLFFT_ROOT} 
     DOC "clFFT root directory.")
     
 FIND_PATH(_CLFFT_INCLUDE_DIRS
@@ -45,7 +47,7 @@ FIND_PATH(_CLFFT_INCLUDE_DIRS
 
 FIND_LIBRARY(_CLFFT_LIBRARY
     NAMES clFFT
-    HINTS ${CLFFT_ROOT_DIR}/lib ${CLFFT_ROOT_DIR}/lib64)
+    HINTS ${CLFFT_ROOT_DIR}/lib)
 
 SET(CLFFT_INCLUDE_DIRS ${_CLFFT_INCLUDE_DIRS})
 SET(CLFFT_LIBRARIES ${_CLFFT_LIBRARY})
@@ -53,9 +55,7 @@ SET(CLFFT_LIBRARIES ${_CLFFT_LIBRARY})
 # handle the QUIETLY and REQUIRED arguments and set CLFFT_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE (FindPackageHandleStandardArgs)
-
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(CLFFT DEFAULT_MSG CLFFT_LIBRARIES CLFFT_INCLUDE_DIRS)
-
 MARK_AS_ADVANCED(CLFFT_LIBRARIES CLFFT_INCLUDE_DIRS)
 
 

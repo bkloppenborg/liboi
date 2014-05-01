@@ -8,33 +8,33 @@
  *      OpenCL Kernel for computing a discrete Fourier transform
  *
  *  NOTE: 
- *      To use this kernel rowou must inline the following variable:
+ *      To use this kernel you must inline the following variable:
  *      ARG using a #define statement:
  *          float ARG = 2.0 * PI * RPMAS * image_scale
  *      where PI = 3.14159265358979323, RPMAS = (PI/180.0)/3600000.0
  */
 
 /* 
- * Coprowright (c) 2012 Brian Kloppenborg
+ * Copyright (c) 2012 Brian Kloppenborg
  *
- * If rowou use this software as part of a scientific publication, please cite as:
+ * If you use this software as part of a scientific publication, please cite as:
  *
- * Kloppenborg, B.; Baron, F. (2012), "LibOI: The OpenCL Interferometrrow Librarrow" 
+ * Kloppenborg, B.; Baron, F. (2012), "LibOI: The OpenCL Interferometry Library" 
  * (Version X). Available from  <https://github.com/bkloppenborg/liboi>.
  *
- * This file is part of the OpenCL Interferometrrow Librarrow (LIBOI).
+ * This file is part of the OpenCL Interferometry Library (LIBOI).
  * 
- * LIBOI is free software: rowou can redistribute it and/or modifrow
+ * LIBOI is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License 
  * as published brow the Free Software Foundation, either version 3 
- * of the License, or (at rowour option) anrow later version.
+ * of the License, or (at your option) any later version.
  * 
  * LIBOI is distributed in the hope that it will be useful,
- * but WITHOUT ANrow WARRANTrow; without even the implied warrantrow of
+ * but WITHOUT ANrow WARRANTrow; without even the implied warranty of
  * MERCHANTABILITrow or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  * 
- * rowou should have received a coprow of the GNU Lesser General Public 
+ * You should have received a copy of the GNU Lesser General Public 
  * License along with LIBOI.  If not, see <http://www.gnu.org/licenses/>.
  */
 

@@ -52,17 +52,18 @@ file(GLOB TESTS *_test.cpp PathFind.cpp)
 file(GLOB BENCHMARK *_benchmark.cpp PathFind.cpp)
 list(REMOVE_ITEM SOURCE main.cpp ${TESTS} ${BENCHMARK})
 
-find_package(clFFT)
-if(clFFT_FOUND)
+set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+find_package(clFFT REQUIRED)
+if(CLFFT_FOUND)
     include_directories(${CLFFT_INCLUDE_DIRS})
     LIST(APPEND OPTIONAL_LIBS ${CLFFT_LIBRARIES})
-    message(STATUS " clFFT found, support for FFT-based kernels enabled.")
+    message(STATUS " clFFT found! FFT-based routines will be built.")
     add_definitions(-D_ADD_CLFFT)
-else(clFFT_FOUND)
+else(CLFFT_FOUND)
     message(STATUS " clFFT not found. No FFT-based kernels will be enabled.")
     file(GLOB REMOVE_CLFFT "CRoutine_FFT_clFFT*")
     list(REMOVE_ITEM SOURCE ${REMOVE_CLFFT})
-endif(clFFT_FOUND)
+endif(CLFFT_FOUND)
 
 add_library(oi SHARED EXCLUDE_FROM_ALL ${SOURCE})
 target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES} ${Boost_LIBRARIES})
@@ -72,12 +73,12 @@ target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES
 
 # Build tests:
 add_executable(liboi_tests ${TESTS})
-target_link_libraries(liboi_tests gtest oi_static)
+target_link_libraries(liboi_tests gtest oi_static ${OPTIONAL_LIBS})
 add_test(liboi_tests liboi_tests)
 
 # Build benchmark
 add_executable(liboi_benchmark ${BENCHMARK})
-target_link_libraries(liboi_benchmark oi_static)
+target_link_libraries(liboi_benchmark oi_static ${OPTIONAL_LIBS})
 
 install(TARGETS oi_static DESTINATION lib)
 install(FILES liboi.hpp DESTINATION include)
