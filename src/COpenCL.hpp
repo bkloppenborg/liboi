@@ -77,7 +77,7 @@ class COpenCL;
 
 #if defined(__APPLE__) || defined(__MACOSX)
 	#include <OpenCL/cl.hpp>
-	#include <OpenGL/gl.h>
+	#include <OpenGL/gl3.h>
 #else
 	#include <CL/cl.hpp>
 	#include <GL/gl.h>
