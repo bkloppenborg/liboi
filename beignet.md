@@ -307,28 +307,26 @@ If you don't see the extension, we need to compile `mesa` from source. First
 install the prerequisites:
 
     sudo apt-get install flex bison autoconf libtool
-    sudo apt-get install x11proto-dri3-dev x11proto-present-dev libudev-dev libclc-dev libclc-ptx
+    sudo apt-get install x11proto-dri3-dev x11proto-present-dev libudev-dev libclc-dev libclc-ptx llvm
 
 Now check out the source code. `cd` into the directory which contains the 
 `beignet` folder then checkout `mesa` with:
 
     git clone git://anongit.freedesktop.org/mesa/mesa
     
-Now we compile
+Now we setup the compilation and build
 
     cd mesa
+    export CC=/usr/bin/clang
+    export CXX=/usr/bin/clang++
     autoreconf -vfi
     ./configure --prefix=/usr \
               --enable-driglx-direct \
-              --enable-gallium \
-              --enable-gles-overlay \
               --enable-gles1 \
               --enable-gles2 \
               --enable-glx-tls \
-              --with-driver=dri \
               --with-dri-driverdir=/usr/lib/dri \
               --with-egl-platforms='drm x11' \
-              --with-state-trackers=egl,glx,dri,vega \
               --with-dri-drivers="swrast,i915,i965"\
               --with-gallium-drivers="i915,swrast" \
               --enable-gbm \
@@ -336,9 +334,15 @@ Now we compile
               --enable-opencl-icd \
               --enable-texture-float \
               --enable-shared-glapi 
+    make
     
 Note that this is being built with only software and Intel 4th generation (i965)
 processors with OpenCL enabled, OpenCL-OpenGL interop enabled, and floating
 point textures enabled. See 
 [the debian page on how to build mesa](http://x.debian.net/howto/build-mesa.html)
-if you require other options.
+if you require other options. You can also enable a parallel build with
+`make -jN` where `N` is the number of cores/threads your processor supports.
+
+
+
+
