@@ -211,12 +211,7 @@ Make a working directory for the kernel somewhere and download the source
 
     mkdir kernel
     cd kernel
-    sudo apt-get source linux-image-`uname -r`
-
-And take ownership of the source files (replace `your_username` with your 
-username, of course):
-
-    sudo chown -R your_username *
+    apt-get source linux-image-`uname -r`
     
 Next we see if we can automatically apply the patch. First download the
 patch:
@@ -267,20 +262,83 @@ Now we build the new kernel. Run the following commands from within the kernel
 source directory:
 
     fakeroot debian/rules clean
-    AUTOBUILD=1 fakeroot debian/rules binary-debs
+    DEB_BUILD_OPTIONS=parallel=8 fakeroot debian/rules binary-headers binary-generic
     
-If it looks like everything is compiling correctly, stop the compilation and
-run it in parallel. I have four cores with 2 threads each so I built with
-8 threads in parallel:
+This will build some Debian packages and place them in the directory *above*
+the kernel source root.
 
-    DEB_BUILD_OPTIONS=parallel=8 AUTOBUILD=1 fakeroot debian/rules binary-debs
+After the kernel has compiled, install it:
 
-Now we install the kernel. If you want to see the Ubuntu splash screen (or use
-text mode) before you get to X instead of just a black screen, you'll want to
-make sure the framebuffer driver loads. Execute one of these two lines:
-
-    echo vesafb | sudo tee -a /etc/initramfs-tools/modules
-    echo fbcon | sudo tee -a /etc/initramfs-tools/modules
+    cd ../ (or go back into the kernel directory)
+    sudo dpkg -i linux-headers-3.13.0-30-generic_3.13.0-30.54_amd64.deb 
+    sudo dpkg -i linux-image-3.13.0-30-generic_3.13.0-30.54_amd64.deb
     
-    
+Now add the kernel to the boot options:
 
+    sudo update-grub
+    sudo reboot
+    
+Re-run the `liboi` test suite. All tests except the 
+`CRoutine_Sum_NVidia.CL_Sum_CPU_CHECK` should pass without any issues. If the
+tests did not pass, verify that you are running the 3.13.0-30 kernel by
+checking the output of the `uname -a` command.
+
+## Compile `Mesa` and enable `cl_khr_gl_sharing` in `beignet`
+
+First verify that `cl_khr_gl_sharing` is not in the list of supported extensions
+by the `beignet` OpenCL driver:
+
+    $ clinfo
+    Number of platforms:				 1
+    ...
+    Name:						Intel(R) HD Graphics Haswell GT2 Desktop
+    Vendor:					    Intel
+    Device OpenCL C version:	OpenCL C 1.2 beignet 0.9.1
+    Driver version:				0.9.1
+    Profile:					FULL_PROFILE
+    Version:					OpenCL 1.2 beignet 0.9.1
+
+    Extensions:					cl_khr_global_int32_base_atomics
+        cl_khr_global_int32_extended_atomics cl_khr_local_int32_base_atomics
+        cl_khr_local_int32_extended_atomics cl_khr_byte_addressable_store 
+        cl_khr_icd
+
+If you don't see the extension, we need to compile `mesa` from source. First
+install the prerequisites:
+
+    sudo apt-get install flex bison autoconf libtool
+    sudo apt-get install x11proto-dri3-dev x11proto-present-dev libudev-dev libclc-dev libclc-ptx
+
+Now check out the source code. `cd` into the directory which contains the 
+`beignet` folder then checkout `mesa` with:
+
+    git clone git://anongit.freedesktop.org/mesa/mesa
+    
+Now we compile
+
+    cd mesa
+    autoreconf -vfi
+    ./configure --prefix=/usr \
+              --enable-driglx-direct \
+              --enable-gallium \
+              --enable-gles-overlay \
+              --enable-gles1 \
+              --enable-gles2 \
+              --enable-glx-tls \
+              --with-driver=dri \
+              --with-dri-driverdir=/usr/lib/dri \
+              --with-egl-platforms='drm x11' \
+              --with-state-trackers=egl,glx,dri,vega \
+              --with-dri-drivers="swrast,i915,i965"\
+              --with-gallium-drivers="i915,swrast" \
+              --enable-gbm \
+              --enable-opencl \
+              --enable-opencl-icd \
+              --enable-texture-float \
+              --enable-shared-glapi 
+    
+Note that this is being built with only software and Intel 4th generation (i965)
+processors with OpenCL enabled, OpenCL-OpenGL interop enabled, and floating
+point textures enabled. See 
+[the debian page on how to build mesa](http://x.debian.net/howto/build-mesa.html)
+if you require other options.
