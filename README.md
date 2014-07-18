@@ -31,19 +31,20 @@ required libraries can be installed through [MacPorts](http://www.macports.org/)
     sudo port install gcc47
     sudo port install cmake
     sudo port install cfitsio
+    sudo port install git
 
 `ccfits` will need to be compiled and installed manually.
 [Download and install ccfits from here](http://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
 *NOTE:* When you compile `ccfits` be sure to specify
 
-    export CC=/path/to/gcc
-    export CXX=/path/to/g++
+    export CC=/opt/local/bin/gcc-mp-4.7
+    export CXX=/opt/local/bin/g++-mp-4.7
 
-so that `gcc` compiles and links the libraries. After these are installed follow the 
-building instructions below.
+so that `gcc` compiles and links the libraries. Please note that Apple may have
+a fake version of `gcc` located in `/opt/local/bin/gcc` that is a wrapper for
+clang. Be sure to specify the macport compiler if you are not using gcc4.7!
 
-If you wish to keep up with the development version, it is suggested that you also
-install [git](http://git-scm.com/).
+After this follow the installation instructions below.
 
 &dagger; It is possible that Xcode 4.6 (which includes Apple `clang` 4.2 which is based on 
 `llvm-clang` 3.2svn) could compile `liboi`, but we haven't tested this yet.
@@ -62,7 +63,7 @@ installed:
 Most of these packages can be easily installed through `apt-get`. First the
 compiler, cmake, cfitsio, and ccfits:
 
-    sudo apt-get install build-essential g++ cmake libccfits0 libccfits-dev 
+    sudo apt-get install build-essential g++ cmake libccfits0 libccfits-dev git
     
 To enable OpenCL-OpenGL interoperability you should also install an OpenGL
 library. This *should* install the prerequisites:
@@ -83,11 +84,6 @@ into your system's OpenCL include directory.
 
 After these are installed follow the building instructions below.
 
-If you wish to keep up with the development version, it is suggested that you also
-install [git](http://git-scm.com/) via:
-
-    sudo apt-get install git
-
 ## Checkout / getting a copy of LibOI source code
 
 After installing the aforementioned prerequisites, you simply need to checkout
@@ -97,15 +93,24 @@ a copy of LibOI
     cd liboi
     git submodule update --init
 
+If you wish to have the bleeding-edge development version of `liboi` (which
+often includes the latest features and bugfixes) checkout the development version:
+
+    git checkout develop
+
+otherwise you can stay on the default `master` branch.
+
 ## Building instructions
 
-After you have obtained a copy of the source and initialized the submodules, simply
+After you have obtained a copy of the source and initialized the submodules, 
+simply 
 
     cd build
     cmake ..
     make
     
-If you have any errors in the compilation steps, please contact us.
+If you have any errors in the compilation steps, please contact us. (If you
+are on a Apple machine be sure to set the `export` lines mentioned above!)
 
 ## Overriding library locations
 
