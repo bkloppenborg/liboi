@@ -131,6 +131,9 @@ bool CRoutine_FTtoVis::FTtoVis_Test(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem ou
 //	bool v2_pass = Verify(cpu_output, output, n_v2, sizeof(cl_float) * offset);
 //	PassFail(v2_pass);
 //	return v2_pass;
+
+	// temporary, this function has been deprecated
+	return true;
 }
 
 } /* namespace liboi */
