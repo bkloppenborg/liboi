@@ -33,21 +33,33 @@ required libraries can be installed through [MacPorts](http://www.macports.org/)
     sudo port install cfitsio
     sudo port install git
 
-`ccfits` will need to be compiled and installed manually.
-[Download and install ccfits from here](http://heasarc.gsfc.nasa.gov/fitsio/CCfits/)
-*NOTE:* When you compile `ccfits` be sure to specify
+Please note that Apple may have installed a fake version of `gcc` located at
+`/opt/local/bin/gcc` that is a wrapper for clang. Besure to specify that you
+want to use the macport-installed compiler using
 
     export CC=/opt/local/bin/gcc-mp-4.7
     export CXX=/opt/local/bin/g++-mp-4.7
 
-so that `gcc` compiles and links the libraries. Please note that Apple may have
-a fake version of `gcc` located in `/opt/local/bin/gcc` that is a wrapper for
-clang. Be sure to specify the macport compiler if you are not using gcc4.7!
+before running and `./configure` or `cmake` commands!
+
+Next you will need to download and install 
+[ccfits](http://heasarc.gsfc.nasa.gov/fitsio/CCfits/).
+You can do this using commands similar to the following
+
+    wget http://heasarc.gsfc.nasa.gov/fitsio/CCfits/CCfits-2.4.tar.gz
+    tar xvzf CCfits-2.4.tar.gz
+    cd CCfits
+    ./configure --prefix=/opt/local --with-cfitsio=/opt/local
+    make
+    sudo make install
 
 After this follow the installation instructions below.
 
-&dagger; It is possible that Xcode 4.6 (which includes Apple `clang` 4.2 which is based on 
-`llvm-clang` 3.2svn) could compile `liboi`, but we haven't tested this yet.
+&dagger; When we last attempted to compile `liboi` on a Mac the machine had
+Xcode 4.6 (which included apple `clang` 4.2 which is based on `llvm-clang` 3.2svn)
+that did not have full C++11 support. We do not have access to an Apple system
+for development, thus we cannot try compiling on a more recent system. If you
+wish to help get `liboi` running on a Mac please contact us!
 
 ### Debian/Ubuntu
 
