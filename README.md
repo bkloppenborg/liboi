@@ -254,8 +254,9 @@ In terms of what you expect, here are some representative test values from
 | NVidia GeForce 8400 GS    | 50                | |
 | i7-4770K (CPU)            | 5                 | Running on 4 physical cores. |
 
-All tests were performed on Ubuntu Linux using manufacturer drivers unless
-otherwise noted. Any additional benchmarks would be appreciated.
+All tests were performed on various Linux distributions using manufacturer 
+drivers unless otherwise noted. 
+Any additional benchmarks would be appreciated.
 
 ## Licensing and Acknowledgements
 
