@@ -120,9 +120,11 @@ simply
     cd build
     cmake ..
     make
-    
-If you have any errors in the compilation steps, please contact us. (If you
-are on a Apple machine be sure to set the `export` lines mentioned above!)
+
+If you have installed a library in a non-standard location, please see the
+[Overriding library locations][] section below. If you have any errors in the
+compilation steps, please contact us. 
+(If you are on a Apple machine be sure to set the `export` lines mentioned above!)
 
 ## Overriding library locations
 
@@ -142,6 +144,118 @@ These can be set by typing `export VARIABLE=/path/to/directory` before calling
 `cmake` in the building instructions above. CMake should indicate that the
 directory you specified is used, rather than the default search path on your
 computer.
+
+## Testing and benchmarking
+
+After compiling `liboi` it is useful to test that `liboi` is functioning correcly
+on your hardware. For this purpose we have packaged the `liboi_tests` and
+`liboi_benchmark` program in the `liboi/bin` directory.
+
+The `liboi_tests` program executes a series of unit tests and compares the result
+of `liboi`'s calculations with analytic results. 
+By default `liboi_tests` runs on the first OpenCL-compatabile GPU it can find.
+You can also have it run on an OpenCL-supporting CPU by specifying the `-cpu` option.
+See `liboi_tests -h` for more information.
+
+When you execute `liboi_tests`you should see something like this:
+
+    liboi/bin$ ./liboi_tests 
+    [==========] Running 34 tests from 12 test cases.
+    [----------] Global test environment set-up.
+    [----------] 14 tests from ChiTest
+    [ RUN      ] ChiTest.CPU_Chi_ZERO
+    [       OK ] ChiTest.CPU_Chi_ZERO (3 ms)
+    ...
+    [----------] Global test environment tear-down
+    [==========] 34 tests from 12 test cases ran. (5987 ms total)
+    [  PASSED  ] 34 tests.
+    
+In the ideal situation all tests will pass, but frequently a few tests will fail.
+In partcular, the following tests often fail for the following reasons:
+
+* `CRoutine_Sum_NVidia.CL_Sum_CPU_CHECK` executes a parallel sum. Due to some
+  optimizations specific to NVidia GPUs, this test seems to always fail on
+  non-NVidia hardware. Thus if you have an Intel or AMD GPU, don't worry if this
+  test fails.
+* `CRoutine_DFT.CL_UniformDisk` this test compares the real (indexed as `.s[0]`)
+  and imaginary (indexed `.s[1]`) components of an analytical uniform disk
+  Fourier transform with a discrete Fourier transform of an image. The analytic
+  and DFT answers are required to match at a 3% or better level. Out of the 10
+  UV points tested, it is common for a few to fail, particularly on older
+  hardware.
+* `CRoutine_DFT.CL_DFT_LARGE_UNEVEN_N_UV_POINTS` compares an analytical and DFT
+  result when there are a large uneven number of UV points (10221 in total). 
+  This test often fails on older hardware where shared memory limitations occur.
+
+The `liboi_benchmark` program accesses how fast your hardware can execute
+the following sequence:
+
+1. Copy a 128x128 image from RAM to OpenCL device memory
+2. Compute the DFT on a reference data set
+3. Compute a chi-squared
+4. Sum the chi-squared
+5. Copy the summed chi-squared back to the host.
+
+By default this will execute on a GPU. You can, specify the `-cpu` option to run
+the benchmark program on your OpenCL-compatible CPU. 
+You can also change the image size, image scale, and number of iterations used 
+in the benchmark. 
+See `liboi_benchmark -h` for this and other options.
+
+`liboi_benchmark` will print some information about your hardware, print metadata
+about the data file being used, and then benchmark liboi.
+When you run `liboi_benchmark` you should see something like the following:
+
+    liboi/bin$ ./liboi_benchmark 
+    Running Benchmark with: 
+
+    Device information: 
+    Device Name: Tahiti
+
+    ...
+
+    Data set information for: 
+     /home/bkloppenborg/workspace/liboi/bin/../samples/PointSource_noise.oifits
+    N Vis: 0
+    N V2 : 525
+    N T3 : 700
+    N UV : 529
+    Average JD: 2456253.90049
+    Building kernels.
+    Starting benchmark.
+    Iteration 0 Chi2: 1993.02527
+    Iteration 100 Chi2: 1993.02527
+    Iteration 200 Chi2: 1993.02527
+    Iteration 300 Chi2: 1993.02527
+    Iteration 400 Chi2: 1993.02527
+    Iteration 500 Chi2: 1993.02527
+    Iteration 600 Chi2: 1993.02527
+    Iteration 700 Chi2: 1993.02527
+    Iteration 800 Chi2: 1993.02527
+    Iteration 900 Chi2: 1993.02527
+    Benchmark Test completed!
+    1000 iterations in 6.33000 seconds. Throughput 157.97788 iterations/sec.
+
+The important aspects to note are that (1) the chi-squared is constant as a
+function of iteration number, (2) the chi-squared is near the reference number
+above, and (2) your throughput.
+The performance of `liboi` is limited by the DFT which is linearly dependent
+on the product of the number of UV points and number of pixels.
+In terms of what you expect, here are some representative test values from
+`liboi_benchmark` on various hardware:
+
+| OpenCL device             | Iterations/sec    | Notes
+|:--------------------------|:------------------|
+| GeForce GTX 570           | 260               |
+| i7-3520M (GPU)            | 210               | MacBook Pro GPU
+| AMD Radeon R9 280x        | 155               |
+| i7-4770K (GPU)            | 135               |
+| GeForce 8600m GT          | 60                |
+| GeForce 8400 GS           | 50                |
+| i7-4770K (CPU)            | 5                 | Running on 4 physical cores.
+
+
+
 
 ## Licensing and Acknowledgements
 
