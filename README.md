@@ -82,11 +82,15 @@ library. This *should* install the prerequisites:
     
     sudo apt-get install libglu1-mesa libglu1-mesa-dev
     
-For OpenCL capabilities you need to install drivers for your device. The
-proprietary drivers for both NVidia and ATI GPUs distributed through the 
+For OpenCL capabilities you need to install development files and the drivers
+for your device. 
+
+    sudo apt-get install opencl-headers ocl-icd-dev
+
+The proprietary drivers for both NVidia and ATI GPUs distributed through the 
 package manager *should* supply everything that is needed.
 
-* For NVIDIA GPUs: `sudo apt-get install nvidia-current` or [NVidia drivers](www.nvidia.com/drivers)
+* For NVIDIA GPUs: `sudo apt-get install nvidia-current nvidia-opencl-dev` or [NVidia drivers](www.nvidia.com/drivers)
 * For AMD GPUs or AMD CPUs: `sudo apt-get install fglrx` or [AMD graphic drivers](http://support.amd.com/us/gpudownload/Pages/index.aspx), and then install the [OpenCL SDK] (http://developer.amd.com/tools/heterogeneous-computing/amd-accelerated-parallel-processing-app-sdk/downloads/)
 * For Intel CPUs: [Intel OpenCL SDK](http://software.intel.com/en-us/vcsource/tools/opencl-sdk)
 
