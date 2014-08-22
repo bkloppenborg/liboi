@@ -244,18 +244,18 @@ on the product of the number of UV points and number of pixels.
 In terms of what you expect, here are some representative test values from
 `liboi_benchmark` on various hardware:
 
-| OpenCL device             | Iterations/sec    | Notes                        |
+| OpenCL device             | Iterations/sec    | Other information            |
 |:--------------------------|:------------------|------------------------------|
-| GeForce GTX 570           | 260               | |
-| i7-3520M (GPU)            | 210               | MacBook Pro GPU |
+| NVidia GeForce GTX 570    | 260               | |
+| Intel i7-3520M (GPU)      | 210               | Apple driver, HD Graphics 4000 |
 | AMD Radeon R9 280x        | 155               | |
-| i7-4770K (GPU)            | 135               | |
-| GeForce 8600m GT          | 60                | |
-| GeForce 8400 GS           | 50                | |
+| Intel i7-4770K (GPU)      | 135               | Beignet, HD Graphics 4600 |
+| NVidia GeForce 8600m GT   | 60                | |
+| NVidia GeForce 8400 GS    | 50                | |
 | i7-4770K (CPU)            | 5                 | Running on 4 physical cores. |
 
-
-
+All tests were performed on Ubuntu Linux using manufacturer drivers unless
+otherwise noted. Any additional benchmarks would be appreciated.
 
 ## Licensing and Acknowledgements
 
