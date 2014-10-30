@@ -82,19 +82,55 @@ library. This *should* install the prerequisites:
     
     sudo apt-get install libglu1-mesa libglu1-mesa-dev
     
-For OpenCL capabilities you need to install drivers for your device. The
-proprietary drivers for both NVidia and ATI GPUs distributed through the 
-package manager *should* supply everything that is needed.
-
-* For NVIDIA GPUs: `sudo apt-get install nvidia-current` or [NVidia drivers](www.nvidia.com/drivers)
-* For AMD GPUs or AMD CPUs: `sudo apt-get install fglrx` or [AMD graphic drivers](http://support.amd.com/us/gpudownload/Pages/index.aspx), and then install the [OpenCL SDK] (http://developer.amd.com/tools/heterogeneous-computing/amd-accelerated-parallel-processing-app-sdk/downloads/)
-* For Intel CPUs: [Intel OpenCL SDK](http://software.intel.com/en-us/vcsource/tools/opencl-sdk)
-
-After the OpenCL implementation is installed, ensure that the `cl.hpp` file got installed
+For OpenCL capabilities you need to install drivers for your device, OpenCL
+headers, and an OpenCL Installable Client Driver (ICD) loader. These *should*
+supply everything you need to compile `liboi`. Unfortunately each vendor has
+specific installation instructions which we list below. After the OpenCL 
+implementation is installed, ensure that the `cl.hpp` file was installed
 along with the OpenCL drivers. If it was not installed copy the `liboi/include/cl.hpp`
 into your system's OpenCL include directory.
 
-After these are installed follow the building instructions below.
+After OpenCL support are installed follow the building instructions below.
+
+#### NVIDIA GPUS:
+
+On systems that do not have NVIDIA unified virtual memory (e.g. Ubuntu 13.10
+and earlier) you only need the display drivers (e.g. one of
+`nvidia-current`, `nvidia-304`, or `nvidia-331`), OpenCL headers, and an OpenCL
+ICD loader:
+
+    sudo apt-get install nvidia-319 opencl-headers nvidia-opencl-dev
+    
+On later Ubuntu systems you will need to add the UVM package. You may also
+need to install special modprobe rules for the NVIDIA UVM drivers. These can be
+found in the following packages:
+
+    sudo apt-get install nvidia-331 nvidia-331-uvm nvidia-modprobe opencl-headers nvidia-opencl-dev
+
+If you prefer, you can install the [drivers from NVIDIA](www.nvidia.com/drivers) instead.
+
+#### AMD GPUs and AMD CPUs:
+
+    sudo apt-get install fglrx opencl-headers
+    
+or if you so choose you can install the 
+[AMD graphic drivers](http://support.amd.com/us/gpudownload/Pages/index.aspx), 
+and then install the 
+[OpenCL SDK] (http://developer.amd.com/tools/heterogeneous-computing/amd-accelerated-parallel-processing-app-sdk/downloads/)
+
+#### Intel CPUs and GPUs
+
+For Intel CPUs you need to install the [Intel OpenCL SDK](http://software.intel.com/en-us/vcsource/tools/opencl-sdk)
+
+Unlike on Windows and Apple systems, Intel does not provide support for OpenCL
+on their GPUs with their display drivers. Instead an open source project
+called [Beignet](http://www.freedesktop.org/wiki/Software/Beignet/) is filling
+the gap.
+
+We have successfully compiled `liboi` and verified that it functions with 
+`Beignet`, however doing so was not a straightforward process.
+See the [beignet.md](beignet.md) document in this directory for further details.
+
 
 ## Checkout / getting a copy of LibOI source code
 
