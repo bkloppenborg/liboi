@@ -31,18 +31,18 @@ find_package(OpenGL REQUIRED)
 # to use clCreateFromGLTexture3D on these old devices.
 find_package(OpenCL REQUIRED)
 include_directories(${OPENCL_INCLUDE_DIRS})
-message(STATUS "Found OpenCL Version: ${OPENCL_VERSION}")
-if(${OPENCL_VERSION} VERSION_EQUAL 1.0)
+message(STATUS "Found OpenCL Version: ${OpenCL_VERSION_STRING}")
+if(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.0)
     add_definitions(-DDETECTED_OPENCL_1_0)
-elseif(${OPENCL_VERSION} VERSION_EQUAL 1.1)
+elseif(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.1)
     add_definitions(-DDETECTED_OPENCL_1_1)
-elseif(${OPENCL_VERSION} VERSION_EQUAL 1.2)
+elseif(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.2)
     add_definitions(-DDETECTED_OPENCL_1_2)    
-elseif(${OPENCL_VERSION} VERSION_EQUAL 2.0)
+elseif(${OpenCL_VERSION_STRING} VERSION_EQUAL 2.0)
     add_definitions(-DDETECTED_OPENCL_2_0)
-else(${OPENCL_VERSION} VERSION_EQUAL 2.0)
+else(${OpenCL_VERSION_STRING} VERSION_EQUAL 2.0)
     add_definitions(-DDETECTED_OPENCL_UNKNOWN_VERSION)     
-endif(${OPENCL_VERSION} VERSION_EQUAL 1.0)
+endif(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.0)
 
 set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTERNAL "")
 
@@ -66,10 +66,10 @@ else(CLFFT_FOUND)
 endif(CLFFT_FOUND)
 
 add_library(oi SHARED EXCLUDE_FROM_ALL ${SOURCE})
-target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OpenCL_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(oi_static STATIC ${SOURCE})
-target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES} ${OPENCL_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES} ${OpenCL_LIBRARIES} ${Boost_LIBRARIES})
 
 # Build tests:
 add_executable(liboi_tests ${TESTS})
