@@ -126,9 +126,12 @@ set(OpenCL_INCLUDE_DIRS ${OpenCL_INCLUDE_DIR})
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   OpenCL
-  FOUND_VAR OpenCL_FOUND
+#  FOUND_VAR OpenCL_FOUND
   REQUIRED_VARS OpenCL_LIBRARY OpenCL_INCLUDE_DIR
   VERSION_VAR OpenCL_VERSION_STRING)
+
+# Workaround for CMake 2.8.7 (Ubuntu 12.04) on Travis
+set(OpenCL_FOUND ${OPENCL_FOUND} PARENT_SCOPE)
 
 mark_as_advanced(
   OpenCL_INCLUDE_DIR
