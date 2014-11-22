@@ -125,9 +125,11 @@ set(OpenCL_LIBRARIES ${OpenCL_LIBRARY})
 set(OpenCL_INCLUDE_DIRS ${OpenCL_INCLUDE_DIR})
 
 include(FindPackageHandleStandardArgs)
+# Ubuntu 12.04 / Travis CI have an old version of CMake that doesn't
+# support "FOUND_VAR OpenCL_FOUND". This could, in principle, be added
+# at a later date.
 find_package_handle_standard_args(
   OpenCL
-  FOUND_VAR OpenCL_FOUND
   REQUIRED_VARS OpenCL_LIBRARY OpenCL_INCLUDE_DIR
   VERSION_VAR OpenCL_VERSION_STRING)
 
