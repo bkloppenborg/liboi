@@ -41,8 +41,9 @@ if(NOT CCFITS_FOUND)
         DOC "CCFITS include directory.")
         
     find_library(CCFITS_LIBRARY 
-        NAMES libCCfits.so libCCfits.a libCCfits.dylib libCCfits.la
+        NAMES CCfits
         HINTS $ENV{CCFITS_ROOT_DIR} 
+        PATH_SUFFIXES lib lib64 lib/CCfits lib64/CCfits
         DOC "CCFITS library.")
   
     find_package(CFITSIO REQUIRED)
