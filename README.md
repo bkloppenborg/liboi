@@ -111,6 +111,22 @@ found in the following packages:
 
 If you prefer, you can install the [drivers from NVIDIA](www.nvidia.com/drivers) instead.
 
+If you receive an error involving `clCreateFromGLTexture` during the linking stage,
+edit the `src/CMakeLists.txt` and replace the OpenCL version testing section with the
+following to force OpenCL 1.1 compatability mode:
+
+    #if(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.0)
+    #    add_definitions(-DDETECTED_OPENCL_1_0)
+    #elseif(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.1)
+        add_definitions(-DDETECTED_OPENCL_1_1)
+    #elseif(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.2)
+    #    add_definitions(-DDETECTED_OPENCL_1_2)    
+    #elseif(${OpenCL_VERSION_STRING} VERSION_EQUAL 2.0)
+    #    add_definitions(-DDETECTED_OPENCL_2_0)
+    #else(${OpenCL_VERSION_STRING} VERSION_EQUAL 2.0)
+    #    add_definitions(-DDETECTED_OPENCL_UNKNOWN_VERSION)     
+    #endif(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.0)
+
 #### AMD GPUs and AMD CPUs:
 
     sudo apt-get install fglrx opencl-headers
