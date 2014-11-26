@@ -65,11 +65,13 @@ else(CLFFT_FOUND)
     list(REMOVE_ITEM SOURCE ${REMOVE_CLFFT})
 endif(CLFFT_FOUND)
 
-add_library(oi SHARED EXCLUDE_FROM_ALL ${SOURCE})
+# Build the libraries
+add_library(oi SHARED ${SOURCE})
 target_link_libraries(oi textio ccoifits ${OPENGL_LIBRARIES} ${OpenCL_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(oi_static STATIC ${SOURCE})
 target_link_libraries(oi_static textio_static ccoifits_static ${OPENGL_LIBRARIES} ${OpenCL_LIBRARIES} ${Boost_LIBRARIES})
+set_target_properties(oi_static PROPERTIES OUTPUT_NAME oi)
 
 # Build tests:
 add_executable(liboi_tests ${TESTS})
@@ -80,5 +82,6 @@ add_test(liboi_tests liboi_tests)
 add_executable(liboi_benchmark ${BENCHMARK})
 target_link_libraries(liboi_benchmark oi_static ${OPTIONAL_LIBS})
 
+install(TARGETS oi DESTINATION lib)
 install(TARGETS oi_static DESTINATION lib)
 install(FILES liboi.hpp DESTINATION include)
