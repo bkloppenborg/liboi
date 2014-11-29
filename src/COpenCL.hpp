@@ -103,6 +103,7 @@ protected:
 
 	bool mCLGLInteropEnabled;
 
+	unsigned int mCLVersion;
 
 public:
 	COpenCL(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled);
@@ -115,6 +116,9 @@ public:
 
 	static void error(std::string errorMsg);
 
+protected:
+	unsigned int  FindOpenCLVersion();
+public:
 	cl_context		GetContext();
 	cl_device_id	GetDevice();
 	cl_command_queue GetQueue();
@@ -124,6 +128,8 @@ public:
 	void 			GetPlatformList(vector<cl_platform_id> * platforms);
 protected:
 	static string 	getOpenCLErrorCodeStr(cl_int err);
+public:
+	unsigned int	GetOpenCLVersion();
 
 	void Init(cl_device_type type);
 	void Init(cl_platform_id platform, cl_device_id device, cl_device_type type);
