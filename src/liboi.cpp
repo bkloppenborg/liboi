@@ -812,6 +812,7 @@ void CLibOI::SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type
 	mImageType = type;
 
 	int status = CL_SUCCESS;
+	unsigned int CLVersion = mOCL->GetOpenCLVersion();
 
 	switch(type)
 	{
@@ -822,11 +823,25 @@ void CLibOI::SetImageSource(GLuint gl_device_memory, LibOIEnums::ImageTypes type
 		break;
 
 	case LibOIEnums::OPENGL_TEXTUREBUFFER:
-#if defined(DETECTED_OPENCL_1_0) || defined(DETECTED_OPENCL_1_1) || defined(DETECTED_OPENCL_UNKNOWN_VERSION)
-		mImage_gl = clCreateFromGLTexture2D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, gl_device_memory, &status);
-#else
-		mImage_gl = clCreateFromGLTexture(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, gl_device_memory, &status);
-#endif // defined(DETECTED_OPENCL_1_0) || defined(DETECTED_OPENCL_1_1)
+
+		// OpenCL's support for texture buffers changed between v1.0 and v1.2,
+		// but we might be linking with an older library, hence we use both
+		// runtime version detection and compile-time detection
+		if(CLVersion == 100 || CLVersion == 110 || CLVersion == 000)
+		{
+			mImage_gl = clCreateFromGLTexture2D(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, gl_device_memory, &status);
+		}
+#if MAX_OPENCL_VERSION >= 120
+//#if MAX_OPENCL_VERSION_MAJOR >= 1 && MAX_OPENCL_VERSION_MAJOR >= 2
+		else if(CLVersion == 120)
+		{
+			mImage_gl = clCreateFromGLTexture(mOCL->GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, gl_device_memory, &status);
+		}
+#endif // MAX_OPENCL_VERSION >= 1.2
+		else // mImage_gl == NULL
+		{
+			throw runtime_error("No function for accessing OpenGL memory is defined for this OpenCL context!");
+		}
 		CHECK_OPENCL_ERROR(status, "clCreateFromGLTexture failed.");
 
 		break;

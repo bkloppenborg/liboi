@@ -49,6 +49,8 @@ COpenCL::COpenCL(cl_device_type type)
 	mCLGLInteropEnabled = false;
 
 	Init(type);
+
+	mCLVersion = FindOpenCLVersion();
 }
 
 COpenCL::COpenCL(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled)
@@ -58,6 +60,8 @@ COpenCL::COpenCL(cl_device_id device, cl_context context, cl_command_queue queue
 	mQueue = queue;
 
 	mCLGLInteropEnabled = cl_gl_interop_enabled;
+
+	mCLVersion = FindOpenCLVersion();
 }
 
 COpenCL::~COpenCL()
@@ -101,6 +105,40 @@ void COpenCL::FindDevice(cl_platform_id & platform, cl_device_id & device, cl_de
 		// Clear the vector
 		devices.clear();
 	}
+}
+
+/// Returns the OpenCL version as a three-digit unsigned integer.
+///
+/// The versions are as follows:
+///  1.0 -> 100
+///  1.1 -> 110
+///  1.2 -> 120
+///  2.0 -> 200
+///  other -> 000
+unsigned int COpenCL::FindOpenCLVersion()
+{
+	int err = CL_SUCCESS;
+	cl_char device_cl_version[1024] = {0};
+	size_t returned_size;
+
+	// Extract the OpenCL device version number. The OpenCL specifications
+	// guarentee the following format: "OpenCL X.Y EXTRA_STUFF"
+	err |= clGetDeviceInfo(mDevice, CL_DEVICE_VERSION, sizeof(device_cl_version), device_cl_version, &returned_size);
+	string temp((char*) device_cl_version);
+	unsigned int start = temp.find(' ', 0);
+	unsigned int end = temp.find(' ', start + 1);
+	string device_cl_version_number = temp.substr(start, end - start);
+
+	if(device_cl_version_number == "1.0")
+		mCLVersion = 100;
+	else if(device_cl_version_number == "1.1")
+		mCLVersion = 110;
+	else if(device_cl_version_number == "1.2")
+		mCLVersion = 120;
+	else if(device_cl_version_number == "2.0")
+		mCLVersion = 200;
+	else
+		mCLVersion = 000;
 }
 
 /// Returns the context
@@ -345,6 +383,19 @@ string COpenCL::getOpenCLErrorCodeStr(cl_int err)
     }
 }
 
+/// Returns the OpenCL version as a three-digit unsigned integer.
+///
+/// The versions are as follows:
+///  1.0 -> 100
+///  1.1 -> 110
+///  1.2 -> 120
+///  2.0 -> 200
+///  other -> 000
+unsigned int COpenCL::GetOpenCLVersion()
+{
+	return mCLVersion;
+}
+
 void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 {
 	int err = CL_SUCCESS;
@@ -415,7 +466,8 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 	cout << "Device information: " << endl;
 	cout << "Device Name: " << device_name << endl;
 	cout << "Vendor: " << vendor_name << endl;
-	cout << "Device OpenCL version: " << device_cl_version << endl;
+	cout << "Device OpenCL version (full): " << device_cl_version << endl;
+	cout << "Device OpenCL version (number): " << FindOpenCLVersion() << endl;
 	cout << "Driver OpenCL version: " << driver_cl_version << endl;
 	cout << "Profile: " << device_profile << endl;
 	cout << "Supported Extensions: " << device_extensions << endl;
@@ -452,6 +504,7 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 	cout << "Global Mem Cache Size (Bytes): " << global_mem_cache_size << endl;
 	cout << "Max Mem Alloc Size (MB): " << max_mem_alloc_size/(1024*1024) << endl;
 	cout << endl;
+
 }
 
 void COpenCL::PrintPlatformInfo(cl_platform_id platform_id)
