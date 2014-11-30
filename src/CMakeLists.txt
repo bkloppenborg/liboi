@@ -48,7 +48,7 @@ set(LIBOI_INCLUDE_DIRS ${OPENCL_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} CACHE INTER
 
 include_directories(. models/)
 file(GLOB SOURCE *.cpp models/*.cpp)
-file(GLOB TESTS *_test.cpp PathFind.cpp)
+file(GLOB TESTS *_test.cpp *_tests.cpp PathFind.cpp)
 file(GLOB BENCHMARK *_benchmark.cpp PathFind.cpp)
 list(REMOVE_ITEM SOURCE main.cpp ${TESTS} ${BENCHMARK})
 
