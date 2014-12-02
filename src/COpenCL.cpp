@@ -121,6 +121,8 @@ unsigned int COpenCL::FindOpenCLVersion()
 	cl_char device_cl_version[1024] = {0};
 	size_t returned_size;
 
+	unsigned int cl_version = 0;
+
 	// Extract the OpenCL device version number. The OpenCL specifications
 	// guarentee the following format: "OpenCL X.Y EXTRA_STUFF"
 	err |= clGetDeviceInfo(mDevice, CL_DEVICE_VERSION, sizeof(device_cl_version), device_cl_version, &returned_size);
@@ -130,15 +132,15 @@ unsigned int COpenCL::FindOpenCLVersion()
 	string device_cl_version_number = temp.substr(start, end - start);
 
 	if(device_cl_version_number == "1.0")
-		mCLVersion = 100;
+		cl_version = 100;
 	else if(device_cl_version_number == "1.1")
-		mCLVersion = 110;
+		cl_version = 110;
 	else if(device_cl_version_number == "1.2")
-		mCLVersion = 120;
+		cl_version = 120;
 	else if(device_cl_version_number == "2.0")
-		mCLVersion = 200;
-	else
-		mCLVersion = 000;
+		cl_version = 200;
+
+	return cl_version;
 }
 
 /// Returns the context
