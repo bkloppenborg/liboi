@@ -75,12 +75,12 @@ set_target_properties(oi_static PROPERTIES OUTPUT_NAME oi)
 
 # Build tests:
 add_executable(liboi_tests ${TESTS})
-target_link_libraries(liboi_tests gtest oi_static ${OPTIONAL_LIBS})
+target_link_libraries(liboi_tests gtest oi ${OPTIONAL_LIBS})
 add_test(liboi_tests liboi_tests)
 
 # Build benchmark
 add_executable(liboi_benchmark ${BENCHMARK})
-target_link_libraries(liboi_benchmark oi_static ${OPTIONAL_LIBS})
+target_link_libraries(liboi_benchmark oi ${OPTIONAL_LIBS})
 
 install(TARGETS oi DESTINATION lib)
 install(TARGETS oi_static DESTINATION lib)
