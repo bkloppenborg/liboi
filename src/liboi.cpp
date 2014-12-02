@@ -351,72 +351,6 @@ int CLibOI::GetNV2(int data_num)
 	return 0;
 }
 
-/// Copies up to buffer_size elements from mSimDataBuffer to output_buffer
-/// Note, the data is exported as a floating point array with the first
-/// N(V2) elements being visibilities and 2*N(T3) elements being T3's
-//void CLibOI::GetSimulatedData(unsigned int data_set, float * output_buffer, unsigned int buffer_size)
-//{
-//	if(data_set > mDataList.size())
-//		return;
-//
-//	unsigned int num_elements = min(int(buffer_size), int(mDataList[data_set]->GetNumData()) );
-//	unsigned int num_v2 = mDataList[data_set]->GetNumV2();
-//	unsigned int num_t3 = mDataList[data_set]->GetNumT3();
-//
-//	// Pull over the T3 data
-//	vector<CT3DataPtr> t3_data;
-//	mDataList[data_set]->GetT3(t3_data);
-//
-//	// Pull the data down from the OpenCL device in it's native format, convert to float afterward
-//	int err = CL_SUCCESS;
-//	cl_float tmp[num_elements];
-//	err |= clEnqueueReadBuffer(mOCL->GetQueue(), mSimDataBuffer, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
-//	COpenCL::CheckOCLError("Could not copy buffer back to CPU, CLibOI::ExportImage() ", err);
-//
-//	// First copy over the V2:
-//	for(int i = 0; i < num_v2; i++)
-//		output_buffer[i] = float(tmp[i]);
-//
-//	// Now do the T3's
-//	complex<float> t3_model_tmp;
-//	complex<float> t3_phase_tmp;
-//	complex<float> t3_out;
-//	float data_phi = 0;
-//	for(int i = 0; i < num_t3; i++)
-//	{
-//		// Compute the complex model t3:
-//		t3_model_tmp = complex<float>(float(tmp[num_v2 + 2*i]), float(tmp[num_v2 + 2*i + 1]));
-//
-//		// Compute the phasor (undoes rotation in COILibData::InitData)
-//		data_phi = t3_data[i]->t3_phi * PI / 180;
-//		t3_phase_tmp = complex<float>(cos(data_phi), -sin(data_phi));
-//
-//		// Rotate the model back to the
-//		t3_out = t3_model_tmp / t3_phase_tmp;
-//
-//		output_buffer[num_v2 + 2*i] = abs(t3_out);
-//		output_buffer[num_v2 + 2*i + 1] = arg(t3_out);
-//	}
-//
-//	// Zero out the remainder of the buffer:
-//	for(int i = num_elements; i < buffer_size; i++)
-//		output_buffer[i] = 0;
-//}
-
-/// Returns the T3 data in a structured vector, does nothing if data_set is out of range.
-//void CLibOI::GetT3(unsigned int data_set, vector<CT3DataPtr> & t3)
-//{
-//	if(data_set < mDataList.size())
-//		mDataList[data_set]->GetT3(t3);
-//}
-//
-///// Returns the V2 data in a structured vector, does nothing if data_set is out of range.
-//void CLibOI::GetV2(unsigned int data_set, vector<CV2DataPtr> & v2)
-//{
-//	if(data_set < mDataList.size())
-//		mDataList[data_set]->GetV2(v2);
-//}
-
 /// Uses the current active image to compute the chi (i.e. non-squared version) with respect to the
 /// specified data and returns the chi elements in the floating point array, output.
 /// This is a convenience function that calls FTToData, DataToChi
@@ -738,37 +672,6 @@ float CLibOI::TotalFlux()
 void CLibOI::RemoveData(int data_num)
 {
 	mDataList->RemoveData(data_num);
-}
-
-/// Runs the verification functions of each kernel.  Assumes all initialization has been complete
-/// and at least one data set has been loaded.
-void CLibOI::RunVerification(int data_num)
-{
-//	if(data_num > mDataList->size() - 1)
-//		return;
-//
-//	// Get the data and some information about the data.
-//	COILibDataPtr data = mDataList->at(data_num);
-//	int n_vis = data->GetNumVis();
-//	int n_v2 = data->GetNumV2();
-//	int n_t3 = data->GetNumT3();
-//	int n_uv = data->GetNumUV();
-//
-//	mrTotalFlux->ComputeSum_Test(mImage_cl, mFluxBuffer);
-//	mrNormalize->Normalize_Test(mImage_cl, mImageWidth, mImageHeight, mFluxBuffer);
-//	mrFT->FT_Test(data->GetLoc_DataUVPoints(), n_uv, mImage_cl, mImageWidth,
-//			mImageHeight, mFluxBuffer, mFTBuffer);
-//
-//	mrV2->FTtoV2_Test(mFTBuffer, data->GetLoc_V2_UVRef(), mSimDataBuffer, n_vis, n_v2, n_uv);
-//
-//	mrT3->FTtoT3_Test(mFTBuffer, data->GetLoc_T3_UVRef(),
-//			data->GetLoc_T3_sign(), mSimDataBuffer, n_vis, n_v2, n_t3, n_uv);
-//
-//	// Now run the chi, chi2, and loglike kernels:
-//	int n = data->GetNumData();
-//	mrChi->Chi_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
-//	mrChi->Chi2_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n, true);
-//	mrLogLike->LogLike_Test(data->GetLoc_Data(), data->GetLoc_DataErr(), mSimDataBuffer, n);
 }
 
 /// Tells OpenCL about the size of the image.
