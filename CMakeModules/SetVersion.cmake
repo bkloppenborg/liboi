@@ -16,14 +16,6 @@ MESSAGE(STATUS "Version information for" ${PROJECT_SOURCE_DIR})
 MESSAGE(STATUS "Version tag: " ${GIT_VERSION_TAG})
 MESSAGE(STATUS "Version hash: " ${GIT_COMMIT_HASH})
 
-if(NOT ${GIT_VERSION_TAG})
-    SET(GIT_VERSION_TAG 'v0.0.0')
-endif()
-
-if(NOT ${GIT_COMMIT_HASH})
-    SET(GIT_COMMIT_HASH '0')
-endif()
-
 # strip the leading 'v' off of the git version tag:
 string(LENGTH ${GIT_VERSION_TAG} GIT_TAG_LENGTH)
 string(SUBSTRING ${GIT_VERSION_TAG} 1 -1 GIT_VERSION_TAG)
