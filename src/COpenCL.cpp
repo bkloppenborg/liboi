@@ -381,7 +381,7 @@ string COpenCL::getOpenCLErrorCodeStr(cl_int err)
     //case CL_INVALID_PROPERTY_EXT:        //    return "CL_INVALID_PROPERTY_EXT";
     //case CL_DEVICE_PARTITION_FAILED_EXT:        		return "CL_DEVICE_PARTITION_FAILED_EXT";
     //case CL_INVALID_PARTITION_COUNT_EXT:        		return "CL_INVALID_PARTITION_COUNT_EXT";
-    default:        return "unknown error code";
+    default:        return "unknown error code: " + int(err);
     }
 }
 
