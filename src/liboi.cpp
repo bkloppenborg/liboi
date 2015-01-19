@@ -622,6 +622,11 @@ void CLibOI::InitRoutines()
 	}
 }
 
+bool CLibOI::IsIntegratedDevice()
+{
+	return COpenCL::isIntegratedDevice(mOCL->GetDevice());
+}
+
 /// Reads in an OIFITS file and stores it into OpenCL memory
 /// Note, this routine will not load data any routine that uses data is initialized.
 int CLibOI::LoadData(string filename)

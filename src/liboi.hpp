@@ -211,6 +211,7 @@ private:
 public:
 	void InitMemory();
 	void InitRoutines();
+	bool IsIntegratedDevice();
 
 	int LoadData(string filename);
 	int LoadData(const OIDataList & data);
