@@ -130,19 +130,26 @@ Not all of the failures are unexpected. The NVidia Sum kernel (tested by
 on non-NVidia hardware. Because we are running the tests on an Intel GPU, this
 test failure is expected.
 
-As of the writing of this document (2014 July 02), the failure of the three
-DFT tests:
+If a significant majority of the unit tests fail, please see the list of
+[known issues for Beignet](http://www.freedesktop.org/wiki/Software/Beignet/).
+You can determine your processor generation by looking at the output of
+the `cat /proc/cpuinfo` command. Intel procesors are as follows:
 
-    CRoutine_DFT.CL_PointSource
-    CRoutine_DFT.CL_UniformDisk
-    CRoutine_DFT.CL_DFT_LARGE_UNEVEN_N_UV_POINTS
-    
-and the one AMD sum test:
+    iN-3xxx - 3rd generation
+    iN-4xxx - 4th generation
+    iN-5xxx - 5th generation
 
-    CRoutine_Sum_AMD.CL_Sum_CPU_CHECK
+One possible solution on Linux 3.15/3.16 kernels is to disable hang checking:
 
-Is most likely due to Intel GPU OpenCL shared local memory being disabled in
-your kernel. Please see below for instructions. 
+    sudo su
+    echo -n 0 > /sys/module/i915/parameters/enable_hangcheck
+    exit
+   
+But this command is a little bit dangerous, as if your kernel really does hang
+hang, then the gpu will lock up forever until a reboot. On 4th generation
+Intel processors, it may be necessary for you to recompile your kernel to
+disable a buffer security mechanisim in the Linux kernel (known Beignet issue).
+See the instructions below for compiling a kernel from scratch.
 
 ## Benchmark liboi
 
