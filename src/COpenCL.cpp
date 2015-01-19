@@ -207,6 +207,29 @@ cl_device_type COpenCL::GetDeviceType(cl_device_id device_id)
 	return type;
 }
 
+/// Determine if the device is an integrated GPU for which memory allocations
+/// should be made using
+bool COpenCL::isIntegratedDevice(cl_device_id device_id)
+{
+	int status = CL_SUCCESS;
+	cl_char device_name[1024] = {0};
+	size_t returned_size;
+	status |= clGetDeviceInfo(device_id, CL_DEVICE_NAME, sizeof(device_name), device_name, &returned_size);
+	CHECK_OPENCL_ERROR(status, "clGetDeviceInfo failed.");
+
+	vector<string> integrated_devices;
+	integrated_devices.push_back("HD Graphics");
+	integrated_devices.push_back("Iris Pro");
+
+	for(auto device_name: integrated_devices)
+	{
+		if(strstr(device_name.c_str(), device_name.c_str()))
+			return true;
+	}
+
+	return false;
+}
+
 /// Initializes the class using the first device found with the specified type.
 void COpenCL::Init(cl_device_type type)
 {
@@ -464,13 +487,22 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(max_3Dimage_width), &max_3Dimage_width, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(max_3Dimage_width), &max_3Dimage_width, &returned_size);
 
+	bool is_integrated = isIntegratedDevice(device_id);
+
 	// Print out some information about the hardware
 	cout << "Device information: " << endl;
 	cout << "Device Name: " << device_name << endl;
+	cout << "Integrated device: ";
+	if(is_integrated)
+		cout << "yes" << endl;
+	else
+		cout << "no" << endl;
+
 	cout << "Vendor: " << vendor_name << endl;
 	cout << "Device OpenCL version (full): " << device_cl_version << endl;
 	cout << "Device OpenCL version (number): " << FindOpenCLVersion() << endl;
 	cout << "Driver OpenCL version: " << driver_cl_version << endl;
+
 	cout << "Profile: " << device_profile << endl;
 	cout << "Supported Extensions: " << device_extensions << endl;
 
