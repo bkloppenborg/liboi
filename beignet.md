@@ -142,7 +142,7 @@ the `cat /proc/cpuinfo` command. Intel procesors are as follows:
 One possible solution on Linux 3.15/3.16 kernels is to disable hang checking:
 
     sudo su
-    echo -n 0 > /sys/module/i915/parameters/enable_hangcheck
+	echo 0 > /sys/module/i915/parameters/enable_cmd_parser
     exit
    
 But this command is a little bit dangerous, as if your kernel really does hang
