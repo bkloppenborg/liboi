@@ -131,6 +131,7 @@ protected:
 public:
 	unsigned int	GetOpenCLVersion();
 
+	bool isIntegratedDevice(cl_device_id device_id);
 	void Init(cl_device_type type);
 	void Init(cl_platform_id platform, cl_device_id device, cl_device_type type);
 
