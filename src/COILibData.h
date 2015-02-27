@@ -76,6 +76,7 @@ protected:
 	unsigned int mNUV;
 	unsigned int mNData;
 	double mAveJD;
+	double mAveWavelength;
 
 	string mFileName;
 
@@ -121,6 +122,7 @@ public:
 public:
 	// Inline the get location functions
 	double GetAveJD(void) { return mAveJD; };
+	double GetAveWavelength(void) { return mAveWavelength; };
 	OIDataList GetData(void) { return mData; };
 	void GetData(int data_num, float * output, unsigned int & n);
 	void GetDataUncertainties(int data_num, float * output, unsigned int & n);
