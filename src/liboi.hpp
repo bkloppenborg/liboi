@@ -184,6 +184,7 @@ public:
 
 	OIDataList GetData(unsigned int data_num);
 	double GetDataAveJD(int data_num);
+	double GetDataAveWavelength(int data_num);
 	string GetDataFileName(int data_num);
 	void GetData(int data_num, float * output, unsigned int & n);
 	void GetDataUncertainties(int data_num, float * output, unsigned int & n);

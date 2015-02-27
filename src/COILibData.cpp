@@ -53,6 +53,8 @@ COILibData::COILibData(string filename, cl_context context, cl_command_queue que
 	mContext = context;
 	mQueue = queue;
 	mFileName = filename;
+	mAveJD = 0;
+	mAveWavelength = 0;
 
 	// Read in the data.
 	COIFile tmp;
@@ -83,6 +85,8 @@ COILibData::COILibData(const OIDataList & data, cl_context context, cl_command_q
 	mContext = context;
 	mQueue = queue;
 	mData = data;
+	mAveJD = 0;
+	mAveWavelength = 0;
 
 	// Set the OpenCL buffers to NULL
 	mData_cl = 0;
@@ -246,6 +250,7 @@ void COILibData::InitData()
 	mNUV = uv_points.size();
 	// Average JD (notice we need to add in MJD)
 	mAveJD = AverageMJD(mData) + MJD;
+	mAveWavelength = AverageWavelength(mData);
 	// Total number of double/floats allocated for storage on the OpenCL context:
 	mNData = TotalBufferSize(mNVis, mNV2, mNT3);
 

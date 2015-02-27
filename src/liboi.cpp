@@ -298,6 +298,11 @@ double CLibOI::GetDataAveJD(int data_num)
 	return mDataList->at(data_num)->GetAveJD();
 }
 
+double CLibOI::GetDataAveWavelength(int data_num)
+{
+	return mDataList->at(data_num)->GetAveWavelength();
+}
+
 string CLibOI::GetDataFileName(int data_num)
 {
 	return mDataList->at(data_num)->GetFilename();
