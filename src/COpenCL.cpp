@@ -221,9 +221,9 @@ bool COpenCL::isIntegratedDevice(cl_device_id device_id)
 	integrated_devices.push_back("HD Graphics");
 	integrated_devices.push_back("Iris Pro");
 
-	for(auto device_name: integrated_devices)
+	for(auto integrated_device_name: integrated_devices)
 	{
-		if(strstr(device_name.c_str(), device_name.c_str()))
+		if(strstr((const char*) device_name, integrated_device_name.c_str()))
 			return true;
 	}
 
