@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <vector>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include "COpenCL.hpp"
 
@@ -45,8 +46,6 @@ COpenCL::COpenCL(cl_device_type type)
 	mDevice = 0;
 	mContext = 0;
 	mQueue = 0;
-
-	mCLGLInteropEnabled = false;
 
 	Init(type);
 
@@ -59,8 +58,6 @@ COpenCL::COpenCL(cl_device_id device, cl_context context, cl_command_queue queue
 	mContext = context;
 	mQueue = queue;
 
-	mCLGLInteropEnabled = cl_gl_interop_enabled;
-
 	mCLVersion = FindOpenCLVersion();
 }
 
@@ -69,6 +66,25 @@ COpenCL::~COpenCL()
 	// Free OpenCL memory:
 	if(mQueue) clReleaseCommandQueue(mQueue);
 	if(mContext) clReleaseContext(mContext);
+}
+
+/// Determine whether or not an OpenCL device has a specific extension.
+bool COpenCL::checkExtensionAvailability(const cl_device_id device_id, std::string ext_name)
+{
+    bool ret_val = false;
+    // find the extension required
+    cl::Device device(device_id);
+
+    std::string exts = device.getInfo<CL_DEVICE_EXTENSIONS>();
+    std::stringstream ss(exts);
+    std::string item;
+    while (std::getline(ss,item,' ')) {
+        if (item == ext_name) {
+            ret_val = true;
+            break;
+        }
+    }
+    return ret_val;
 }
 
 /// Prints error message.
@@ -207,27 +223,15 @@ cl_device_type COpenCL::GetDeviceType(cl_device_id device_id)
 	return type;
 }
 
-/// Determine if the device is an integrated GPU for which memory allocations
-/// should be made using
-bool COpenCL::isIntegratedDevice(cl_device_id device_id)
+bool COpenCL::isCLGLInteropEnabled()
 {
-	int status = CL_SUCCESS;
-	cl_char device_name[1024] = {0};
-	size_t returned_size;
-	status |= clGetDeviceInfo(device_id, CL_DEVICE_NAME, sizeof(device_name), device_name, &returned_size);
-	CHECK_OPENCL_ERROR(status, "clGetDeviceInfo failed.");
+#if defined(__APPLE__) || defined(__MACOSX)
+	static const std::string CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
+#else
+	static const std::string CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
+#endif
 
-	vector<string> integrated_devices;
-	integrated_devices.push_back("HD Graphics");
-	integrated_devices.push_back("Iris Pro");
-
-	for(auto device_name: integrated_devices)
-	{
-		if(strstr(device_name.c_str(), device_name.c_str()))
-			return true;
-	}
-
-	return false;
+	return checkExtensionAvailability(mDevice, CL_GL_SHARING_EXT);
 }
 
 /// Initializes the class using the first device found with the specified type.
@@ -251,6 +255,7 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 {
 	int status = CL_SUCCESS;
 	this->mDevice = device;
+	bool CLGLInteropEnabled = false;
 
 	// Each operating system has a different routine for OpenCL-OpenGL interoperability
 	// initialization.  Here we try to catch all of them.  Each OS-specific block below
@@ -273,7 +278,7 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
       properties[2] = CL_CONTEXT_PLATFORM;
       properties[3] = (cl_context_properties) platform;
       properties[4] = 0;
-      mCLGLInteropEnabled = true;
+      CLGLInteropEnabled = true;
     }
 
 #elif defined WIN32 // Windows
@@ -290,7 +295,7 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 		properties[4] = CL_CONTEXT_PLATFORM;
 		properties[5] = (cl_context_properties) platform;
 		properties[6] = 0;
-		mCLGLInteropEnabled = true;
+		CLGLInteropEnabled = true;
 	}
 
 #else	// Linux
@@ -308,13 +313,13 @@ void COpenCL::Init(cl_platform_id platform, cl_device_id device, cl_device_type 
 		properties[4] = CL_CONTEXT_PLATFORM;
 		properties[5] = (cl_context_properties) platform;
 		properties[6] = 0;
-		mCLGLInteropEnabled = true;
+		CLGLInteropEnabled = true;
 	}
 
 #endif
 
 	// If OpenCL - OpenGL interop was not detected, enable a plain OpenCL-only context:
-	if(!mCLGLInteropEnabled)
+	if(!CLGLInteropEnabled)
 	{
 //		cout << "OpenCL-OpenGL interoperability NOT detected and NOT ENABLED." << endl;
 		// enable a plain OpenCL-only context.
@@ -487,16 +492,10 @@ void COpenCL::PrintDeviceInfo(cl_device_id device_id)
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(max_3Dimage_width), &max_3Dimage_width, &returned_size);
 	err|= clGetDeviceInfo(device_id, CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(max_3Dimage_width), &max_3Dimage_width, &returned_size);
 
-	bool is_integrated = isIntegratedDevice(device_id);
-
 	// Print out some information about the hardware
 	cout << "Device information: " << endl;
 	cout << "Device Name: " << device_name << endl;
-	cout << "Integrated device: ";
-	if(is_integrated)
-		cout << "yes" << endl;
-	else
-		cout << "no" << endl;
+	cout << "Has OpenCL-OpenGL interop: " << this->isCLGLInteropEnabled() << endl;
 
 	cout << "Vendor: " << vendor_name << endl;
 	cout << "Device OpenCL version (full): " << device_cl_version << endl;

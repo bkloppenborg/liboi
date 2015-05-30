@@ -196,6 +196,7 @@ public:
 	int GetNV2(int data_num);
 	int GetMaxDataSize() { return mMaxData; };
 
+	bool isInteropEnabled();
 	void ImageToChi(COILibDataPtr data, float * output, unsigned int & n);
 	bool ImageToChi(int data_num, float * output, unsigned int & n);
 	float ImageToChi2(COILibDataPtr data);

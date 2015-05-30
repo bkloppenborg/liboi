@@ -101,8 +101,6 @@ protected:
 	cl_context mContext;
 	cl_command_queue mQueue;
 
-	bool mCLGLInteropEnabled;
-
 	unsigned int mCLVersion;
 
 public:
@@ -111,8 +109,8 @@ public:
 	virtual ~COpenCL();
 
 public:
-	//static void CheckOCLError(string user_message, int error_code);
-	bool CL_GLInteropEnabled() { return mCLGLInteropEnabled; };
+
+	static bool checkExtensionAvailability(const cl_device_id device_id, std::string ext_name);
 
 	static void error(std::string errorMsg);
 
@@ -131,7 +129,8 @@ protected:
 public:
 	unsigned int	GetOpenCLVersion();
 
-	static bool isIntegratedDevice(cl_device_id device_id);
+	bool isCLGLInteropEnabled();
+
 	void Init(cl_device_type type);
 	void Init(cl_platform_id platform, cl_device_id device, cl_device_type type);
 

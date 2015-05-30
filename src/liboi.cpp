@@ -135,14 +135,13 @@ void CLibOI::CopyImageToBuffer(float * host_mem, cl_mem cl_buffer, int width, in
 {
 	int status = CL_SUCCESS;
 	int size = width *  height;
-	int offset = size * layer;
 
 	cl_float * tmp = new cl_float[size];
 	for(int i = 0; i < size; i++)
 		tmp[i] = host_mem[i];
 
 	// Enqueue a blocking write
-    status = clEnqueueWriteBuffer(mOCL->GetQueue(), mImage_cl, CL_TRUE, offset, sizeof(float) * size, tmp, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(mOCL->GetQueue(), cl_buffer, CL_TRUE, 0, sizeof(cl_float) * size, tmp, 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
 
 	delete[] tmp;
@@ -354,6 +353,14 @@ int CLibOI::GetNV2(int data_num)
 		return mDataList->at(data_num)->GetNumV2();
 
 	return 0;
+}
+
+bool CLibOI::isInteropEnabled()
+{
+	if(mOCL)
+		return mOCL->isCLGLInteropEnabled();
+
+	return false;
 }
 
 /// Uses the current active image to compute the chi (i.e. non-squared version) with respect to the
@@ -569,7 +576,7 @@ void CLibOI::InitRoutines()
 	}
 
 	/// Only init the mrCopyImage routine if CL-GL interop is enabled.
-	if(mOCL->CL_GLInteropEnabled() && mrCopyImage == NULL)
+	if(mOCL->isCLGLInteropEnabled() && mrCopyImage == NULL)
 	{
 		mrCopyImage = new CRoutine_ImageToBuffer(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 		mrCopyImage->SetSourcePath(mKernelSourcePath);
@@ -625,11 +632,6 @@ void CLibOI::InitRoutines()
 			mrLogLike->Init(mMaxData);
 		}
 	}
-}
-
-bool CLibOI::IsIntegratedDevice()
-{
-	return COpenCL::isIntegratedDevice(mOCL->GetDevice());
 }
 
 /// Reads in an OIFITS file and stores it into OpenCL memory
