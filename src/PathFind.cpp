@@ -62,7 +62,7 @@ string do_readlink(std::string const& path)
 {
     char buff[1024];
 #if defined (BSD) || defined(__gnu_linux__) || defined(sun) || defined(__sun)	 // BSD, Linux, Solaris
-    ssize_t len = ::readlink(path.c_str(), buff, sizeof(buff)-1);
+    ::readlink(path.c_str(), buff, sizeof(buff)-1);
 #endif
 
     return string(buff);

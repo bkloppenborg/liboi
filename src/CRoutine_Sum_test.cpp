@@ -27,15 +27,17 @@ TEST(CRoutine_Sum, CPU_Sum)
 	double sum;
 
 	// 100 elements sums to 5050
-	valarray<double> a(100);
-	for(int i = 0; i < a.size(); i++)
+	size_t n_elements = 100;
+	valarray<double> a(n_elements);
+	for(size_t i = 0; i < n_elements; i++)
 		a[i] = i+1;
 	sum = CRoutine_Sum::Sum(a);
     EXPECT_EQ(5050, sum);
 
     // 10000 elements sums to 50005000
-	valarray<double> b(10000);
-	for(int i = 0; i < b.size(); i++)
+    n_elements = 10000;
+	valarray<double> b(n_elements);
+	for(size_t i = 0; i < n_elements; i++)
 		b[i] = i+1;
 	sum = CRoutine_Sum::Sum(b);
     EXPECT_EQ(50005000, sum);
@@ -44,7 +46,7 @@ TEST(CRoutine_Sum, CPU_Sum)
 /// Checks that the sum on the OpenCL device and CPU match
 TEST(CRoutine_Sum_NVidia, CL_Sum_CPU_CHECK)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Init the OpenCL device and necessary routines:
 	COpenCL cl(OPENCL_DEVICE_TYPE);
@@ -56,7 +58,7 @@ TEST(CRoutine_Sum_NVidia, CL_Sum_CPU_CHECK)
 	r_sum.Init(test_size);
 
 	valarray<cl_float> data(test_size);
-	for(int i = 0; i < data.size(); i++)
+	for(size_t i = 0; i < test_size; i++)
 		data[i] = i;
 
 	// Create buffers
@@ -65,6 +67,7 @@ TEST(CRoutine_Sum_NVidia, CL_Sum_CPU_CHECK)
 	cl_mem final_buffer = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
 	// Fill the input buffer (it doesn't matter what is in the output buffer)
     err= clEnqueueWriteBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
+    CHECK_OPENCL_ERROR(err, "clEnqueueWriteBuffer failed");
 
 	cl_float cpu_sum = CRoutine_Sum::Sum(data);
 	float cl_sum = r_sum.Sum(input_buffer);
@@ -79,7 +82,7 @@ TEST(CRoutine_Sum_NVidia, CL_Sum_CPU_CHECK)
 /// Checks that the sum on the OpenCL device and CPU match
 TEST(CRoutine_Sum_AMD, CL_Sum_CPU_CHECK)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Init the OpenCL device and necessary routines:
 	COpenCL cl(OPENCL_DEVICE_TYPE);
@@ -91,7 +94,7 @@ TEST(CRoutine_Sum_AMD, CL_Sum_CPU_CHECK)
 	r_sum.Init(test_size);
 
 	valarray<cl_float> data(test_size);
-	for(int i = 0; i < data.size(); i++)
+	for(size_t i = 0; i < test_size; i++)
 		data[i] = i;
 
 	// Create buffers
@@ -100,6 +103,7 @@ TEST(CRoutine_Sum_AMD, CL_Sum_CPU_CHECK)
 	cl_mem final_buffer = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, &err);
 	// Fill the input buffer (it doesn't matter what is in the output buffer)
     err = clEnqueueWriteBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
+    CHECK_OPENCL_ERROR(err, "clEnqueueWriteBuffer failed");
 
 	cl_float cpu_sum = CRoutine_Sum::Sum(data);
 	float cl_sum = r_sum.Sum(input_buffer);

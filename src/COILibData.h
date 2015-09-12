@@ -124,8 +124,8 @@ public:
 	double GetAveJD(void) { return mAveJD; };
 	double GetAveWavelength(void) { return mAveWavelength; };
 	OIDataList GetData(void) { return mData; };
-	void GetData(int data_num, float * output, unsigned int & n);
-	void GetDataUncertainties(int data_num, float * output, unsigned int & n);
+	void GetData(float * output, unsigned int & n);
+	void GetDataUncertainties(float * output, unsigned int & n);
 	string GetFilename(void) { return mFileName; };
 	cl_mem GetLoc_Data() { return mData_cl; };
 	cl_mem GetLoc_DataErr() { return mData_err_cl; };

@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 
 	}
 
-	RunBenchmark(device_type, exe_path, image_width, image_height, image_depth, image_scale, n_iterations, n_uv);
+	RunBenchmark(device_type, exe_path, image_width, image_height, image_depth, image_scale, n_iterations);
 }
 
 int GetMilliCount()
@@ -121,13 +121,14 @@ void PrintHelp()
 
 int RunBenchmark(cl_device_type device_type, string exe_path,
 		unsigned int image_width, unsigned int image_height, unsigned int image_depth, float image_scale,
-		unsigned int n_iterations, unsigned int n_uv)
+		unsigned int n_iterations)
 {
 	// Setup the model, make an image and copy it over to a float buffer.
 	CPointSource ps(image_width, image_height, image_scale);
+	size_t num_pixels = image_width * image_height * image_depth;
 	valarray<double> temp = ps.GetImage();
-	valarray<float> image(image_width * image_height * image_depth);
-	for(int i = 0; i < temp.size(); i++)
+	valarray<float> image(num_pixels);
+	for(size_t i = 0; i < num_pixels; i++)
 		image[i] = float(temp[i]);
 
 	// Get and OpenCL device:
@@ -159,7 +160,7 @@ int RunBenchmark(cl_device_type device_type, string exe_path,
 	int start = GetMilliCount();
 
 	// Run the iterations
-	for(int i = 0; i < n_iterations; i++)
+	for(unsigned int i = 0; i < n_iterations; i++)
 	{
 		liboi.CopyImageToBuffer(0);
 		chi2 = liboi.ImageToChi2(0);

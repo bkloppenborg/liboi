@@ -82,7 +82,7 @@ void CRoutine_ImageToBuffer::CopyImage(cl_mem gl_input, cl_mem cl_output,
 	CHECK_OPENCL_ERROR(status, "clFinish failed.");
 
 	// Now that we have exclusive access to the OpenGL memory object, copy it to the OpenCL buffer
-	size_t global[2] = {image_width, image_height};
+	size_t global[3] = {image_width, image_height, image_depth};
 
 	// Enqueue the kernel.
 //	status |= clSetKernelArg(mKernels[0],  0, sizeof(cl_uint), &image_width);

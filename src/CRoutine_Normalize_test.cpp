@@ -19,10 +19,10 @@ extern cl_device_type OPENCL_DEVICE_TYPE;
 /// Checks that the CPU normalization routine is working correctly.
 TEST(CRoutine_Normalize, CPU_Normalize)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	valarray<float> cpu_val(test_size);
-	for(int i = 0; i < cpu_val.size(); i++)
+	for(size_t i = 0; i < cpu_val.size(); i++)
 		cpu_val[i] = i;
 
 	CRoutine_Normalize::Normalize(cpu_val, cpu_val.size());
@@ -34,7 +34,7 @@ TEST(CRoutine_Normalize, CPU_Normalize)
 /// Verifies that the CPU and OpenCL normalization routines are working similarly.
 TEST(CRoutine_Normalize, CL_Normalize)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Init the OpenCL device and necessary routines:
 	COpenCL cl(OPENCL_DEVICE_TYPE);
@@ -44,7 +44,7 @@ TEST(CRoutine_Normalize, CL_Normalize)
 
 	valarray<cl_float> cpu_val(test_size);
 	valarray<cl_float> cl_val(test_size);
-	for(int i = 0; i < cpu_val.size(); i++)
+	for(size_t i = 0; i < cpu_val.size(); i++)
 		cpu_val[i] = i;
 
 	// Calculate the divisor
@@ -52,11 +52,13 @@ TEST(CRoutine_Normalize, CL_Normalize)
 	cl_float divisor = 1.0 / sum;
 
 	// Create buffers
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	cl_mem input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clCreateBuffer failed.");
 
 	// Fill the input buffer
-    err = clEnqueueWriteBuffer(cl.GetQueue(), input_cl, CL_FALSE, 0, sizeof(cl_float) * test_size, &cpu_val[0], 0, NULL, NULL);
+	status = clEnqueueWriteBuffer(cl.GetQueue(), input_cl, CL_FALSE, 0, sizeof(cl_float) * test_size, &cpu_val[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
 
 	// Wait for memory transfers to finish.
 	clFinish(cl.GetQueue());
@@ -66,12 +68,13 @@ TEST(CRoutine_Normalize, CL_Normalize)
 	CRoutine_Normalize::Normalize(cpu_val, cpu_val.size());
 
 	// Read back the results.
-	err = clEnqueueReadBuffer(cl.GetQueue(), input_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &cl_val[0], 0, NULL, NULL);
+	status = clEnqueueReadBuffer(cl.GetQueue(), input_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &cl_val[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	// Free buffers
 	clReleaseMemObject(input_cl);
 
 	// Check the results.
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_NEAR(float(cpu_val[i]), float(cl_val[i]), MAX_REL_ERROR) << " at index " << i;
 }

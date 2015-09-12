@@ -38,9 +38,6 @@
 #ifndef LIBOI_H_
 #define LIBOI_H_
 
-#pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
-#pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
-
 // cl.hpp throws lot of warnings, but we have no control over these.  Tell GCC to ignore them.
 //#pragma GCC diagnostic push
 //#pragma GCC diagnostic ignored "-Wall"
@@ -78,7 +75,7 @@ class CLibOI;
     { \
         CLibOI::error(msg); \
         std::cout << "Location : " << __FILE__ << ":" << __LINE__<< std::endl; \
-        return LIBOI_FAILURE; \
+        throw; \
     }
 
 class CRoutine_Sum;
@@ -162,7 +159,7 @@ protected:
 public:
 	CLibOI(COpenCLPtr open_cl);
 	CLibOI(cl_device_type type);
-	CLibOI(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled);
+	CLibOI(cl_device_id device, cl_context context, cl_command_queue queue);
 	virtual ~CLibOI();
 
 public:
@@ -192,20 +189,21 @@ public:
 	int GetNDataAllocated();
 	int GetNDataAllocated(int data_num);
 	int GetNDataSets();
-	int GetNT3(int data_num);
-	int GetNV2(int data_num);
+	int GetNT3(size_t data_num);
+	int GetNV2(size_t data_num);
 	int GetMaxDataSize() { return mMaxData; };
 
+	bool isInteropEnabled();
 	void ImageToChi(COILibDataPtr data, float * output, unsigned int & n);
-	bool ImageToChi(int data_num, float * output, unsigned int & n);
+	bool ImageToChi(size_t data_num, float * output, unsigned int & n);
 	float ImageToChi2(COILibDataPtr data);
-	float ImageToChi2(int data_num);
+	float ImageToChi2(size_t data_num);
 	void ImageToChi2(COILibDataPtr data, float * output, unsigned int & n);
-	bool ImageToChi2(int data_num, float * output, unsigned int & n);
-	void ImageToData(int data_num);
+	bool ImageToChi2(size_t data_num, float * output, unsigned int & n);
+	void ImageToData(size_t data_num);
 	void ImageToData(COILibDataPtr data);
 	float ImageToLogLike(COILibDataPtr data);
-	float ImageToLogLike(int data_num);
+	float ImageToLogLike(size_t data_num);
 	void Init();
 private:
 	void InitMembers();

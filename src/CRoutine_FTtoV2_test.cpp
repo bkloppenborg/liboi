@@ -24,7 +24,7 @@ extern cl_device_type OPENCL_DEVICE_TYPE;
 /// Checks that the CPU routine functions correctly.
 TEST(CRoutine_FTtoV2, CPU_PointSource)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Generate a point source model, get input data from it.
 	CPointSource pnt(128, 128, 0.025);
@@ -33,7 +33,7 @@ TEST(CRoutine_FTtoV2, CPU_PointSource)
 
 	// Create linear indexing
 	valarray<cl_uint> uv_ref(test_size);
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		uv_ref[i] = i;
 
 	// Allocate place to store the output
@@ -44,7 +44,7 @@ TEST(CRoutine_FTtoV2, CPU_PointSource)
 	valarray<cl_float> model_out = pnt.GetV2_CL(uv_points);
 
 	// Now check the results:
-	for(unsigned int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		EXPECT_NEAR(output[i], model_out[i], MAX_REL_ERROR * model_out[i]);
 	}
@@ -53,7 +53,7 @@ TEST(CRoutine_FTtoV2, CPU_PointSource)
 /// Checks that the OpenCL routine functions correctly.
 TEST(CRoutine_FTtoV2, CL_PointSource)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Generate a point source model, get input data from it.
 	CPointSource pnt(128, 128, 0.025);
@@ -69,7 +69,7 @@ TEST(CRoutine_FTtoV2, CL_PointSource)
 
 	// Create linear indexing
 	valarray<cl_uint> uv_ref(test_size);
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		uv_ref[i] = i;
 
 	// Allocate memory on the OpenCL device and copy things over.
@@ -80,6 +80,7 @@ TEST(CRoutine_FTtoV2, CL_PointSource)
 	// UV references
 	cl_mem uv_ref_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_uint) * test_size, NULL, NULL);
     err = clEnqueueWriteBuffer(cl.GetQueue(), uv_ref_cl, CL_FALSE, 0, sizeof(cl_uint) * test_size, &uv_ref[0], 0, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clEnqueueWriteBuffer Failed");
     // Output bufer
 	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
 
@@ -92,6 +93,7 @@ TEST(CRoutine_FTtoV2, CL_PointSource)
 	// Copy back the buffer
 	valarray<cl_float> output(test_size);
 	err = clEnqueueReadBuffer(cl.GetQueue(), output_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &output[0], 0, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clEnqueueReadBuffer Failed");
 
 	// Free OpenCL memory
 	clReleaseMemObject(ft_input_cl);
@@ -99,7 +101,7 @@ TEST(CRoutine_FTtoV2, CL_PointSource)
 	clReleaseMemObject(output_cl);
 
 	// Now check the results:
-	for(unsigned int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		EXPECT_NEAR(output[i], model_out[i], MAX_REL_ERROR * model_out[i]);
 	}

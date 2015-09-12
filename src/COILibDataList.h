@@ -75,7 +75,7 @@ public:
 	int MaxUVPoints();
 
 	void RemoveData(unsigned int data_num);
-	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data, cl_context context, cl_command_queue queue);
+	void ReplaceData(unsigned int old_data_id, const OIDataList & new_data);
 
 	unsigned int size();
 };

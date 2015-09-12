@@ -100,7 +100,7 @@ void CRoutine_FTtoV2::FTtoV2(valarray<cl_float2> & ft_input, valarray<cl_uint> &
 
 	// Square the visibility, save it to the output array:
 	unsigned int uv_index = 0;
-	for(int i = 0; i < n_v2; i++)
+	for(size_t i = 0; i < n_v2; i++)
 	{
 		uv_index = uv_ref[i];
 		cpu_output[i] = ft_input[uv_index].s[0] * ft_input[uv_index].s[0] + ft_input[uv_index].s[1] * ft_input[uv_index].s[1];

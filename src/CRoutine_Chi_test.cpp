@@ -40,7 +40,7 @@ protected:
 	/// Creates a buffer where data[i] = model[i], thus the chi values should always evaluate to zero.
 	void MakeChiZeroBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
 	{
-		unsigned int n = 2*test_size;
+		size_t n = 2*test_size;
 		// Create buffers
 		data.resize(n);
 		data_err.resize(n);
@@ -54,7 +54,7 @@ protected:
 		// Set data = model to produce a zero chi result.
 		// The temp[i + 1] indexing is due to GenerateUVSpiral_CL creating a value
 		// near zero in the first element.
-		for(int i = 0; i < test_size; i++)
+		for(size_t i = 0; i < test_size; i++)
 		{
 			data[i] = temp[i + 1].s[0];
 			data[test_size + i] = temp[i + 1].s[1];
@@ -71,7 +71,7 @@ protected:
 	/// Creates a buffer in which model is one-sigma away from model, thus all chi elements should evaluate to 1.
 	void MakeChiOneBuffers(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output, unsigned int test_size)
 	{
-		unsigned int n = 2*test_size;
+		size_t n = 2*test_size;
 		// Create buffers
 		data.resize(n);
 		data_err.resize(n);
@@ -85,7 +85,7 @@ protected:
 		// Set data = model to produce a zero chi result.
 		// The temp[i + 1] indexing is due to GenerateUVSpiral_CL creating a value
 		// near zero in the first element.
-		for(int i = 0; i < test_size; i++)
+		for(size_t i = 0; i < test_size; i++)
 		{
 			complex<float> c_data(t_data[i + 1].s[0], t_data[i + 1].s[1]);
 
@@ -112,9 +112,10 @@ protected:
 
     void ReadCLResult(valarray<cl_float> & output)
     {
-    	unsigned int test_size = output.size();
+    	size_t test_size = output.size();
 		int err = CL_SUCCESS;
 		err = clEnqueueReadBuffer(cl->GetQueue(), output_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &output[0], 0, NULL, NULL);
+		CHECK_ERROR(err, CL_SUCCESS, "clEnqueueReadBuffer Failed");
     }
 
 	virtual void SetUp()
@@ -165,6 +166,7 @@ protected:
 		err = clEnqueueWriteBuffer(cl->GetQueue(), data_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
 		err = clEnqueueWriteBuffer(cl->GetQueue(), data_err_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &data_err[0], 0, NULL, NULL);
 		err = clEnqueueWriteBuffer(cl->GetQueue(), model_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &model[0], 0, NULL, NULL);
+		CHECK_ERROR(err, CL_SUCCESS, "clEnqueueWriteBuffer Failed");
 	}
 
 	template <typename T> int sign(T val) {
@@ -192,7 +194,7 @@ protected:
 /// when data and model are equal.
 TEST_F(ChiTest, CPU_Chi_ZERO)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -205,7 +207,7 @@ TEST_F(ChiTest, CPU_Chi_ZERO)
 	CRoutine_Chi::Chi(data, data_err, model, 0, test_size, output);
 
 	// Compare results. Because data = model every chi element should be zero
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_EQ(output[i], 0);
 }
 
@@ -213,7 +215,7 @@ TEST_F(ChiTest, CPU_Chi_ZERO)
 /// by one standard deviation.
 TEST_F(ChiTest, CPU_Chi_ONE)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 	// Create buffers
 	valarray<cl_float> data(test_size);
 	valarray<cl_float> data_err(test_size);
@@ -225,14 +227,14 @@ TEST_F(ChiTest, CPU_Chi_ONE)
 	CRoutine_Chi::Chi(data, data_err, model, 0, test_size, output);
 
 	// Compare results. Because data = model every chi element should be of unit magnitude
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_NEAR(fabs(output[i]), 1.0, MAX_REL_ERROR);
 }
 
 /// Tests the CPU implementation of the convex chi approximation
 TEST_F(ChiTest, CPU_Chi_Convex_ZERO)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data;
@@ -245,7 +247,7 @@ TEST_F(ChiTest, CPU_Chi_Convex_ZERO)
 	CRoutine_Chi::Chi_complex_convex(data, data_err, model, 0, test_size, output);
 
 	// Compare results. Because data = model every chi element should be of unit magnitude
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		// Check the real and imaginary chi values
 		EXPECT_NEAR(fabs(output[i]), 0, MAX_REL_ERROR);
@@ -256,7 +258,7 @@ TEST_F(ChiTest, CPU_Chi_Convex_ZERO)
 /// Tests the CPU implementation of the convex chi approximation
 TEST_F(ChiTest, CPU_Chi_Convex_ONE)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data;
@@ -269,7 +271,7 @@ TEST_F(ChiTest, CPU_Chi_Convex_ONE)
 	CRoutine_Chi::Chi_complex_convex(data, data_err, model, 0, test_size, output);
 
 	// Compare results. Because data = model every chi element should be of unit magnitude
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		// Check the real and imaginary chi values
 		EXPECT_LT(fabs(output[i]), 1 + amp_err);
@@ -280,7 +282,7 @@ TEST_F(ChiTest, CPU_Chi_Convex_ONE)
 /// Tests the CPU implementation of the convex chi approximation
 TEST_F(ChiTest, CPU_Chi_NonConvex_ZERO)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data;
@@ -293,7 +295,7 @@ TEST_F(ChiTest, CPU_Chi_NonConvex_ZERO)
 	CRoutine_Chi::Chi_complex_nonconvex(data, data_err, model, 0, test_size, output);
 
 	// Compare results. Because data = model every chi element should be of unit magnitude
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		// Check the real and imaginary chi values
 		EXPECT_EQ(fabs(output[i]), 0) << "Amplitude error exceeded.";
@@ -304,7 +306,7 @@ TEST_F(ChiTest, CPU_Chi_NonConvex_ZERO)
 /// Tests the CPU implementation of the convex chi approximation
 TEST_F(ChiTest, CPU_Chi_NonConvex_ONE)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data;
@@ -317,7 +319,7 @@ TEST_F(ChiTest, CPU_Chi_NonConvex_ONE)
 	CRoutine_Chi::Chi_complex_nonconvex(data, data_err, model, 0, test_size, output);
 
 	// Compare results. Because data = model every chi element should be of unit magnitude
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		// Check the real and imaginary chi values
 		EXPECT_LT(fabs(output[i]), 1 + amp_err) << "Amplitude error exceeded.";
@@ -329,7 +331,7 @@ TEST_F(ChiTest, CPU_Chi_NonConvex_ONE)
 /// when data and model are equal.
 TEST_F(ChiTest, CL_Chi_ZERO)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -344,7 +346,7 @@ TEST_F(ChiTest, CL_Chi_ZERO)
     ReadCLResult(output);
 
 	// Compare results. Because data = model every chi element should be zero
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_EQ(output[i], 0);
 }
 
@@ -352,7 +354,7 @@ TEST_F(ChiTest, CL_Chi_ZERO)
 /// when data and model are equal.
 TEST_F(ChiTest, CL_Chi_ONE)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -367,7 +369,7 @@ TEST_F(ChiTest, CL_Chi_ONE)
     ReadCLResult(output);
 
 	// Compare results. Because data = model every chi element should be zero
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_NEAR(fabs(output[i]), 1, MAX_REL_ERROR);
 }
 
@@ -375,7 +377,7 @@ TEST_F(ChiTest, CL_Chi_ONE)
 /// when data and model are equal.
 TEST_F(ChiTest, CL_Chi_Convex_Zero)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -390,7 +392,7 @@ TEST_F(ChiTest, CL_Chi_Convex_Zero)
     ReadCLResult(output);
 
 	// Compare results. Because data = model every chi element should be zero
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_EQ(fabs(output[i]), 0);
 }
 
@@ -398,7 +400,7 @@ TEST_F(ChiTest, CL_Chi_Convex_Zero)
 /// when data and model are different by one sigma
 TEST_F(ChiTest, CL_Chi_Convex_One)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -413,7 +415,7 @@ TEST_F(ChiTest, CL_Chi_Convex_One)
     ReadCLResult(output);
 
 	// Compare results. Because model = data + 1sigma all elements should be ~1
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_NEAR(fabs(output[i]), 1, MAX_REL_ERROR);
 }
 
@@ -421,7 +423,7 @@ TEST_F(ChiTest, CL_Chi_Convex_One)
 /// when data and model are equal.
 TEST_F(ChiTest, CL_Chi_NonConvex_Zero)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -436,7 +438,7 @@ TEST_F(ChiTest, CL_Chi_NonConvex_Zero)
     ReadCLResult(output);
 
 	// Compare results. Because data = model every chi element should be zero
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_EQ(fabs(output[i]), 0);
 }
 
@@ -444,7 +446,7 @@ TEST_F(ChiTest, CL_Chi_NonConvex_Zero)
 /// when data and model are different by one sigma
 TEST_F(ChiTest, CL_Chi_NonConvex_One)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -459,14 +461,14 @@ TEST_F(ChiTest, CL_Chi_NonConvex_One)
     ReadCLResult(output);
 
 	// Compare results. Because model = data + 1sigma all elements should be ~1
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_NEAR(fabs(output[i]), 1, MAX_REL_ERROR);
 }
 
 /// Checks that the chi2 functions are working for V2 data
 TEST_F(ChiTest, CL_Chi2_V2)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);
@@ -491,7 +493,7 @@ TEST_F(ChiTest, CL_Chi2_V2)
 /// Checks that the chi2 functions are working for T3 data
 TEST_F(ChiTest, CL_Chi2_T3)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Create buffers
 	valarray<cl_float> data(test_size);

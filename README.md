@@ -84,15 +84,9 @@ library. This *should* install the prerequisites:
     
     sudo apt-get install libglu1-mesa libglu1-mesa-dev
     
-For OpenCL capabilities you need to install drivers for your device, OpenCL
-headers, and an OpenCL Installable Client Driver (ICD) loader. These *should*
-supply everything you need to compile `liboi`. Unfortunately each vendor has
-specific installation instructions which we list below. After the OpenCL 
-implementation is installed, ensure that the `cl.hpp` file was installed
-along with the OpenCL drivers. If it was not installed copy the `liboi/include/cl.hpp`
-into your system's OpenCL include directory.
-
-After OpenCL support are installed follow the building instructions below.
+Lastly install the OpenCL Installable Client Driver (ICD) loader:
+    
+    sudo apt-get install opencl-headers ocl-icd-libopencl1
 
 #### NVIDIA GPUS:
 
@@ -107,7 +101,7 @@ On later Ubuntu systems you will need to add the UVM package. You may also
 need to install special modprobe rules for the NVIDIA UVM drivers. These can be
 found in the following packages:
 
-    sudo apt-get install nvidia-331 nvidia-331-uvm nvidia-modprobe opencl-headers nvidia-opencl-dev
+    sudo apt-get install nvidia-331 nvidia-331-uvm nvidia-modprobe nvidia-opencl-icd-331
 
 If you prefer, you can install the [drivers from NVIDIA](www.nvidia.com/drivers) instead.
 

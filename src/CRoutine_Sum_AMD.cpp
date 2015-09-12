@@ -36,8 +36,8 @@
 namespace liboi {
 
 CRoutine_Sum_AMD::CRoutine_Sum_AMD(cl_device_id device, cl_context context, cl_command_queue queue, CRoutine_Zero * rZero)
-	: 	GROUP_SIZE(256), VECTOR_SIZE(4), MULTIPLY(2),
-	  	CRoutine_Sum(device, context, queue, rZero)
+	: CRoutine_Sum(device, context, queue, rZero),
+	  GROUP_SIZE(256), VECTOR_SIZE(4), MULTIPLY(2)
 {
 
 	// Specify the source location, set temporary buffers to null
@@ -93,10 +93,9 @@ float CRoutine_Sum_AMD::Sum(cl_mem input_buffer)
 	// First zero out the temporary sum buffer.
 	mrZero->Zero(mInputBuffer, mBufferSize);
 
-	int err = CL_SUCCESS;
 	// Copy the input buffer into mTempBuffer1
 	// The work was all completed on the GPU.  Copy the summed value to the final buffer:
-	err = clEnqueueCopyBuffer(mQueue, input_buffer, mInputBuffer, 0, 0, mInputSize * sizeof(cl_float), 0, NULL, NULL);
+	status = clEnqueueCopyBuffer(mQueue, input_buffer, mInputBuffer, 0, 0, mInputSize * sizeof(cl_float), 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueCopyBuffer failed.");
 	clFinish(mQueue);
 
@@ -205,8 +204,6 @@ void CRoutine_Sum_AMD::Init(int n)
 
 void CRoutine_Sum_AMD::setWorkGroupSize()
 {
-    cl_int status = 0;
-
     setKernelInfo();
     setDeviceInfo();
 

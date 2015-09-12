@@ -56,16 +56,6 @@ class COpenCL;
         throw runtime_error("OpenCL error detected."); \
     }
 
-#pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
-#pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
-//#pragma OPENCL EXTENSION cl_khr_image2D_buffer : enable
-
-// cl.hpp throws lot of warnings, but we have no control over these.  Tell GCC to ignore them.
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wall"
-//#pragma GCC diagnostic ignored "-Wextra"
-//#pragma GCC diagnostic ignored "-Wshadow"
-
 // Enable OpenCL exceptions
 #define __CL_ENABLE_EXCEPTIONS
 
@@ -101,18 +91,16 @@ protected:
 	cl_context mContext;
 	cl_command_queue mQueue;
 
-	bool mCLGLInteropEnabled;
-
 	unsigned int mCLVersion;
 
 public:
-	COpenCL(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled);
+	COpenCL(cl_device_id device, cl_context context, cl_command_queue queue);
 	COpenCL(cl_device_type type);
 	virtual ~COpenCL();
 
 public:
-	//static void CheckOCLError(string user_message, int error_code);
-	bool CL_GLInteropEnabled() { return mCLGLInteropEnabled; };
+
+	static bool checkExtensionAvailability(const cl_device_id device_id, std::string ext_name);
 
 	static void error(std::string errorMsg);
 
@@ -131,7 +119,8 @@ protected:
 public:
 	unsigned int	GetOpenCLVersion();
 
-	static bool isIntegratedDevice(cl_device_id device_id);
+	bool isCLGLInteropEnabled();
+
 	void Init(cl_device_type type);
 	void Init(cl_platform_id platform, cl_device_id device, cl_device_type type);
 

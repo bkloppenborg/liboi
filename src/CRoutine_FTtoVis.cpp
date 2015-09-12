@@ -97,43 +97,4 @@ void CRoutine_FTtoVis::FTtoVis(cl_mem ft_input, cl_mem vis_uv_ref, cl_mem output
 	CHECK_OPENCL_ERROR(status, "clEnqueueNDRangeKernel failed.");
 }
 
-/// Computes the V2 using the input data on the CPU, compares the values and writes out to the console.
-void CRoutine_FTtoVis::FTtoVis_CPU(cl_mem ft_input, cl_mem vis_uv_ref, valarray<cl_float> & cpu_output, unsigned int n_vis, unsigned int n_uv)
-{
-//	if(n_v2 == 0)
-//		return;
-//
-//	int err = CL_SUCCESS;
-//	cl_float2 cpu_ft[n_uv];
-//	cl_uint cpu_uv_ref[n_v2];
-//
-//	err  = clEnqueueReadBuffer(mQueue, ft_input, CL_TRUE, 0, sizeof(cl_float2) * n_uv, cpu_ft, 0, NULL, NULL);
-//	err |= clEnqueueReadBuffer(mQueue, v2_uv_ref, CL_TRUE, 0, sizeof(cl_uint) * n_v2, cpu_uv_ref, 0, NULL, NULL);
-//    COpenCL::CheckOCLError("Failed to copy values back to the CPU, Routine_FTtoV2::FTtoV2_CPU().", err);
-//
-//    unsigned int uv_index = 0;
-//	for(int i = 0; i < n_v2; i++)
-//	{
-//		uv_index = cpu_uv_ref[i];
-//		cpu_output[i] = cpu_ft[uv_index].s0 * cpu_ft[uv_index].s0 + cpu_ft[uv_index].s1 * cpu_ft[uv_index].s1;
-//	}
-}
-
-bool CRoutine_FTtoVis::FTtoVis_Test(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, unsigned int n_vis, unsigned int n_uv)
-{
-//	valarray<cl_float> cpu_output(n_v2);
-//	FTtoV2(ft_input, v2_uv_ref, output, n_vis, n_v2);
-//	FTtoV2_CPU(ft_input, v2_uv_ref, cpu_output, n_vis, n_v2, n_uv);
-//
-//	int offset = CalculateOffset(n_vis);
-//
-//	printf("Checking FT -> V2 Routine:\n");
-//	bool v2_pass = Verify(cpu_output, output, n_v2, sizeof(cl_float) * offset);
-//	PassFail(v2_pass);
-//	return v2_pass;
-
-	// temporary, this function has been deprecated
-	return true;
-}
-
 } /* namespace liboi */

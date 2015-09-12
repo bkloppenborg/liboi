@@ -93,7 +93,7 @@ void COILibDataList::GetData(int data_num, float * output, unsigned int & n)
 
 	try
 	{
-		mDataList[data_num]->GetData(data_num, output, n);
+		mDataList[data_num]->GetData(output, n);
 	}
 	catch(...)
 	{
@@ -108,7 +108,7 @@ void COILibDataList::GetDataUncertainties(int data_num, float * output, unsigned
 
 	try
 	{
-		mDataList[data_num]->GetDataUncertainties(data_num, output, n);
+		mDataList[data_num]->GetDataUncertainties(output, n);
 	}
 	catch(...)
 	{
@@ -149,8 +149,6 @@ int COILibDataList::GetNDataAllocated(unsigned int data_num)
 {
 	// Lock the data, automatically unlocks
 	lock_guard<mutex> lock(mDataMutex);
-
-	unsigned int n_data = 0;
 
 	try
 	{
@@ -235,7 +233,7 @@ void COILibDataList::RemoveData(unsigned int data_num)
 }
 
 // Replaces the data stored in old_data_id with the new_data. The data must be of the same eize
-void COILibDataList::ReplaceData(unsigned int old_data_id, const OIDataList & new_data, cl_context context, cl_command_queue queue)
+void COILibDataList::ReplaceData(unsigned int old_data_id, const OIDataList & new_data)
 {
 	// Lock the data, automatically unlocks
 	lock_guard<mutex> lock(mDataMutex);

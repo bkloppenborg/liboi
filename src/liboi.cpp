@@ -68,9 +68,9 @@ CLibOI::CLibOI(cl_device_type type)
 	InitMembers();
 }
 
-CLibOI::CLibOI(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled)
+CLibOI::CLibOI(cl_device_id device, cl_context context, cl_command_queue queue)
 {
-	mOCL = COpenCLPtr(new COpenCL(device, context, queue, cl_gl_interop_enabled));
+	mOCL = COpenCLPtr(new COpenCL(device, context, queue));
 	InitMembers();
 }
 
@@ -101,8 +101,6 @@ CLibOI::~CLibOI()
 /// If the image is already in an OpenCL buffer, this function need not be called.
 void CLibOI::CopyImageToBuffer(int layer)
 {
-	int status = CL_SUCCESS;
-
 	// Decide where we need to copy from
 
 	if(mImageType == LibOIEnums::OPENGL_FRAMEBUFFER || mImageType == LibOIEnums::OPENGL_TEXTUREBUFFER)
@@ -135,14 +133,13 @@ void CLibOI::CopyImageToBuffer(float * host_mem, cl_mem cl_buffer, int width, in
 {
 	int status = CL_SUCCESS;
 	int size = width *  height;
-	int offset = size * layer;
 
 	cl_float * tmp = new cl_float[size];
 	for(int i = 0; i < size; i++)
 		tmp[i] = host_mem[i];
 
 	// Enqueue a blocking write
-    status = clEnqueueWriteBuffer(mOCL->GetQueue(), mImage_cl, CL_TRUE, offset, sizeof(float) * size, tmp, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(mOCL->GetQueue(), cl_buffer, CL_TRUE, 0, sizeof(cl_float) * size, tmp, 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
 
 	delete[] tmp;
@@ -192,8 +189,7 @@ void   CLibOI::ExportImage(string filename)
 
 	// write out the FITS file:
 	fitsfile *fptr;
-	int error = 0;
-	int* status = &error;
+	int status = 0;
 	long fpixel = 1, naxis = 2, nelements;
 	long naxes[2];
 
@@ -203,47 +199,47 @@ void   CLibOI::ExportImage(string filename)
 	nelements = mImageWidth * mImageWidth;
 
 	/*Create new file*/
-	if (*status == 0)
-		fits_create_file(&fptr, filename.c_str(), status);
+	if (status == 0)
+		fits_create_file(&fptr, filename.c_str(), &status);
 
 	/*Create primary array image*/
-	if (*status == 0)
-		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, status);
+	if (status == 0)
+		fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status);
 
 	double RPMAS = (M_PI / 180.0) / 3600000.0;
-	double image_scale_rad = mImageScale;// * RPMAS;
+	double image_scale_rad = mImageScale * RPMAS;
 
 	// Write keywords to get WCS to work //
-//	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Milli-arcsecs per pixel", status);
-//	fits_write_key_dbl(fptr, "CDELT2", image_scale_rad, 3, "Milli-arcsecs per pixel", status);
-//	fits_write_key_dbl(fptr, "CRVAL1", 0.0, 3, "X-coordinate of ref pixel", status);
-//	fits_write_key_dbl(fptr, "CRVAL2", 0.0, 3, "Y-coordinate of ref pixel", status);
-//	fits_write_key_lng(fptr, "CRPIX1", naxes[0]/2, "Ref pixel in X", status);
-//	fits_write_key_lng(fptr, "CRPIX2", naxes[1]/2, "Ref pixel in Y", status);
-//	fits_write_key_str(fptr, "CTYPE1", "RA",  "Name of X-coordinate", status);
-//	fits_write_key_str(fptr, "CTYPE2", "DEC", "Name of Y-coordinate", status);
-//	fits_write_key_str(fptr, "CUNIT1", "mas", "Unit of X-coordinate", status);
-//	fits_write_key_str(fptr, "CUNIT2", "mas", "Unit of Y-coordinate", status);
+	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Radians per pixel", &status);
+	fits_write_key_dbl(fptr, "CDELT2", image_scale_rad, 3, "Radians per pixel", &status);
+	fits_write_key_dbl(fptr, "CRVAL1", 0.0, 3, "X-coordinate of reference pixel", &status);
+	fits_write_key_dbl(fptr, "CRVAL2", 0.0, 3, "Y-coordinate of reference pixel", &status);
+	fits_write_key_lng(fptr, "CRPIX1", naxes[0]/2, "reference pixel in X", &status);
+	fits_write_key_lng(fptr, "CRPIX2", naxes[1]/2, "reference pixel in Y", &status);
+	fits_write_key_str(fptr, "CTYPE1", "RA",  "Name of X-coordinate", &status);
+	fits_write_key_str(fptr, "CTYPE2", "DEC", "Name of Y-coordinate", &status);
+	fits_write_key_str(fptr, "CUNIT1", "rad", "Unit of X-coordinate", &status);
+	fits_write_key_str(fptr, "CUNIT2", "rad", "Unit of Y-coordinate", &status);
 
 	/*Write a keywords (datafile, target, image scale) */
-//	if (*status == 0)
-//		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", status);
-//	if (*status == 0)
-//		fits_update_key(fptr, TSTRING, "TARGET", "FakeImage", "Target Name", status);
-//	if (*status == 0)
-//		fits_update_key(fptr, TFLOAT, "SCALE", &scale, "Scale (mas/pixel)", status);
+//	if (status == 0)
+//		fits_update_key(fptr, TSTRING, "DATAFILE", "FakeImage", "Data File Name", &status);
+//	if (status == 0)
+//		fits_update_key(fptr, TSTRING, "TARGET", "FakeImage", "Target Name", &status);
+//	if (status == 0)
+//		fits_update_key(fptr, TFLOAT, "SCALE", &mImageScale, "Scale (mas/pixel)", &status);
 
 
 	/*Write image*/
-	if (*status == 0)
-		fits_write_img(fptr, TFLOAT, fpixel, nelements, &image[0], status);
+	if (status == 0)
+		fits_write_img(fptr, TFLOAT, fpixel, nelements, &image[0], &status);
 
 	/*Close file*/
-	if (*status == 0)
-		fits_close_file(fptr, status);
+	if (status == 0)
+		fits_close_file(fptr, &status);
 
 	/*Report any errors*/
-	fits_report_error(stderr, *status);
+	fits_report_error(stderr, status);
 }
 
 /// Prints error message.
@@ -259,13 +255,13 @@ void CLibOI::ExportImage(float * image, unsigned int width, unsigned int height,
 		return;
 
 	int status = CL_SUCCESS;
-	int num_elements = mImageWidth * mImageHeight * mImageDepth;
+	size_t num_elements = mImageWidth * mImageHeight * mImageDepth;
 	cl_float tmp[num_elements];
 	status |= clEnqueueReadBuffer(mOCL->GetQueue(), mImage_cl, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	// Copy to the output buffer, converting as we go.
-	for(unsigned int i = 0; i < num_elements; i++)
+	for(size_t i = 0; i < num_elements; i++)
 		image[i] = tmp[i];
 
 }
@@ -339,7 +335,7 @@ int CLibOI::GetNDataSets()
 }
 
 /// Returns the number of T3 data points in the specified data set.  If the data set does not exist, returns 0.
-int CLibOI::GetNT3(int data_num)
+int CLibOI::GetNT3(size_t data_num)
 {
 	if(data_num < mDataList->size())
 		return mDataList->at(data_num)->GetNumT3();
@@ -348,12 +344,20 @@ int CLibOI::GetNT3(int data_num)
 }
 
 /// Returns the number of V2 data points in the specified data set.  If the data set does not exist, returns 0.
-int CLibOI::GetNV2(int data_num)
+int CLibOI::GetNV2(size_t data_num)
 {
 	if(data_num < mDataList->size())
 		return mDataList->at(data_num)->GetNumV2();
 
 	return 0;
+}
+
+bool CLibOI::isInteropEnabled()
+{
+	if(mOCL)
+		return mOCL->isCLGLInteropEnabled();
+
+	return false;
 }
 
 /// Uses the current active image to compute the chi (i.e. non-squared version) with respect to the
@@ -374,7 +378,7 @@ void CLibOI::ImageToChi(COILibDataPtr data, float * output, unsigned int & n)
 
 /// Same as ImageToChi above.
 /// Returns false if the data number does not exist, true otherwise.
-bool CLibOI::ImageToChi(int data_num, float * output, unsigned int & n)
+bool CLibOI::ImageToChi(size_t data_num, float * output, unsigned int & n)
 {
 	if(data_num > mDataList->size() - 1)
 		return false;
@@ -396,7 +400,7 @@ float CLibOI::ImageToChi2(COILibDataPtr data)
 }
 
 /// Same as ImageToChi2 above
-float CLibOI::ImageToChi2(int data_num)
+float CLibOI::ImageToChi2(size_t data_num)
 {
 	if(data_num > mDataList->size() - 1)
 		return -1;
@@ -423,7 +427,7 @@ void CLibOI::ImageToChi2(COILibDataPtr data, float * output, unsigned int & n)
 
 /// Same as ImageToChi above.
 /// Returns false if the data number does not exist, true otherwise.
-bool CLibOI::ImageToChi2(int data_num, float * output, unsigned int & n)
+bool CLibOI::ImageToChi2(size_t data_num, float * output, unsigned int & n)
 {
 	if(data_num > mDataList->size() - 1)
 		return false;
@@ -435,7 +439,7 @@ bool CLibOI::ImageToChi2(int data_num, float * output, unsigned int & n)
 
 /// Uses the currently loaded image and specified data set to
 /// compute simulated data.
-void CLibOI::ImageToData(int data_num)
+void CLibOI::ImageToData(size_t data_num)
 {
 	if(data_num > mDataList->size() - 1)
 		return;
@@ -460,7 +464,7 @@ float CLibOI::ImageToLogLike(COILibDataPtr data)
 	float llike = DataToLogLike(data);
 	return llike;
 }
-float CLibOI::ImageToLogLike(int data_num)
+float CLibOI::ImageToLogLike(size_t data_num)
 {
 	if(data_num > mDataList->size() - 1)
 		return -1;
@@ -569,7 +573,7 @@ void CLibOI::InitRoutines()
 	}
 
 	/// Only init the mrCopyImage routine if CL-GL interop is enabled.
-	if(mOCL->CL_GLInteropEnabled() && mrCopyImage == NULL)
+	if(mOCL->isCLGLInteropEnabled() && mrCopyImage == NULL)
 	{
 		mrCopyImage = new CRoutine_ImageToBuffer(mOCL->GetDevice(), mOCL->GetContext(), mOCL->GetQueue());
 		mrCopyImage->SetSourcePath(mKernelSourcePath);
@@ -625,11 +629,6 @@ void CLibOI::InitRoutines()
 			mrLogLike->Init(mMaxData);
 		}
 	}
-}
-
-bool CLibOI::IsIntegratedDevice()
-{
-	return COpenCL::isIntegratedDevice(mOCL->GetDevice());
 }
 
 /// Reads in an OIFITS file and stores it into OpenCL memory
@@ -782,7 +781,7 @@ void CLibOI::SetKernelSourcePath(string path_to_kernels)
 /// Replaces the data set loaded into old_data_id with new_data
 void CLibOI::ReplaceData(unsigned int old_data_id, const OIDataList & new_data)
 {
-	mDataList->ReplaceData(old_data_id, new_data, mOCL->GetContext(), mOCL->GetQueue());
+	mDataList->ReplaceData(old_data_id, new_data);
 }
 
 } /* namespace liboi */
