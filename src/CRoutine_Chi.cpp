@@ -243,14 +243,12 @@ void CRoutine_Chi::Chi(valarray<cl_float> & data, valarray<cl_float> & data_err,
 		valarray<cl_float> & output)
 {
 	// Verify the input sizes are ok.
-	unsigned int n_data = data.size();
-	assert(start_index + n <= n_data);
-	assert(n_data == data_err.size());
-	assert(n_data == model.size());
+	assert(start_index + n <= data.size());
+	assert(data.size() == data_err.size());
+	assert(data.size() == model.size());
 
 	// Verify the output sizes are ok.
-	unsigned int n_output = output.size();
-	assert(start_index + n <= n_output);
+	assert(start_index + n < output.size());
 
 	// Everything is ok, compute the chi elements
 	for(size_t i = start_index; i < n; i++)
@@ -263,14 +261,12 @@ void CRoutine_Chi::Chi_complex_convex(valarray<cl_float> & data, valarray<cl_flo
 		valarray<cl_float> & output)
 {
 	// Verify the input sizes are ok.
-	unsigned int n_data = data.size();
-	assert(start_index + n <= n_data);
-	assert(n_data == data_err.size());
-	assert(n_data == model.size());
+	assert(start_index + n <= data.size());
+	assert(data.size() == data_err.size());
+	assert(data.size() == model.size());
 
 	// Verify the output sizes are ok.
-	unsigned int n_output = output.size();
-	assert(start_index + n < n_output);
+	assert(start_index + n < output.size());
 
 	// Compute the chi elements
 	// Under the convex approximation the complex quantities are rotated to zero phase and compared
@@ -300,14 +296,12 @@ void CRoutine_Chi::Chi_complex_nonconvex(valarray<cl_float> & data, valarray<cl_
 		valarray<cl_float> & output)
 {
 	// Verify the input sizes are ok.
-	unsigned int n_data = data.size();
-	assert(start_index + n <= n_data);
-	assert(n_data == data_err.size());
-	assert(n_data == model.size());
+	assert(start_index + n <= data.size());
+	assert(data.size() == data_err.size());
+	assert(data.size() == model.size());
 
 	// Verify the output sizes are ok.
-	unsigned int n_output = output.size();
-	assert(start_index + n < n_output);
+	assert(start_index + n < output.size());
 
 	// Compute the chi elements
 	// Under the non-convex approximation the complex quantities are compared in polar coordinates

@@ -135,13 +135,12 @@ protected:
 		phi_err = 0.1;
 	}
 
-	void SetUpCL(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model, valarray<cl_float> & output)
+	void SetUpCL(valarray<cl_float> & data, valarray<cl_float> & data_err, valarray<cl_float> & model)
 	{
 		unsigned int test_size = data.size();
 
 		assert(data_err.size() == test_size);
 		assert(model.size() == test_size);
-		assert(output.size() == test_size);
 
 		// Init OpenCL and the routine
 		cl = new COpenCL(OPENCL_DEVICE_TYPE);
