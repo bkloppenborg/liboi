@@ -340,7 +340,7 @@ TEST_F(ChiTest, CL_Chi_ZERO)
 	MakeChiZeroBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
-	SetUpCL(data, data_err, model, output);
+	SetUpCL(data, data_err, model);
     r->Chi(data_cl, data_err_cl, model_cl, output_cl, 0, test_size);
     ReadCLResult(output);
 
@@ -363,7 +363,7 @@ TEST_F(ChiTest, CL_Chi_ONE)
 	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
-	SetUpCL(data, data_err, model, output);
+	SetUpCL(data, data_err, model);
     r->Chi(data_cl, data_err_cl, model_cl, output_cl, 0, test_size);
     ReadCLResult(output);
 
@@ -386,7 +386,7 @@ TEST_F(ChiTest, CL_Chi_Convex_Zero)
 	MakeChiZeroBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
-	SetUpCL(data, data_err, model, output);
+	SetUpCL(data, data_err, model);
     r->ChiComplexConvex(data_cl, data_err_cl, model_cl, output_cl, 0, test_size);
     ReadCLResult(output);
 
@@ -409,7 +409,7 @@ TEST_F(ChiTest, CL_Chi_Convex_One)
 	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
-	SetUpCL(data, data_err, model, output);
+	SetUpCL(data, data_err, model);
     r->ChiComplexConvex(data_cl, data_err_cl, model_cl, output_cl, 0, test_size);
     ReadCLResult(output);
 
@@ -432,7 +432,7 @@ TEST_F(ChiTest, CL_Chi_NonConvex_Zero)
 	MakeChiZeroBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
-	SetUpCL(data, data_err, model, output);
+	SetUpCL(data, data_err, model);
     r->ChiComplexNonConvex(data_cl, data_err_cl, model_cl, output_cl, 0, test_size);
     ReadCLResult(output);
 
@@ -455,7 +455,7 @@ TEST_F(ChiTest, CL_Chi_NonConvex_One)
 	MakeChiOneBuffers(data, data_err, model, output, test_size);
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
-	SetUpCL(data, data_err, model, output);
+	SetUpCL(data, data_err, model);
     r->ChiComplexNonConvex(data_cl, data_err_cl, model_cl, output_cl, 0, test_size);
     ReadCLResult(output);
 
@@ -482,7 +482,7 @@ TEST_F(ChiTest, CL_Chi2_V2)
 	unsigned int n_t3 = 0;
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
-	SetUpCL(data, data_err, model, output);
+	SetUpCL(data, data_err, model);
 	float should_be_one = r->Chi2(data_cl, data_err_cl, model_cl, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
 	should_be_one /= test_size;
 
@@ -506,7 +506,7 @@ TEST_F(ChiTest, CL_Chi2_T3)
 	unsigned int n_t3 = test_size;
 
 	// Setup OpenCL and the Chi routine. Teardown is automatic.
-	SetUpCL(data, data_err, model, output);
+	SetUpCL(data, data_err, model);
 	float should_be_one = r->Chi2(data_cl, data_err_cl, model_cl, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
 	should_be_one /= test_size;
 
@@ -532,7 +532,7 @@ TEST_F(ChiTest, CL_Chi2_T3)
 //	unsigned int n_t3 = test_size/2;
 //
 //	// Setup OpenCL and the Chi routine. Teardown is automatic.
-//	SetUpCL(data, data_err, model, output);
+//	SetUpCL(data, data_err, model);
 //	float should_be_one = r->Chi2(data_cl, data_err_cl, model_cl, LibOIEnums::NON_CONVEX, n_vis, n_v2, n_t3, true);
 //	should_be_one /= n_values;
 //
