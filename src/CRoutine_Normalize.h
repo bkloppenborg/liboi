@@ -50,10 +50,10 @@ public:
 	void Normalize(cl_mem image, unsigned int image_width, unsigned int image_height, float one_over_sum);
 
 	template <typename T>
-	static void Normalize(valarray<T> & buffer, unsigned int buffer_size)
+	static void Normalize(valarray<T> & buffer, size_t buffer_size)
 	{
 		T sum = CRoutine_Sum::Sum(buffer);
-		for(int i = 0; i < buffer_size; i++)
+		for(size_t i = 0; i < buffer_size; i++)
 			buffer[i] /= sum;
 	}
 };

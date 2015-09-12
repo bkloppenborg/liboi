@@ -108,8 +108,6 @@ COILibData::~COILibData()
 /// Initializes statistics on the data set and uploads the data to the OpenCL device.
 void COILibData::AllocateMemory()
 {
-	int err = CL_SUCCESS;
-
 	// In case it has been called before, clean up memory.
 	DeallocateMemory();
 
@@ -202,7 +200,7 @@ void COILibData::ExportData(string base_filename, cl_mem simulated_data)
 			t3_uv_ref, mData_T3_uv_ref,
 			t3_uv_sign, mData_T3_sign);
 
-	ccoifits::Export_ToText(base_filename, uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+	ccoifits::Export_ToText(base_filename, uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref);
 
 	if(simulated_data != NULL)
 	{
@@ -219,15 +217,13 @@ void COILibData::ExportData(string base_filename, cl_mem simulated_data)
 				t3_uv_ref, mData_T3_uv_ref,
 				t3_uv_sign, mData_T3_sign);
 
-		ccoifits::Export_ToText(base_filename + "_model", uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref, t3_uv_sign);
+		ccoifits::Export_ToText(base_filename + "_model", uv_points, vis, vis_err, vis_uv_ref, vis2, vis2_err, vis2_uv_ref, t3, t3_err, t3_uv_ref);
 	}
 }
 
 /// Initializes statistics on the data set and uploads the data to the OpenCL device.
 void COILibData::InitData()
 {
-	int err = CL_SUCCESS;
-
 	// Export the data from OIDataList to something we can use here.
 	vector<pair<double,double> > uv_points;
 	valarray<complex<double>> vis;
@@ -373,7 +369,7 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points, cl_mem
 	// #####
 	// UV points
 	uv_points.resize(mNUV);
-	for(int i = 0; i < mNUV; i++)
+	for(unsigned int i = 0; i < mNUV; i++)
 	{
 		uv_points[i].first = t_uv_points[i].s[0];
 		uv_points[i].second = t_uv_points[i].s[1];
@@ -384,7 +380,7 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points, cl_mem
 	// Stored as [real(vis1), ..., real(visN), imag(vis1), ..., imag(visN)] within the mData_cl buffer
 	vis.resize(mNVis);
 	vis_err.resize(mNVis);
-	for(int i = 0; i < mNVis; i++)
+	for(unsigned int  i = 0; i < mNVis; i++)
 	{
 		vis[i] = complex<double>(t_vis[i], t_vis[mNVis + i]);
 		vis_err[i].first = t_vis_err[i];
@@ -398,7 +394,7 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points, cl_mem
 	vis2.resize(mNV2);
 	vis2_err.resize(mNV2);
 	vis2_uv_ref.resize(mNV2);
-	for(int i = 0; i < mNV2; i++)
+	for(unsigned int  i = 0; i < mNV2; i++)
 	{
 		vis2[i] = t_vis2[i];
 		vis2_err[i] = t_vis2_err[i];
@@ -413,7 +409,7 @@ void COILibData::CopyFromDevice(vector<pair<double,double> > & uv_points, cl_mem
 	t3_err.resize(mNT3);
 	t3_uv_ref.resize(mNT3);
 	t3_uv_sign.resize(mNT3);
-	for(int i = 0; i < mNT3; i++)
+	for(unsigned int  i = 0; i < mNT3; i++)
 	{
 		t3[i] = complex<double>(t_t3[i], t_t3[mNT3 + i]);
 
@@ -453,13 +449,14 @@ void COILibData::CopyToDevice(const vector<pair<double,double> > & uv_points,
 
 	// Allocate a buffer, fill it with UV points
 	valarray<cl_float2> t_uv_points(mNUV);
-	for(int i = 0; i < uv_points.size(); i++)
+	size_t nUV = uv_points.size();
+	for(size_t i = 0; i < nUV; i++)
 	{
 		t_uv_points[i].s[0] = uv_points[i].first;
 		t_uv_points[i].s[1] = uv_points[i].second;
 	}
 	// Pad with infinities after this (results in UV points having value of (0 + 0i))
-	for(int i = uv_points.size(); i < mNUV; i++)
+	for(size_t i = nUV; i < mNUV; i++)
 	{
 		t_uv_points[i].s[0] = numeric_limits<float>::infinity();
 		t_uv_points[i].s[1] = numeric_limits<float>::infinity();
@@ -477,7 +474,7 @@ void COILibData::CopyToDevice(const vector<pair<double,double> > & uv_points,
 	valarray<cl_float> t_vis(2*mNVis);
 	valarray<cl_float> t_vis_err(2*mNVis);
 	valarray<cl_uint> t_vis_uvref(mNVis);
-	for(int i = 0; i < mNVis; i++)
+	for(unsigned int i = 0; i < mNVis; i++)
 	{
 		t_vis[i] = real(vis[i]);
 		t_vis[mNVis + i] = imag(vis[i]);
@@ -501,7 +498,7 @@ void COILibData::CopyToDevice(const vector<pair<double,double> > & uv_points,
 	valarray<cl_float> t_vis2(mNV2);
 	valarray<cl_float> t_vis2_err(mNV2);
 	valarray<cl_uint> t_vis2_uvref(mNV2);
-	for(int i = 0; i < mNV2; i++)
+	for(unsigned int i = 0; i < mNV2; i++)
 	{
 		t_vis2[i] = vis2[i];
 		t_vis2_err[i] = vis2_err[i];
@@ -526,7 +523,7 @@ void COILibData::CopyToDevice(const vector<pair<double,double> > & uv_points,
 	valarray<cl_float> t_t3_err(2*mNT3);
 	valarray<cl_uint4> t_t3_uvref(mNT3);
 	valarray<cl_short4> t_t3_sign(mNT3);
-	for(int i = 0; i < mNT3; i++)
+	for(unsigned int i = 0; i < mNT3; i++)
 	{
 		t_t3[i] = real(t3[i]);
 		t_t3[mNT3 + i] = imag(t3[i]);
@@ -561,7 +558,7 @@ void COILibData::CopyToDevice(const vector<pair<double,double> > & uv_points,
 }
 
 /// Copies up to n of the data from the OpenCL device to output.
-void COILibData::GetData(int data_num, float * output, unsigned int & n)
+void COILibData::GetData(float * output, unsigned int & n)
 {
 	int err = CL_SUCCESS;
 
@@ -570,11 +567,12 @@ void COILibData::GetData(int data_num, float * output, unsigned int & n)
 	// Copy the minimum of the output buffer size and n_data
 	n = min(n, n_data);
 	err |= clEnqueueReadBuffer(mQueue, mData_cl, CL_FALSE, 0, sizeof(cl_float) * n, output, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(err, "clEnqueueReadBuffer failed")
 	clFinish(mQueue);
 }
 
 /// Copies up to n of the data uncertainties from the OpenCL device to output.
-void COILibData::GetDataUncertainties(int data_num, float * output, unsigned int & n)
+void COILibData::GetDataUncertainties(float * output, unsigned int & n)
 {
 	int err = CL_SUCCESS;
 
@@ -583,6 +581,7 @@ void COILibData::GetDataUncertainties(int data_num, float * output, unsigned int
 	// Copy the minimum of the output buffer size and n_data
 	n = min(n, n_data);
 	err |= clEnqueueReadBuffer(mQueue, mData_err_cl, CL_FALSE, 0, sizeof(cl_float) * n, output, 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(err, "clEnqueueReadBuffer failed")
 	clFinish(mQueue);
 }
 

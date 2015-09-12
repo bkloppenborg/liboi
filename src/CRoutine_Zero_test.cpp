@@ -18,7 +18,7 @@ extern cl_device_type OPENCL_DEVICE_TYPE;
 
 TEST(CRoutine_Zero, CL_ZeroBuffer)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Init the OpenCL device and necessary routines:
 	COpenCL cl(OPENCL_DEVICE_TYPE);
@@ -27,24 +27,27 @@ TEST(CRoutine_Zero, CL_ZeroBuffer)
 	r_zero.Init();
 
 	valarray<cl_float> data(test_size);
-	for(int i = 0; i < data.size(); i++)
+	for(size_t i = 0; i < data.size(); i++)
 		data[i] = i;
 
 	// Create buffers
-	int err = CL_SUCCESS;
+	int status = CL_SUCCESS;
 	cl_mem input_buffer = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clCreateBuffer failed.");
 	// Fill the input buffer
-    err = clEnqueueWriteBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
+	status = clEnqueueWriteBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueWriteBuffer failed.");
 
 	r_zero.Zero(input_buffer, test_size);
 
 	// Read back the results.
-	err = clEnqueueReadBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
+	status = clEnqueueReadBuffer(cl.GetQueue(), input_buffer, CL_TRUE, 0, sizeof(cl_float) * test_size, &data[0], 0, NULL, NULL);
+	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	// Free buffers
 	clReleaseMemObject(input_buffer);
 
 	// Check the results.
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_EQ(0, data[i]);
 }

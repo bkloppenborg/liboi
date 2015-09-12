@@ -56,16 +56,6 @@ class COpenCL;
         throw runtime_error("OpenCL error detected."); \
     }
 
-#pragma OPENCL EXTENSION CL_APPLE_gl_sharing : enable
-#pragma OPENCL EXTENSION CL_KHR_gl_sharing : enable
-//#pragma OPENCL EXTENSION cl_khr_image2D_buffer : enable
-
-// cl.hpp throws lot of warnings, but we have no control over these.  Tell GCC to ignore them.
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wall"
-//#pragma GCC diagnostic ignored "-Wextra"
-//#pragma GCC diagnostic ignored "-Wshadow"
-
 // Enable OpenCL exceptions
 #define __CL_ENABLE_EXCEPTIONS
 
@@ -104,7 +94,7 @@ protected:
 	unsigned int mCLVersion;
 
 public:
-	COpenCL(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled);
+	COpenCL(cl_device_id device, cl_context context, cl_command_queue queue);
 	COpenCL(cl_device_type type);
 	virtual ~COpenCL();
 

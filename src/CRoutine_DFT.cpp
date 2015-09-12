@@ -137,7 +137,7 @@ void CRoutine_DFT::FT(valarray<cl_float2> & uv_points, unsigned int n_uv_points,
 		valarray<cl_float2> & cpu_output)
 {
 	// compute the Fourier transform of the image for each Uv point
-	for(unsigned int i = 0; i < uv_points.size(); i++)
+	for(unsigned int i = 0; i < n_uv_points; i++)
 	{
 		FT(uv_points[i], image, image_width, image_height, image_scale, cpu_output[i]);
 	}

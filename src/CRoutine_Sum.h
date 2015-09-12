@@ -61,13 +61,14 @@ public:
 	static unsigned int nextPow2( unsigned int x );
 
 	template <typename T>
-	static T Sum(valarray<T> & buffer)
+	static T Sum(const valarray<T> & buffer)
 	{
 		// Use Kahan summation to minimize lost precision.
 		// http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 		T sum = buffer[0];
 		T c = T(0.0);
-		for (int i = 1; i < buffer.size(); i++)
+		size_t buffer_size = buffer.size();
+		for (size_t i = 1; i < buffer_size; i++)
 		{
 			T y = buffer[i] - c;
 			T t = sum + y;

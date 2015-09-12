@@ -93,7 +93,7 @@ void CRoutine_FTtoT3::FTtoT3(cl_mem ft_input, cl_mem t3_uv_ref, cl_mem t3_uv_sig
 void CRoutine_FTtoT3::FTtoT3(valarray<cl_float2> & ft_input, valarray<cl_uint4> & uv_ref, valarray<cl_short4> & signs, valarray<cl_float> & output)
 {
 	// How many T3s do we have?
-	unsigned int n_t3 = min(uv_ref.size(), signs.size());
+	size_t n_t3 = min(uv_ref.size(), signs.size());
 	output.resize(2*n_t3);
 
 	// Locals
@@ -106,7 +106,7 @@ void CRoutine_FTtoT3::FTtoT3(valarray<cl_float2> & ft_input, valarray<cl_uint4> 
 	complex<float> V_bc;
 	complex<float> V_ca;
 	complex<float> T3;
-	for(int i = 0; i < n_t3; i++)
+	for(size_t i = 0; i < n_t3; i++)
 	{
 		// Look up the UV points
 		uvpoint = uv_ref[i];

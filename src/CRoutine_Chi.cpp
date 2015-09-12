@@ -116,7 +116,6 @@ void CRoutine_Chi::Chi(cl_mem data, cl_mem data_err, cl_mem model_data,
 	unsigned int vis_offset = COILibData::CalculateOffset_Vis();
 	unsigned int v2_offset = COILibData::CalculateOffset_V2(n_vis);
 	unsigned int t3_offset = COILibData::CalculateOffset_T3(n_vis, n_v2);
-	unsigned int n_data = COILibData::TotalBufferSize(n_vis, n_v2, n_t3);
 
 	// V2 is always calculated using the standard chi routine.
 	Chi(data, data_err, model_data, mChiOutput, v2_offset, n_v2);
@@ -254,7 +253,7 @@ void CRoutine_Chi::Chi(valarray<cl_float> & data, valarray<cl_float> & data_err,
 	assert(start_index + n <= n_output);
 
 	// Everything is ok, compute the chi elements
-	for(int i = start_index; i < n; i++)
+	for(size_t i = start_index; i < n; i++)
 		output[i] = (data[i] - model[i]) / data_err[i];
 }
 
@@ -277,7 +276,7 @@ void CRoutine_Chi::Chi_complex_convex(valarray<cl_float> & data, valarray<cl_flo
 	// Under the convex approximation the complex quantities are rotated to zero phase and compared
 	// in cartesian coordinates.
 	// The data, data err, and model are already stored as complex numbers so simply extract them from the buffers
-	for(int i = start_index; i < n; i++)
+	for(size_t i = start_index; i < n; i++)
 	{
 		// Form the complex quantities:
 		complex<float> c_data(data[i], data[n+i]);
@@ -316,7 +315,7 @@ void CRoutine_Chi::Chi_complex_nonconvex(valarray<cl_float> & data, valarray<cl_
 	cl_float2 c_data;
 	cl_float2 c_model;
 	cl_float2 c_error;
-	for(int i = start_index; i < n; i++)
+	for(size_t i = start_index; i < n; i++)
 	{
 		// Form the complex quantities:
 		c_data.s[0] = data[i];

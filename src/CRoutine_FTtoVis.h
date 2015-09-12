@@ -47,8 +47,6 @@ public:
 
 	void Init();
 	void FTtoVis(cl_mem ft_input, cl_mem vis_uv_ref, cl_mem output, unsigned int n_vis);
-	void FTtoVis_CPU(cl_mem ft_input, cl_mem v2_uv_ref, valarray<cl_float> & cpu_output, unsigned int n_vis, unsigned int n_uv);
-	bool FTtoVis_Test(cl_mem ft_input, cl_mem v2_uv_ref, cl_mem output, unsigned int n_vis, unsigned int n_uv);
 };
 
 } /* namespace liboi */

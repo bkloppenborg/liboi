@@ -22,16 +22,15 @@ extern cl_device_type OPENCL_DEVICE_TYPE;
 /// Checks that the CPU routine functions correctly.
 TEST(CRoutine_FTtoT3, CPU_PointSource)
 {
-	unsigned int test_size = 10000;
-
-	unsigned int n_uv = 3 * test_size ;
+	size_t test_size = 10000;
+	size_t n_uv = 3 * test_size ;
 
 	// Generate a point source model, get input data from it.
 	CPointSource pnt(128, 128, 0.025);
 	valarray<cl_float2> uv_points = pnt.GenerateUVSpiral_CL(n_uv);
 	// GenerateUVSpiral doesn't make closed triangles, so we replace every third
 	// UV point with the closed arm of a triplet.
-	for(int i = 2; i < test_size; i += 3)
+	for(size_t i = 2; i < test_size; i += 3)
 	{
 		uv_points[i].s[0] = -1*(uv_points[i-2].s[0] + uv_points[i-1].s[0]);
 		uv_points[i].s[1] = -1*(uv_points[i-2].s[1] + uv_points[i-1].s[1]);
@@ -42,7 +41,7 @@ TEST(CRoutine_FTtoT3, CPU_PointSource)
 	// Create linear indexing for the T3 points
 	valarray<cl_uint4> uv_ref(test_size);
 	valarray<cl_short4> uv_sign(test_size);
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		// Create the UV references
 		uv_ref[i].s[0] = 3*i;
@@ -68,7 +67,7 @@ TEST(CRoutine_FTtoT3, CPU_PointSource)
 	// Now check the results:
 	// Odd indexing is to conform with the format specified in COILibData.h for the output data.
 	//  [t3_amp_0, ..., t3_amp_n, t3_phi_0, ..., t3_phi_n]
-	for(unsigned int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		EXPECT_NEAR(output[i], model_out[i].s[0], MAX_REL_ERROR * model_out[i].s[0]);
 		EXPECT_NEAR(output[test_size + i], model_out[i].s[1], MAX_REL_ERROR * model_out[i].s[1]);
@@ -78,16 +77,16 @@ TEST(CRoutine_FTtoT3, CPU_PointSource)
 /// Checks that the OpenCL routine functions correctly.
 TEST(CRoutine_FTtoT3, CL_PointSource)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
-	unsigned int n_uv = 3 * test_size ;
+	size_t n_uv = 3 * test_size ;
 
 	// Generate a point source model, get input data from it.
 	CPointSource pnt(128, 128, 0.025);
 	valarray<cl_float2> uv_points = pnt.GenerateUVSpiral_CL(n_uv);
 	// GenerateUVSpiral doesn't make closed triangles, so we replace every third
 	// UV point with the closed arm of a triplet.
-	for(int i = 2; i < test_size; i += 3)
+	for(size_t i = 2; i < test_size; i += 3)
 	{
 		uv_points[i].s[0] = -1*(uv_points[i-2].s[0] + uv_points[i-1].s[0]);
 		uv_points[i].s[1] = -1*(uv_points[i-2].s[1] + uv_points[i-1].s[1]);
@@ -98,7 +97,7 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	// Create linear indexing for the T3 points
 	valarray<cl_uint4> uv_ref(test_size);
 	valarray<cl_short4> uv_sign(test_size);
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		// Create the UV references
 		uv_ref[i].s[0] = 3*i;
@@ -123,6 +122,7 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	int err = CL_SUCCESS;
 	// FT input
 	cl_mem ft_input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float2) * n_uv, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clCreateBuffer Failed");
     err = clEnqueueWriteBuffer(cl.GetQueue(), ft_input_cl, CL_FALSE, 0, sizeof(cl_float2) * n_uv, &ft_input[0], 0, NULL, NULL);
 	// UV references
 	cl_mem uv_ref_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_uint4) * test_size, NULL, NULL);
@@ -130,8 +130,10 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	// UV signs
 	cl_mem uv_sign_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_short4) * test_size, NULL, NULL);
     err = clEnqueueWriteBuffer(cl.GetQueue(), uv_sign_cl, CL_FALSE, 0, sizeof(cl_short4) * test_size, &uv_sign[0], 0, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clEnqueueWriteBuffer Failed");
     // Output buffer (remember, we write out to a cl_float, not cl_float 2 so we need twice the storage)
 	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * 2 * test_size, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clCreateBuffer Failed");
 
 	// Wait for memory transfers to finish.
 	clFinish(cl.GetQueue());
@@ -143,6 +145,7 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	// Copy back the results
 	valarray<cl_float> output(2 * test_size);
 	err = clEnqueueReadBuffer(cl.GetQueue(), output_cl, CL_TRUE, 0, sizeof(cl_float) * 2 * test_size, &output[0], 0, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clEnqueueReadBuffer Failed");
 
 	// Free OpenCL memory
 	clReleaseMemObject(ft_input_cl);
@@ -153,7 +156,7 @@ TEST(CRoutine_FTtoT3, CL_PointSource)
 	// Now check the results:
 	// Odd indexing is to conform with the format specified in COILibData.h for the output data.
 	//  [t3_amp_0, ..., t3_amp_n, t3_phi_0, ..., t3_phi_n]
-	for(unsigned int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 	{
 		EXPECT_NEAR(output[i], model_out[i].s[0], MAX_REL_ERROR * model_out[i].s[0]) << "Amplitude calculation error.";
 		EXPECT_NEAR(output[test_size + i], model_out[i].s[1], MAX_REL_ERROR * model_out[i].s[1]) << "Phase calculation error.";

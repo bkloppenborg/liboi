@@ -45,7 +45,7 @@ TEST(CRoutine_Square, CPU_Square)
 
 TEST(CRoutine_Square, CL_Square)
 {
-	unsigned int test_size = 10000;
+	size_t test_size = 10000;
 
 	// Init the OpenCL device and necessary routines:
 	COpenCL cl(OPENCL_DEVICE_TYPE);
@@ -56,16 +56,18 @@ TEST(CRoutine_Square, CL_Square)
 	valarray<cl_float> input(test_size);
 	valarray<cl_float> cpu_val(test_size);
 	valarray<cl_float> cl_val(test_size);
-	for(int i = 0; i < cpu_val.size(); i++)
+	for(size_t i = 0; i < test_size; i++)
 		input[i] = i;
 
 	// Create buffers
 	int err = CL_SUCCESS;
 	cl_mem input_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
 	cl_mem output_cl = clCreateBuffer(cl.GetContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * test_size, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clCreateBuffer Failed");
 
 	// Fill the input buffer
     err = clEnqueueWriteBuffer(cl.GetQueue(), input_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &input[0], 0, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clEnqueueWriteBuffer Failed");
 
     // Normalize on the OpenCL device, do the same on the CPU:
     r_square.Square(input_cl, output_cl, test_size, test_size);
@@ -73,12 +75,13 @@ TEST(CRoutine_Square, CL_Square)
 
 	// Read back the results.
 	err = clEnqueueReadBuffer(cl.GetQueue(), output_cl, CL_TRUE, 0, sizeof(cl_float) * test_size, &cl_val[0], 0, NULL, NULL);
+	CHECK_ERROR(err, CL_SUCCESS, "clEnqueueReadBuffer Failed");
 
 	// Free OpencL buffers
 	clReleaseMemObject(input_cl);
 	clReleaseMemObject(output_cl);
 
 	// Check the results.
-	for(int i = 0; i < test_size; i++)
+	for(size_t i = 0; i < test_size; i++)
 		EXPECT_NEAR(float(cpu_val[i]), float(cl_val[i]), MAX_REL_ERROR) << " at index " << i;
 }

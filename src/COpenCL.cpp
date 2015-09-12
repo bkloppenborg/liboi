@@ -52,12 +52,9 @@ COpenCL::COpenCL(cl_device_type type)
 	mCLVersion = FindOpenCLVersion();
 }
 
-COpenCL::COpenCL(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled)
+COpenCL::COpenCL(cl_device_id device, cl_context context, cl_command_queue queue)
+	: mDevice(device), mContext(context), mQueue(queue)
 {
-	mDevice = device;
-	mContext = context;
-	mQueue = queue;
-
 	mCLVersion = FindOpenCLVersion();
 }
 

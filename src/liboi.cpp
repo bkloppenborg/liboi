@@ -68,9 +68,9 @@ CLibOI::CLibOI(cl_device_type type)
 	InitMembers();
 }
 
-CLibOI::CLibOI(cl_device_id device, cl_context context, cl_command_queue queue, bool cl_gl_interop_enabled)
+CLibOI::CLibOI(cl_device_id device, cl_context context, cl_command_queue queue)
 {
-	mOCL = COpenCLPtr(new COpenCL(device, context, queue, cl_gl_interop_enabled));
+	mOCL = COpenCLPtr(new COpenCL(device, context, queue));
 	InitMembers();
 }
 
@@ -101,8 +101,6 @@ CLibOI::~CLibOI()
 /// If the image is already in an OpenCL buffer, this function need not be called.
 void CLibOI::CopyImageToBuffer(int layer)
 {
-	int status = CL_SUCCESS;
-
 	// Decide where we need to copy from
 
 	if(mImageType == LibOIEnums::OPENGL_FRAMEBUFFER || mImageType == LibOIEnums::OPENGL_TEXTUREBUFFER)
@@ -257,13 +255,13 @@ void CLibOI::ExportImage(float * image, unsigned int width, unsigned int height,
 		return;
 
 	int status = CL_SUCCESS;
-	int num_elements = mImageWidth * mImageHeight * mImageDepth;
+	size_t num_elements = mImageWidth * mImageHeight * mImageDepth;
 	cl_float tmp[num_elements];
 	status |= clEnqueueReadBuffer(mOCL->GetQueue(), mImage_cl, CL_TRUE, 0, num_elements * sizeof(cl_float), tmp, 0, NULL, NULL);
 	CHECK_OPENCL_ERROR(status, "clEnqueueReadBuffer failed.");
 
 	// Copy to the output buffer, converting as we go.
-	for(unsigned int i = 0; i < num_elements; i++)
+	for(size_t i = 0; i < num_elements; i++)
 		image[i] = tmp[i];
 
 }
@@ -337,7 +335,7 @@ int CLibOI::GetNDataSets()
 }
 
 /// Returns the number of T3 data points in the specified data set.  If the data set does not exist, returns 0.
-int CLibOI::GetNT3(int data_num)
+int CLibOI::GetNT3(size_t data_num)
 {
 	if(data_num < mDataList->size())
 		return mDataList->at(data_num)->GetNumT3();
@@ -346,7 +344,7 @@ int CLibOI::GetNT3(int data_num)
 }
 
 /// Returns the number of V2 data points in the specified data set.  If the data set does not exist, returns 0.
-int CLibOI::GetNV2(int data_num)
+int CLibOI::GetNV2(size_t data_num)
 {
 	if(data_num < mDataList->size())
 		return mDataList->at(data_num)->GetNumV2();
@@ -380,7 +378,7 @@ void CLibOI::ImageToChi(COILibDataPtr data, float * output, unsigned int & n)
 
 /// Same as ImageToChi above.
 /// Returns false if the data number does not exist, true otherwise.
-bool CLibOI::ImageToChi(int data_num, float * output, unsigned int & n)
+bool CLibOI::ImageToChi(size_t data_num, float * output, unsigned int & n)
 {
 	if(data_num > mDataList->size() - 1)
 		return false;
@@ -402,7 +400,7 @@ float CLibOI::ImageToChi2(COILibDataPtr data)
 }
 
 /// Same as ImageToChi2 above
-float CLibOI::ImageToChi2(int data_num)
+float CLibOI::ImageToChi2(size_t data_num)
 {
 	if(data_num > mDataList->size() - 1)
 		return -1;
@@ -429,7 +427,7 @@ void CLibOI::ImageToChi2(COILibDataPtr data, float * output, unsigned int & n)
 
 /// Same as ImageToChi above.
 /// Returns false if the data number does not exist, true otherwise.
-bool CLibOI::ImageToChi2(int data_num, float * output, unsigned int & n)
+bool CLibOI::ImageToChi2(size_t data_num, float * output, unsigned int & n)
 {
 	if(data_num > mDataList->size() - 1)
 		return false;
@@ -441,7 +439,7 @@ bool CLibOI::ImageToChi2(int data_num, float * output, unsigned int & n)
 
 /// Uses the currently loaded image and specified data set to
 /// compute simulated data.
-void CLibOI::ImageToData(int data_num)
+void CLibOI::ImageToData(size_t data_num)
 {
 	if(data_num > mDataList->size() - 1)
 		return;
@@ -466,7 +464,7 @@ float CLibOI::ImageToLogLike(COILibDataPtr data)
 	float llike = DataToLogLike(data);
 	return llike;
 }
-float CLibOI::ImageToLogLike(int data_num)
+float CLibOI::ImageToLogLike(size_t data_num)
 {
 	if(data_num > mDataList->size() - 1)
 		return -1;
@@ -783,7 +781,7 @@ void CLibOI::SetKernelSourcePath(string path_to_kernels)
 /// Replaces the data set loaded into old_data_id with new_data
 void CLibOI::ReplaceData(unsigned int old_data_id, const OIDataList & new_data)
 {
-	mDataList->ReplaceData(old_data_id, new_data, mOCL->GetContext(), mOCL->GetQueue());
+	mDataList->ReplaceData(old_data_id, new_data);
 }
 
 } /* namespace liboi */

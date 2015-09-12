@@ -21,11 +21,10 @@ extern cl_device_type OPENCL_DEVICE_TYPE;
 TEST(CRoutine_DFT, CPU_PointSource)
 {
 	// Create a (normalized) image with a point source at the center:
-	unsigned int image_width = 128;
-	unsigned int image_height = 128;
-	unsigned int image_size = image_width * image_height;
+	size_t image_width = 128;
+	size_t image_height = 128;
 	float image_scale = 0.025; // mas/pixel
-	unsigned int n_uv = 10;
+	size_t n_uv = 10;
 
 	// Create the model
 	CPointSource model(image_width, image_height, image_scale);
@@ -48,7 +47,7 @@ TEST(CRoutine_DFT, CPU_PointSource)
 	float max_vis_error = 1E-5;
 	float max_percent_error = 0;
 	float one_degree = 1.0 / 360 * PI;
-	for(int i = 0; i < n_uv; i++)
+	for(size_t i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
 		max_percent_error = abs(max_vis_error * theory_val.s[0]);
@@ -63,17 +62,16 @@ TEST(CRoutine_DFT, CPU_PointSource)
 TEST(CRoutine_DFT, CPU_UniformDisk)
 {
 	// Create a (normalized) image with a point source at the center:
-	unsigned int image_width = 1024;
-	unsigned int image_height = 1024;
-	unsigned int image_size = image_width * image_height;
+	size_t image_width = 1024;
+	size_t image_height = 1024;
 	float image_scale = 0.025; // mas/pixel
-	unsigned int n_uv = 10;
+	size_t n_uv = 10;
 	float radius = float(image_width) / 2 * image_scale;
 
 	// Create the model
 	CUniformDisk model(image_width, image_height, image_scale, radius, 0, 0);
 	valarray<double> image_temp = model.GetImage();
-	model.WriteImage(image_temp, image_width, image_height, image_scale, "!model_cpu_uniform_disk.fits");
+	model.WriteImage("!model_cpu_uniform_disk.fits");
 
 	// Get UV points, the image, and init an output buffer:
 	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv);
@@ -93,7 +91,7 @@ TEST(CRoutine_DFT, CPU_UniformDisk)
 	float max_vis_error = 0.03;
 	float three_percent_error = 0;
 	float one_degree = 1.0 / 360 * PI;
-	for(int i = 0; i < n_uv; i++)
+	for(size_t i = 0; i < n_uv; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
 		three_percent_error = abs(max_vis_error * theory_val.s[0]);
@@ -108,11 +106,11 @@ TEST(CRoutine_DFT, CL_PointSource)
 {
 	int status = CL_SUCCESS;
 	// Create a (normalized) image with a point source at the center:
-	unsigned int image_width = 128;
-	unsigned int image_height = 128;
-	unsigned int image_size = image_width * image_height;
+	size_t image_width = 128;
+	size_t image_height = 128;
+	size_t image_size = image_width * image_height;
 	float image_scale = 0.025; // mas/pixel
-	unsigned int n_uv_points = 10;
+	size_t n_uv_points = 10;
 
 	// Create the model
 	CPointSource model(image_width, image_height, image_scale);
@@ -152,7 +150,7 @@ TEST(CRoutine_DFT, CL_PointSource)
 	float three_percent_error = 0;
 	// Permit up to 1% error between the DFT and theoretical phases.
 	float one_degree = 1.0 / 360 * PI;
-	for(unsigned int i = 0; i < n_uv_points; i++)
+	for(size_t i = 0; i < n_uv_points; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
 
@@ -169,17 +167,17 @@ TEST(CRoutine_DFT, CL_UniformDisk)
 {
 	int status = CL_SUCCESS;
 	// Create a (normalized) image with a point source at the center:
-	unsigned int image_width = 1024;
-	unsigned int image_height = 1024;
-	unsigned int image_size = image_width * image_height;
+	size_t image_width = 1024;
+	size_t image_height = 1024;
+	size_t image_size = image_width * image_height;
 	float image_scale = 0.025; // mas/pixel
-	unsigned int n_uv_points = 10;
+	size_t n_uv_points = 10;
 	float radius = float(image_width) / 2 * image_scale;
 
 	// Create the model
 	CUniformDisk model(image_width, image_height, image_scale, radius, 0, 0);
 	valarray<double> image_temp = model.GetImage();
-	model.WriteImage(image_temp, image_width, image_height, image_scale, "!model_cl_uniform_disk.fits");
+	model.WriteImage("!model_cl_uniform_disk.fits");
 
 	// Get UV points, the image, and init an output buffer:
 	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv_points);
@@ -216,7 +214,7 @@ TEST(CRoutine_DFT, CL_UniformDisk)
 	float three_percent_error = 0;
 	// Permit up to 1% error between the DFT and theoretical phases.
 	float one_degree = 1.0 / 360 * PI;
-	for(unsigned int i = 0; i < n_uv_points; i++)
+	for(size_t i = 0; i < n_uv_points; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
 
@@ -235,17 +233,17 @@ TEST(CRoutine_DFT, CL_DFT_LARGE_UNEVEN_N_UV_POINTS)
 {
 	int status = CL_SUCCESS;
 	// Create a (normalized) image with a point source at the center:
-	unsigned int image_width = 1024;
-	unsigned int image_height = 1024;
-	unsigned int image_size = image_width * image_height;
+	size_t image_width = 1024;
+	size_t image_height = 1024;
+	size_t image_size = image_width * image_height;
 	float image_scale = 0.025; // mas/pixel
-	unsigned int n_uv_points = 10221;	// Choose something much larger and not evenly divisible by typical local sizes
+	size_t n_uv_points = 10221;	// Choose something much larger and not evenly divisible by typical local sizes
 	float radius = float(image_width) / 2 * image_scale;
 
 	// Create the model
 	CUniformDisk model(image_width, image_height, image_scale, radius, 0, 0);
 	valarray<double> image_temp = model.GetImage();
-	model.WriteImage(image_temp, image_width, image_height, image_scale, "!model_cl_uniform_disk.fits");
+	model.WriteImage("!model_cl_uniform_disk.fits");
 
 	// Get UV points, the image, and init an output buffer:
 	valarray<cl_float2> uv_points = model.GenerateUVSpiral_CL(n_uv_points);
@@ -280,7 +278,7 @@ TEST(CRoutine_DFT, CL_DFT_LARGE_UNEVEN_N_UV_POINTS)
 	cl_float2 theory_val;
 	// Permit up to 1% error between the DFT and theoretical phases.
 	float two_degrees = 2.0 / 360 * PI;
-	for(unsigned int i = 0; i < n_uv_points; i++)
+	for(size_t i = 0; i < n_uv_points; i++)
 	{
 		theory_val = model.GetVis_CL(uv_points[i]);
 

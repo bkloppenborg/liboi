@@ -47,9 +47,9 @@ public:
 	void Square(cl_mem input, cl_mem output, unsigned int buffer_size, unsigned int data_size);
 
 	template <typename T>
-	static void Square(valarray<T> & input_buffer, valarray<T> & output_buffer, unsigned int buffer_size, unsigned int data_size)
+	static void Square(valarray<T> & input_buffer, valarray<T> & output_buffer, size_t buffer_size, size_t data_size)
 	{
-		for(int i = 0; i < buffer_size && i < data_size; i++)
+		for(size_t i = 0; i < buffer_size && i < data_size; i++)
 			output_buffer[i] = input_buffer[i] * input_buffer[i];
 	}
 };

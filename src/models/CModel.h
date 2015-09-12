@@ -72,9 +72,9 @@ public:
 	unsigned int MasToPixel(double value);
 	double MasToRad(double value);
 
-	valarray<double> ReadImage(string filename, unsigned int width, unsigned int height, double image_scale);
+	valarray<double> ReadImage(const string & filename, unsigned int width, unsigned int height);
 
-	void   WriteImage(valarray<double> & image, unsigned int image_width, unsigned int image_height, double image_scale, string filename);
+	void   WriteImage(const string & filename);
 };
 
 } // namespace liboi

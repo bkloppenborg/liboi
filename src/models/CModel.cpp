@@ -20,8 +20,8 @@ double CModel::RPMAS = (M_PI / 180.0) / 3600000.0; // Number of radians per mill
 CModel::CModel(unsigned int image_width, unsigned int image_height, double image_scale)
 {
 	assert(image_scale > 0);
-	assert(image_width >= 0);
-	assert(image_height >= 0);
+	assert(image_width > 0);
+	assert(image_height > 0);
 
 	mImageWidth = image_width;
 	mImageHeight = image_height;
@@ -58,7 +58,7 @@ valarray<cl_float2> CModel::GetVis_CL(valarray<cl_float2> & uv_list)
 {
 	unsigned int n_uv = uv_list.size();
 	valarray<cl_float2> output(n_uv);
-	for(int i = 0; i < n_uv; i++)
+	for(size_t i = 0; i < n_uv; i++)
 	{
 		output[i] = GetVis_CL(uv_list[i]);
 	}
@@ -150,7 +150,7 @@ valarray<pair<double,double>> CModel::GenerateUVSpiral(unsigned int n_uv)
 	double dt = 4 * 2 * PI / n_uv;	// We want to have four full circles
 	double r = 0;
 	double theta = 0;
-	for(int i = 1; i < n_uv; i++)
+	for(size_t i = 1; i < n_uv; i++)
 	{
 		r = (a + b * theta) * 1E6;
 		uv_points[i] = pair<float,float>(r*cos(theta), r*sin(theta));
@@ -167,7 +167,7 @@ valarray<cl_float2> CModel::GenerateUVSpiral_CL(unsigned int n_uv)
 	valarray<cl_float2> output(n_uv);
 
 	valarray<pair<double,double>> input = GenerateUVSpiral(n_uv);
-	for(int i = 0; i < n_uv; i++)
+	for(size_t i = 0; i < n_uv; i++)
 	{
 		output[i] = cl_float2();
 		output[i].s[0] = cl_float(input[i].first);
@@ -181,7 +181,7 @@ valarray<cl_float> CModel::GetImage_CL()
 {
 	valarray<double> input = GetImage();
 	valarray<cl_float> output(input.size());
-	for(int i = 0; i < input.size(); i++)
+	for(size_t i = 0; i < input.size(); i++)
 		output[i] = cl_float(input[i]);
 
 	return output;
@@ -199,15 +199,12 @@ double CModel::MasToRad(double value)
 
 /// Reads in a TFLOAT FITS image
 /// TODO: This function is hard-coded to TFLOAT format and should not, in general, be used.
-valarray<double> CModel::ReadImage(string filename, unsigned int width, unsigned int height, double image_scale)
+valarray<double> CModel::ReadImage(const string &filename, unsigned int width, unsigned int height)
 {
     valarray<double> image(width * height);
     valarray<float> image_temp(width * height);
 
 	int status = 0;
-
-    char comment[200];          // should be enough for most comments
-
     fitsfile *fptr;             // pointer to the FITS file, defined in
                                 // fitsio.h
     int nfound, anynull;
@@ -222,7 +219,7 @@ valarray<double> CModel::ReadImage(string filename, unsigned int width, unsigned
         fits_read_keys_lng(fptr, "NAXIS", 1, 2, naxes, &nfound, &status);
 
     assert(width == naxes[0]);
-    assert(height = naxes[1]);      // number of pixels in the image
+    assert(height == naxes[1]);      // number of pixels in the image
 
 
     // Check the format for the image:
@@ -247,42 +244,43 @@ valarray<double> CModel::ReadImage(string filename, unsigned int width, unsigned
 
 /// Saves the current image in the OpenCL memory buffer to the specified FITS file
 /// If the OpenCL memory has not been initialzed, this function immediately returns
-void   CModel::WriteImage(valarray<double> & image, unsigned int image_width, unsigned int image_height, double image_scale, string filename)
+void   CModel::WriteImage(const string &filename)
 {
+	// Get the image
+	valarray<double> image = this->GetImage();
 	// write out the FITS file:
 	fitsfile *fptr;
-	int error = 0;
-	int* status = &error;
+	int status = 0;
 	long fpixel = 1, naxis = 2, nelements;
 	long naxes[2];
 
 	/*Initialise storage*/
-	naxes[0] = (long) image_width;
-	naxes[1] = (long) image_height;
-	nelements = image_width * image_height;
+	naxes[0] = (long) mImageWidth;
+	naxes[1] = (long) mImageHeight;
+	nelements = mImageWidth * mImageHeight;
 
 	/*Create new file*/
-	if (*status == 0)
-		fits_create_file(&fptr, filename.c_str(), status);
+	if (status == 0)
+		fits_create_file(&fptr, filename.c_str(), &status);
 
 	/*Create primary array image*/
-	if (*status == 0)
-		fits_create_img(fptr, DOUBLE_IMG, naxis, naxes, status);
+	if (status == 0)
+		fits_create_img(fptr, DOUBLE_IMG, naxis, naxes, &status);
 
 	double RPMAS = (M_PI / 180.0) / 3600000.0;
-	double image_scale_rad = image_scale;// * RPMAS;
+	double image_scale_rad = mImageScale * RPMAS;
 
 	// Write keywords to get WCS to work //
-//	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Milli-arcsecs per pixel", status);
-//	fits_write_key_dbl(fptr, "CDELT2", image_scale_rad, 3, "Milli-arcsecs per pixel", status);
-//	fits_write_key_dbl(fptr, "CRVAL1", 0.0, 3, "X-coordinate of ref pixel", status);
-//	fits_write_key_dbl(fptr, "CRVAL2", 0.0, 3, "Y-coordinate of ref pixel", status);
-//	fits_write_key_lng(fptr, "CRPIX1", naxes[0]/2, "Ref pixel in X", status);
-//	fits_write_key_lng(fptr, "CRPIX2", naxes[1]/2, "Ref pixel in Y", status);
-//	fits_write_key_str(fptr, "CTYPE1", "RA",  "Name of X-coordinate", status);
-//	fits_write_key_str(fptr, "CTYPE2", "DEC", "Name of Y-coordinate", status);
-//	fits_write_key_str(fptr, "CUNIT1", "mas", "Unit of X-coordinate", status);
-//	fits_write_key_str(fptr, "CUNIT2", "mas", "Unit of Y-coordinate", status);
+	fits_write_key_dbl(fptr, "CDELT1", -image_scale_rad, 3, "Radians per pixel", &status);
+	fits_write_key_dbl(fptr, "CDELT2", image_scale_rad, 3, "Radians per pixel", &status);
+	fits_write_key_dbl(fptr, "CRVAL1", 0.0, 3, "X-coordinate of reference pixel", &status);
+	fits_write_key_dbl(fptr, "CRVAL2", 0.0, 3, "Y-coordinate of reference pixel", &status);
+	fits_write_key_lng(fptr, "CRPIX1", naxes[0]/2, "reference pixel in X", &status);
+	fits_write_key_lng(fptr, "CRPIX2", naxes[1]/2, "reference pixel in Y", &status);
+	fits_write_key_str(fptr, "CTYPE1", "RA",  "Name of X-coordinate", &status);
+	fits_write_key_str(fptr, "CTYPE2", "DEC", "Name of Y-coordinate", &status);
+	fits_write_key_str(fptr, "CUNIT1", "rad", "Unit of X-coordinate", &status);
+	fits_write_key_str(fptr, "CUNIT2", "rad", "Unit of Y-coordinate", &status);
 
 	/*Write a keywords (datafile, target, image scale) */
 //	if (*status == 0)
@@ -294,15 +292,15 @@ void   CModel::WriteImage(valarray<double> & image, unsigned int image_width, un
 
 
 	/*Write image*/
-	if (*status == 0)
-		fits_write_img(fptr, TDOUBLE, fpixel, nelements, &image[0], status);
+	if (status == 0)
+		fits_write_img(fptr, TDOUBLE, fpixel, nelements, &image[0], &status);
 
 	/*Close file*/
-	if (*status == 0)
-		fits_close_file(fptr, status);
+	if (status == 0)
+		fits_close_file(fptr, &status);
 
 	/*Report any errors*/
-	fits_report_error(stderr, *status);
+	fits_report_error(stderr, status);
 }
 
 } // namespace liboi
