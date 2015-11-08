@@ -42,9 +42,15 @@ function(_FIND_OPENCL_VERSION)
     set(CMAKE_REQUIRED_INCLUDES "${OpenCL_INCLUDE_DIR}")
 
     if(APPLE)
+      # prefer the header from the Framework
+      set(OSX_OpenCL_HEADER "${OpenCL_INCLUDE_DIR}/Headers/cl.h")
+      if(EXISTS "${OpenCL_INCLUDE_DIR}/OpenCL/cl.h")
+        set(OSX_OpenCL_HEADER "${OpenCL_INCLUDE_DIR}/OpenCL/cl.h")
+      endif()
+    
       CHECK_SYMBOL_EXISTS(
         CL_VERSION_${VERSION}
-        "${OpenCL_INCLUDE_DIR}/OpenCL/cl.h"
+        ${OSX_OpenCL_HEADER}
         OPENCL_VERSION_${VERSION})
     else()
       CHECK_SYMBOL_EXISTS(

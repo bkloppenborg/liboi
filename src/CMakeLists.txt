@@ -31,6 +31,7 @@ find_package(OpenGL REQUIRED)
 # to use clCreateFromGLTexture3D on these old devices.
 find_package(OpenCL REQUIRED)
 include_directories(${OPENCL_INCLUDE_DIRS})
+message(STATUS "OpenCL HEADER path: ${OpenCL_INCLUDE_DIRS}")
 message(STATUS "OpenCL version from headers: ${OpenCL_VERSION_STRING}")
 if(${OpenCL_VERSION_STRING} VERSION_EQUAL 1.0)
     add_definitions(-DMAX_OPENCL_VERSION=100)
