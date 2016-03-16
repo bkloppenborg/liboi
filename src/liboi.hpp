@@ -49,8 +49,10 @@
 
 #if defined(__APPLE__) || defined(__MACOSX)
     #include "cl.hpp"
+    #include <OpenGL/gl.h>
 #else
 	#include <CL/cl.hpp>
+    #include <GL/gl.h>
 #endif
 
 #include <string>
