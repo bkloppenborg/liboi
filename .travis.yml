@@ -1,10 +1,12 @@
+sudo: required
+dist: trusty
 language: cpp
 
 compiler:
   - gcc
 #  - clang
-  
-script: 
+
+script:
   - cd build
   - cmake ..
   - make
