@@ -1,7 +1,5 @@
 # OpenCL Interferometry Library (liboi)
 
-[![Build Status](https://travis-ci.org/bkloppenborg/liboi.svg?branch=master)](https://travis-ci.org/bkloppenborg/liboi)
-
 ## Description
 
 The OpenCL Interferometry Library (liboi) is a C / C++ library that aims to 
